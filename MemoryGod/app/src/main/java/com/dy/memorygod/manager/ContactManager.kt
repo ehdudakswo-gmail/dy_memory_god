@@ -34,7 +34,10 @@ object ContactManager {
         while (cursor.moveToNext()) {
             val phone = cursor.getString(0)
             val name = cursor.getString(1)
-            list.add(ContactData(phone, name))
+            val email = "test@gmail.com"
+
+            val data = ContactData(phone, name, email)
+            list.add(data)
         }
         cursor.close()
 
