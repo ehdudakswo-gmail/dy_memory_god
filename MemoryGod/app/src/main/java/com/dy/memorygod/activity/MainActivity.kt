@@ -1,15 +1,19 @@
-package com.dy.memorygod
+package com.dy.memorygod.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.dy.memorygod.R
 import com.dy.memorygod.adapter.MainRecyclerViewAdapter
 import com.dy.memorygod.data.ContactEmailData
 import com.dy.memorygod.data.ContactPhoneNumberData
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
+import com.dy.memorygod.enums.IntentName
 import com.dy.memorygod.manager.ContactManager
+import com.google.gson.Gson
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
@@ -48,18 +52,14 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
 
-                Toast.makeText(this@MainActivity, getInfo(data), Toast.LENGTH_SHORT).show()
+                val intent = Intent(this@MainActivity, TestActivity::class.java)
+                val intentName = IntentName.MainData.toString()
+                val json = Gson().toJson(data)
+
+                intent.putExtra(intentName, json)
+                startActivity(intent)
             }
         })
-    }
-
-    private fun getInfo(data: MainData): String {
-        return buildString {
-            for (content in data.contentList) {
-                appendln(content.title)
-                appendln(content.data)
-            }
-        }
     }
 
     private fun checkPermissions() {
@@ -78,7 +78,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPermissionDenied(deniedPermissions: ArrayList<String>?) {
-                Toast.makeText(this@MainActivity, R.string.app_permission_need, Toast.LENGTH_LONG)
+                Toast.makeText(
+                        this@MainActivity,
+                        R.string.app_permission_need, Toast.LENGTH_LONG
+                    )
                     .show()
                 finish()
             }
