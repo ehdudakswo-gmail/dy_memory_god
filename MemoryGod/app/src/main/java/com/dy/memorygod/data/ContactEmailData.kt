@@ -1,7 +1,6 @@
 package com.dy.memorygod.data
 
-class ContactData(
-    val phone: String,
+class ContactEmailData(
     val name: String,
     val email: String
 )

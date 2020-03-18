@@ -5,7 +5,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dy.memorygod.adapter.MainRecyclerViewAdapter
-import com.dy.memorygod.data.ContactData
+import com.dy.memorygod.data.ContactEmailData
+import com.dy.memorygod.data.ContactPhoneNumberData
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.manager.ContactManager
@@ -38,6 +39,15 @@ class MainActivity : AppCompatActivity() {
             MainRecyclerViewAdapter.ItemClickListener {
             override fun onClick() {
                 val data = recyclerViewAdapter.selectedItem
+                if (data.contentList.isEmpty()) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        R.string.app_main_contentList_empty,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+
                 Toast.makeText(this@MainActivity, getInfo(data), Toast.LENGTH_SHORT).show()
             }
         })
@@ -75,25 +85,28 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun setContactList() {
-        val contactList = ContactManager.getContactList(this)
-        if (contactList == ContactManager.ERROR_CONTACT) {
+        val phoneNumberList = ContactManager.getPhoneNumberList(this)
+        val emailList = ContactManager.getEmailList(this)
+
+        if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
             Toast.makeText(this, ContactManager.ERROR_MESSAGE, Toast.LENGTH_LONG).show()
             finish()
             return
         }
 
-        setPhoneData(contactList)
-        setEmailData(contactList)
+        setPhoneNumberList(phoneNumberList)
+        setEmailList(emailList)
         recyclerViewAdapter.refresh(dataList)
     }
 
-    private fun setPhoneData(contactList: List<ContactData>) {
-        val subject = getString(R.string.app_main_phone_subject)
+    private fun setPhoneNumberList(phoneNumberList: List<ContactPhoneNumberData>) {
+        val subject = getString(R.string.app_main_phoneNumber_subject)
         val contentList = ArrayList<MainDataContent>()
 
-        for (contact in contactList) {
-            val title = contact.name
-            val data = contact.phone
+        for (phoneNumber in phoneNumberList) {
+            val title = phoneNumber.name
+            val data = phoneNumber.phoneNumber
+
             val content = MainDataContent(title, data)
             contentList.add(content)
         }
@@ -102,13 +115,14 @@ class MainActivity : AppCompatActivity() {
         dataList.add(data)
     }
 
-    private fun setEmailData(contactList: List<ContactData>) {
+    private fun setEmailList(emailList: List<ContactEmailData>) {
         val subject = getString(R.string.app_main_email_subject)
         val contentList = ArrayList<MainDataContent>()
 
-        for (contact in contactList) {
-            val title = contact.name
-            val data = contact.email
+        for (email in emailList) {
+            val title = email.name
+            val data = email.email
+
             val content = MainDataContent(title, data)
             contentList.add(content)
         }
