@@ -4,9 +4,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.dy.memorygod.R
-import com.dy.memorygod.data.MainData
 import com.dy.memorygod.enums.IntentName
-import com.google.gson.Gson
+import com.dy.memorygod.manager.MainDataManager
 
 class TestActivity : AppCompatActivity() {
 
@@ -14,14 +13,28 @@ class TestActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
 
-        val intentName = IntentName.MainData.toString()
-        val json = intent.getStringExtra(intentName)
-        val data = Gson().fromJson(json, MainData::class.java)
-
+        val intentName = IntentName.TestConfig.toString()
+        val config = intent.getStringExtra(intentName)
         Toast.makeText(
             this,
-            data.toString(),
+            config,
             Toast.LENGTH_SHORT
         ).show()
+
+        val selectedData = MainDataManager.selectedData
+        if (selectedData.isReadOnly) {
+            Toast.makeText(
+                this,
+                selectedData.toString(),
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Toast.makeText(
+                this,
+                "Writable",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
+
 }

@@ -13,14 +13,14 @@ import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.IntentName
 import com.dy.memorygod.manager.ContactManager
-import com.google.gson.Gson
+import com.dy.memorygod.manager.MainDataManager
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private val dataList: ArrayList<MainData> = ArrayList()
+    private val dataList = MainDataManager.dataList
     private val recyclerViewAdapter = MainRecyclerViewAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,8 +42,8 @@ class MainActivity : AppCompatActivity() {
         recyclerViewAdapter.setItemClickListener(object :
             MainRecyclerViewAdapter.ItemClickListener {
             override fun onClick() {
-                val data = recyclerViewAdapter.selectedItem
-                if (data.contentList.isEmpty()) {
+                val selectedItem = recyclerViewAdapter.selectedItem
+                if (selectedItem.contentList.isEmpty()) {
                     Toast.makeText(
                         this@MainActivity,
                         R.string.app_main_contentList_empty,
@@ -52,11 +52,12 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
 
+                MainDataManager.selectedData = selectedItem
                 val intent = Intent(this@MainActivity, TestActivity::class.java)
-                val intentName = IntentName.MainData.toString()
-                val json = Gson().toJson(data)
+                val intentName = IntentName.TestConfig.toString()
+                val config = selectedItem.subject
 
-                intent.putExtra(intentName, json)
+                intent.putExtra(intentName, config)
                 startActivity(intent)
             }
         })
