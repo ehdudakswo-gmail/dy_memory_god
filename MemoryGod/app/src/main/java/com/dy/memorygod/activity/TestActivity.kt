@@ -15,14 +15,9 @@ class TestActivity : AppCompatActivity() {
 
         val intentName = IntentName.TestConfig.toString()
         val config = intent.getStringExtra(intentName)
-        Toast.makeText(
-            this,
-            config,
-            Toast.LENGTH_SHORT
-        ).show()
 
         val selectedData = MainDataManager.selectedData
-        if (selectedData.isReadOnly) {
+        if (selectedData.isPhoneData) {
             Toast.makeText(
                 this,
                 selectedData.toString(),
