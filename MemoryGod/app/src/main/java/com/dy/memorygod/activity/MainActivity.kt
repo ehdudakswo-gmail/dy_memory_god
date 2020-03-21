@@ -2,6 +2,8 @@ package com.dy.memorygod.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         setDefaultList()
         loadBackup()
         setRecyclerView()
-        refreshRecyclerView()
+        setToolbar()
     }
 
     override fun onDestroy() {
@@ -109,11 +111,33 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         })
+
+        refreshRecyclerView()
     }
 
     private fun refreshRecyclerView() {
         val mainDataList = MainDataManager.dataList
         recyclerViewAdapter.refresh(mainDataList)
+    }
+
+    private fun setToolbar() {
+        setSupportActionBar(toolbar_main)
+        supportActionBar!!.setDisplayShowTitleEnabled(false)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.main_toolBar_action_item_add -> {
+                Toast.makeText(this, "main_toolBar_action_item_add", Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
 }
