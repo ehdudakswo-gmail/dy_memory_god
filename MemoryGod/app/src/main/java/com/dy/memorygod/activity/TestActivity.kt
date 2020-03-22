@@ -1,6 +1,8 @@
 package com.dy.memorygod.activity
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.dy.memorygod.R
@@ -10,6 +12,7 @@ import com.dy.memorygod.manager.ContactManager
 import com.dy.memorygod.manager.MainDataManager
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
+import kotlinx.android.synthetic.main.activity_test.*
 
 class TestActivity : AppCompatActivity() {
 
@@ -91,15 +94,45 @@ class TestActivity : AppCompatActivity() {
     }
 
     private fun initActivity() {
-        val subject = selectedData.subject
-        val contentList = selectedData.contentList
-        val msg = "$subject (${contentList.size})\n$contentList"
+//        val subject = selectedData.subject
+//        val contentList = selectedData.contentList
+//        val msg = "$subject (${contentList.size})\n$contentList"
+//
+//        Toast.makeText(
+//            this,
+//            msg,
+//            Toast.LENGTH_SHORT
+//        ).show()
 
-        Toast.makeText(
-            this,
-            msg,
-            Toast.LENGTH_SHORT
-        ).show()
+        setToolbar()
+    }
+
+    private fun setToolbar() {
+        setSupportActionBar(toolbar_test)
+        val actionBar = supportActionBar!!
+
+        actionBar.setDisplayShowTitleEnabled(false)
+        actionBar.setDisplayHomeAsUpEnabled(true)
+        textView_toolbar_test_title.text = selectedData.subject
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_test, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                true
+            }
+            R.id.test_toolBar_action_item_add -> {
+                Toast.makeText(this, "test_toolBar_action_item_add", Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
 }

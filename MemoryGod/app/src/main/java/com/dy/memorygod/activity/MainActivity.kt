@@ -122,7 +122,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setToolbar() {
         setSupportActionBar(toolbar_main)
-        supportActionBar!!.setDisplayShowTitleEnabled(false)
+        val actionBar = supportActionBar!!
+        actionBar.setDisplayShowTitleEnabled(false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

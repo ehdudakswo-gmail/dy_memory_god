@@ -6,4 +6,7 @@
 
     <string name="main_toolBar_title">암기신</string>
     <string name="main_toolBar_action_item_add">아이템 추가</string>
+
+    <string name="test_toolBar_title">TEST</string>
+    <string name="test_toolBar_action_item_add">아이템 추가</string>
 </resources>

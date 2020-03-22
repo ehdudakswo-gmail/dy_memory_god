@@ -1,3 +1,4 @@
 <resources>
     <dimen name="main_toolBar_title">20sp</dimen>
+    <dimen name="test_toolBar_title">20sp</dimen>
 </resources>
