@@ -5,7 +5,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.dy.memorygod.R
+import com.dy.memorygod.adapter.TestRecyclerViewAdapter
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.IntentName
 import com.dy.memorygod.manager.ContactManager
@@ -17,6 +19,7 @@ import kotlinx.android.synthetic.main.activity_test.*
 class TestActivity : AppCompatActivity() {
 
     private val selectedData = MainDataManager.selectedData
+    private val recyclerViewAdapter = TestRecyclerViewAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,17 +97,8 @@ class TestActivity : AppCompatActivity() {
     }
 
     private fun initActivity() {
-//        val subject = selectedData.subject
-//        val contentList = selectedData.contentList
-//        val msg = "$subject (${contentList.size})\n$contentList"
-//
-//        Toast.makeText(
-//            this,
-//            msg,
-//            Toast.LENGTH_SHORT
-//        ).show()
-
         setToolbar()
+        setRecyclerView()
     }
 
     private fun setToolbar() {
@@ -114,6 +108,31 @@ class TestActivity : AppCompatActivity() {
         actionBar.setDisplayShowTitleEnabled(false)
         actionBar.setDisplayHomeAsUpEnabled(true)
         textView_toolbar_test_title.text = selectedData.subject
+    }
+
+    private fun setRecyclerView() {
+        val recyclerView = recyclerView_test
+        val layoutManager = LinearLayoutManager(this)
+
+        recyclerView.adapter = recyclerViewAdapter
+        recyclerView.layoutManager = layoutManager
+        recyclerView.setHasFixedSize(true)
+
+        recyclerViewAdapter.setItemClickListener(object :
+            TestRecyclerViewAdapter.ItemClickListener {
+            override fun onClick() {
+                val selectedItem = recyclerViewAdapter.selectedItem
+                Toast.makeText(this@TestActivity, selectedItem.toString(), Toast.LENGTH_SHORT)
+                    .show()
+            }
+        })
+
+        refreshRecyclerView()
+    }
+
+    private fun refreshRecyclerView() {
+        val dataList = selectedData.contentList
+        recyclerViewAdapter.refresh(dataList)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

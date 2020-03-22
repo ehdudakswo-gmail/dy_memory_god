@@ -29,8 +29,8 @@ class MainActivity : AppCompatActivity() {
         MainDataManager.init()
         setDefaultList()
         loadBackup()
-        setRecyclerView()
         setToolbar()
+        setRecyclerView()
     }
 
     override fun onDestroy() {
@@ -89,6 +89,13 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "loadBackup\n$msg", Toast.LENGTH_SHORT).show()
     }
 
+    private fun setToolbar() {
+        setSupportActionBar(toolbar_main)
+        val actionBar = supportActionBar!!
+
+        actionBar.setDisplayShowTitleEnabled(false)
+    }
+
     private fun setRecyclerView() {
         val recyclerView = recyclerView_main
         val layoutManager = LinearLayoutManager(this)
@@ -118,12 +125,6 @@ class MainActivity : AppCompatActivity() {
     private fun refreshRecyclerView() {
         val mainDataList = MainDataManager.dataList
         recyclerViewAdapter.refresh(mainDataList)
-    }
-
-    private fun setToolbar() {
-        setSupportActionBar(toolbar_main)
-        val actionBar = supportActionBar!!
-        actionBar.setDisplayShowTitleEnabled(false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
