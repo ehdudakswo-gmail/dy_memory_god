@@ -11,18 +11,8 @@ object MainDataManager {
         this.dataList = ArrayList()
     }
 
-    fun getBackupDataList(): List<MainData> {
-        return dataList.filterNot { it.isPhoneData }
-    }
-
-    fun refreshBackup(backupDataList: List<MainData>) {
-        val newDataList = ArrayList<MainData>()
-        val phoneDataList = dataList.filter { it.isPhoneData }
-
-        newDataList.addAll(phoneDataList)
-        newDataList.addAll(backupDataList)
-
-        dataList = newDataList
+    fun refreshBackup(backupDataList: ArrayList<MainData>) {
+        dataList = backupDataList
     }
 
 }

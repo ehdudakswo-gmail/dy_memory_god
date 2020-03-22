@@ -11,12 +11,14 @@ import com.dy.memorygod.R
 import com.dy.memorygod.adapter.MainRecyclerViewAdapter
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
-import com.dy.memorygod.enums.IntentName
+import com.dy.memorygod.enums.DataType
 import com.dy.memorygod.enums.PreferenceKey
 import com.dy.memorygod.manager.JsonManager
 import com.dy.memorygod.manager.MainDataManager
 import com.dy.memorygod.manager.PreferenceManager
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,10 +35,11 @@ class MainActivity : AppCompatActivity() {
         setRecyclerView()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStart() {
+        super.onStart()
 
         saveBackup()
+        refreshRecyclerView()
     }
 
     private fun setDefaultList() {
@@ -48,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         val title = getString(R.string.app_main_phoneNumber_title)
         val contentList = ArrayList<MainDataContent>()
 
-        val data = MainData(title, contentList, true)
+        val data = MainData(DataType.PhoneNumber, title, contentList, null)
         MainDataManager.dataList.add(data)
     }
 
@@ -58,20 +61,10 @@ class MainActivity : AppCompatActivity() {
 
         contentList.add(MainDataContent("사과", "apple"))
         contentList.add(MainDataContent("한국", "korea"))
+        contentList.add(MainDataContent("영어", "english"))
 
-        val data = MainData(title, contentList, false)
+        val data = MainData(DataType.Normal, title, contentList, Date())
         MainDataManager.dataList.add(data)
-    }
-
-    private fun saveBackup() {
-        val backupDataList = MainDataManager.getBackupDataList()
-        val key = PreferenceKey.MainBackupDataList.toString()
-        val value = JsonManager.toJson(backupDataList)
-
-        PreferenceManager.set(this, key, value)
-
-        val msg = buildString { backupDataList.forEach { appendln(it.title) } }
-        Toast.makeText(this, "saveBackup\n$msg", Toast.LENGTH_SHORT).show()
     }
 
     private fun loadBackup() {
@@ -84,9 +77,14 @@ class MainActivity : AppCompatActivity() {
 
         val backupDataList = JsonManager.toMainBackupDataList(value)
         MainDataManager.refreshBackup(backupDataList)
+    }
 
-        val msg = buildString { MainDataManager.dataList.forEach { appendln(it.title) } }
-        Toast.makeText(this, "loadBackup\n$msg", Toast.LENGTH_SHORT).show()
+    private fun saveBackup() {
+        val dataList = MainDataManager.dataList
+        val key = PreferenceKey.MainBackupDataList.toString()
+        val value = JsonManager.toJson(dataList)
+
+        PreferenceManager.set(this, key, value)
     }
 
     private fun setToolbar() {
@@ -108,18 +106,25 @@ class MainActivity : AppCompatActivity() {
             MainRecyclerViewAdapter.ItemClickListener {
             override fun onClick() {
                 val selectedItem = recyclerViewAdapter.selectedItem
+                setUpdatedDate(selectedItem)
                 MainDataManager.selectedData = selectedItem
 
                 val intent = Intent(this@MainActivity, TestActivity::class.java)
-                val intentName = IntentName.TestConfig.toString()
-                val config = selectedItem.title
-
-                intent.putExtra(intentName, config)
                 startActivity(intent)
             }
         })
 
         refreshRecyclerView()
+    }
+
+    private fun setUpdatedDate(data: MainData) {
+        when (data.dataType) {
+            DataType.Normal -> {
+                data.updatedDate = Date()
+            }
+            else -> {
+            }
+        }
     }
 
     private fun refreshRecyclerView() {

@@ -1,7 +1,11 @@
 package com.dy.memorygod.data
 
+import com.dy.memorygod.enums.DataType
+import java.util.*
+
 data class MainData(
-    val title: String,
+    val dataType: DataType,
+    var title: String,
     val contentList: ArrayList<MainDataContent>,
-    val isPhoneData: Boolean
+    var updatedDate: Date?
 )

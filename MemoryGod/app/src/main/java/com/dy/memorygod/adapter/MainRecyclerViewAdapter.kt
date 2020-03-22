@@ -8,6 +8,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.dy.memorygod.R
 import com.dy.memorygod.data.MainData
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainRecyclerViewAdapter(private val context: Context) :
     RecyclerView.Adapter<MainRecyclerViewAdapter.ViewHolder>() {
@@ -17,8 +20,18 @@ class MainRecyclerViewAdapter(private val context: Context) :
             itemView.findViewById(R.id.textView_main_recyclerView_title)
 
         fun bind(data: MainData) {
-            titleTextView.text = data.title
+            titleTextView.text = getTitleText(data)
         }
+    }
+
+    private fun getTitleText(data: MainData): String {
+        val title = data.title
+        val updatedDate = data.updatedDate ?: return title
+
+        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val dateFormat = simpleDateFormat.format(updatedDate)
+
+        return "$title ($dateFormat)"
     }
 
     interface ItemClickListener {

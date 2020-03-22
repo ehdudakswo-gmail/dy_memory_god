@@ -12,5 +12,13 @@
 
     <color name="color_test_toolBar_bg">@color/colorBlack</color>
     <color name="color_test_toolBar_title">@color/colorWhite</color>
-    <color name="color_test_recyclerView_bg">#E2E2E2</color>
+    <color name="color_test_toolBar_icon_tint">@color/colorWhite</color>
+    <color name="color_test_contentView_bg">#E2E2E2</color>
+    <color name="color_test_recyclerView_item_bg_normal">@color/colorWhite</color>
+    <color name="color_test_recyclerView_item_bg_move">@android:color/holo_blue_light</color>
+    <color name="color_test_recyclerView_item_bg_delete">@android:color/holo_red_light</color>
+
+    <color name="color_item_add_button_tint">@color/colorWhite</color>
+    <color name="color_item_add_button_backgroundTint">@color/colorBlack</color>
+    <color name="color_item_add_button_rippleColor">@color/colorWhite</color>
 </resources>

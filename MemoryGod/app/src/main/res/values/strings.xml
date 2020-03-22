@@ -3,10 +3,31 @@
     <string name="app_permission_need">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
     <string name="app_main_phoneNumber_title">전화번호</string>
     <string name="app_main_wordSample_title">영어단어 샘플</string>
+    <string name="app_dialog_ok">확인</string>
+    <string name="app_dialog_cancel">취소</string>
+    <string name="app_searchView_hint">검색</string>
 
     <string name="main_toolBar_title">암기신</string>
     <string name="main_toolBar_action_item_add">아이템 추가</string>
 
-    <string name="test_toolBar_title">TEST</string>
-    <string name="test_toolBar_action_item_add">아이템 추가</string>
+    <string name="test_toolBar_title">암기 테스트</string>
+    <string name="test_toolBar_title_input_empty">제목 입력값이 필요합니다.</string>
+    <string name="test_edit_not_allowed">편집이 불가능한 데이터입니다.</string>
+    <string name="test_searchView_hint">@string/app_searchView_hint</string>
+    <string name="test_item_no">아이템이 없습니다.</string>
+    <string name="test_item_edit_dialog_title_add">아이템 추가</string>
+    <string name="test_item_edit_dialog_title_edit">아이템 편집</string>
+    <string name="test_item_edit_dialog_problem_hint">문제</string>
+    <string name="test_item_edit_dialog_answer_hint">정답</string>
+    <string name="test_item_edit_dialog_input_empty">입력값이 필요합니다.</string>
+    <string name="test_trash_title_format">휴지통 (%d개)</string>
+    <string name="test_trash_check_dialog_message_format">삭제된 아이템이 %d개 있습니다. 편집을 적용하겠습니까?</string>
+
+    <string name="description_edit_complete">편집 완료</string>
+    <string name="description_edit_mode">편집 모드</string>
+    <string name="description_edit_mode_trash">휴지통</string>
+    <string name="description_item_add">아이템 추가</string>
+    <string name="description_item_move">아이템 이동</string>
+    <string name="description_item_delete">아이템 삭제</string>
+
 </resources>

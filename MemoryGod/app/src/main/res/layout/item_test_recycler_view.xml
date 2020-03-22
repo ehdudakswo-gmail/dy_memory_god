@@ -10,28 +10,57 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:foreground="?android:attr/selectableItemBackground"
-        app:cardBackgroundColor="@color/colorWhite"
+        app:cardBackgroundColor="@color/color_test_recyclerView_item_bg_normal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:gravity="center_vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <Space
-                android:layout_width="10dp"
-                android:layout_height="match_parent" />
+            <ImageView
+                android:id="@+id/imageView_test_recyclerView_item_move"
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:contentDescription="@string/description_item_move"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_item_move" />
 
             <TextView
                 android:id="@+id/textView_test_recyclerView_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:textSize="20sp" />
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="5dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="TITLE"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView_test_recyclerView_item_delete"
+                app:layout_constraintStart_toEndOf="@+id/imageView_test_recyclerView_item_move"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        </LinearLayout>
+            <ImageView
+                android:id="@+id/imageView_test_recyclerView_item_delete"
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:contentDescription="@string/description_item_delete"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_item_delete" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
 
