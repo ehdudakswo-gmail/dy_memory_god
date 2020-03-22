@@ -13,11 +13,11 @@ class MainRecyclerViewAdapter(private val context: Context) :
     RecyclerView.Adapter<MainRecyclerViewAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val textView: TextView =
-            itemView.findViewById(R.id.textView_main_recyclerView_subject)
+        private val titleTextView: TextView =
+            itemView.findViewById(R.id.textView_main_recyclerView_title)
 
         fun bind(data: MainData) {
-            textView.text = data.subject
+            titleTextView.text = data.title
         }
     }
 

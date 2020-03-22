@@ -67,8 +67,8 @@ class TestActivity : AppCompatActivity() {
         }
 
     private fun handlePhoneData(): Boolean {
-        when (selectedData.subject) {
-            getString(R.string.app_main_phoneNumber_subject) -> return setPhoneNumberList()
+        when (selectedData.title) {
+            getString(R.string.app_main_phoneNumber_title) -> return setPhoneNumberList()
         }
 
         return false
@@ -107,7 +107,7 @@ class TestActivity : AppCompatActivity() {
 
         actionBar.setDisplayShowTitleEnabled(false)
         actionBar.setDisplayHomeAsUpEnabled(true)
-        textView_toolbar_test_title.text = selectedData.subject
+        textView_toolbar_test_title.text = selectedData.title
     }
 
     private fun setRecyclerView() {

@@ -45,21 +45,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setPhoneNumber() {
-        val subject = getString(R.string.app_main_phoneNumber_subject)
+        val title = getString(R.string.app_main_phoneNumber_title)
         val contentList = ArrayList<MainDataContent>()
 
-        val data = MainData(subject, contentList, true)
+        val data = MainData(title, contentList, true)
         MainDataManager.dataList.add(data)
     }
 
     private fun setWordSample() {
-        val subject = getString(R.string.app_main_wordSample_subject)
+        val title = getString(R.string.app_main_wordSample_title)
         val contentList = ArrayList<MainDataContent>()
 
         contentList.add(MainDataContent("사과", "apple"))
         contentList.add(MainDataContent("한국", "korea"))
 
-        val data = MainData(subject, contentList, false)
+        val data = MainData(title, contentList, false)
         MainDataManager.dataList.add(data)
     }
 
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
 
         PreferenceManager.set(this, key, value)
 
-        val msg = buildString { backupDataList.forEach { appendln(it.subject) } }
+        val msg = buildString { backupDataList.forEach { appendln(it.title) } }
         Toast.makeText(this, "saveBackup\n$msg", Toast.LENGTH_SHORT).show()
     }
 
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         val backupDataList = JsonManager.toMainBackupDataList(value)
         MainDataManager.refreshBackup(backupDataList)
 
-        val msg = buildString { MainDataManager.dataList.forEach { appendln(it.subject) } }
+        val msg = buildString { MainDataManager.dataList.forEach { appendln(it.title) } }
         Toast.makeText(this, "loadBackup\n$msg", Toast.LENGTH_SHORT).show()
     }
 
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
                 val intent = Intent(this@MainActivity, TestActivity::class.java)
                 val intentName = IntentName.TestConfig.toString()
-                val config = selectedItem.subject
+                val config = selectedItem.title
 
                 intent.putExtra(intentName, config)
                 startActivity(intent)
