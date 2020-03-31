@@ -22,6 +22,13 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <View
+                android:id="@+id/view_test_recyclerView_item_test_check"
+                android:layout_width="10dp"
+                android:layout_height="match_parent"
+                android:background="@color/colorAccent"
+                app:layout_constraintStart_toStartOf="parent" />
+
             <ImageView
                 android:id="@+id/imageView_test_recyclerView_item_move"
                 android:layout_width="50dp"
@@ -36,7 +43,7 @@
             <TextView
                 android:id="@+id/textView_test_recyclerView_title"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_height="match_parent"
                 android:layout_marginStart="5dp"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
@@ -44,10 +51,8 @@
                 android:singleLine="true"
                 android:text="TITLE"
                 android:textSize="20sp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/imageView_test_recyclerView_item_delete"
-                app:layout_constraintStart_toEndOf="@+id/imageView_test_recyclerView_item_move"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toEndOf="@+id/view_test_recyclerView_item_test_check" />
 
             <ImageView
                 android:id="@+id/imageView_test_recyclerView_item_delete"

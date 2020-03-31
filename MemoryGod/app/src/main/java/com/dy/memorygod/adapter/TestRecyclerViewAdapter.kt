@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.dy.memorygod.R
@@ -42,19 +41,21 @@ class TestRecyclerViewAdapter(
 
         fun bind(data: MainDataContent) {
             titleTextView.text = data.problem
-            setBackgroundColor(cardView, R.color.color_test_recyclerView_item_bg_normal)
-            refreshEditViews(itemView)
+            cardView.setBackgroundResource(R.color.color_test_recyclerView_item_bg_normal)
+            refreshTestCheck(itemView, data)
+            refreshVisibility(itemView)
         }
     }
 
-    private fun setBackgroundColor(
-        view: View,
-        @DrawableRes color: Int
-    ) {
-        view.setBackgroundResource(color)
+    private fun refreshTestCheck(itemView: View, data: MainDataContent) {
+        val testCheckView: View =
+            itemView.view_test_recyclerView_item_test_check
+
+        val color = data.testCheck.color
+        testCheckView.setBackgroundResource(color)
     }
 
-    private fun refreshEditViews(itemView: View) {
+    private fun refreshVisibility(itemView: View) {
         val moveImageView: ImageView =
             itemView.imageView_test_recyclerView_item_move
         val deleteImageView: ImageView =
@@ -93,16 +94,12 @@ class TestRecyclerViewAdapter(
         itemView.imageView_test_recyclerView_item_delete.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    setBackgroundColor(
-                        itemView.cardView_test_recyclerView,
-                        R.color.color_test_recyclerView_item_bg_delete
-                    )
+                    val view = itemView.cardView_test_recyclerView
+                    view.setBackgroundResource(R.color.color_test_recyclerView_item_bg_delete)
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    setBackgroundColor(
-                        itemView.cardView_test_recyclerView,
-                        R.color.color_test_recyclerView_item_bg_normal
-                    )
+                    val view = itemView.cardView_test_recyclerView
+                    view.setBackgroundResource(R.color.color_test_recyclerView_item_bg_normal)
                 }
             }
 
@@ -113,10 +110,8 @@ class TestRecyclerViewAdapter(
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     onEventListener.onDragStarted(holder)
-                    setBackgroundColor(
-                        itemView.cardView_test_recyclerView,
-                        R.color.color_test_recyclerView_item_bg_move
-                    )
+                    val view = itemView.cardView_test_recyclerView
+                    view.setBackgroundResource(R.color.color_test_recyclerView_item_bg_move)
                 }
             }
 

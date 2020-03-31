@@ -17,13 +17,16 @@ import com.dy.memorygod.adapter.TestRecyclerViewTouchHelperCallback
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.ActivityMode
 import com.dy.memorygod.enums.DataType
+import com.dy.memorygod.enums.TestCheck
 import com.dy.memorygod.manager.ContactManager
 import com.dy.memorygod.manager.KeyboardManager
 import com.dy.memorygod.manager.MainDataManager
+import com.dy.memorygod.manager.TestManager
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_test.*
 import kotlinx.android.synthetic.main.dialog_test_item_edit.view.*
+import kotlinx.android.synthetic.main.dialog_test_item_test.view.*
 import java.util.*
 
 
@@ -310,14 +313,15 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             .setNegativeButton(R.string.app_dialog_cancel, null)
             .show()
 
+        dialog.setCanceledOnTouchOutside(false)
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            val editedProblem = view.editText_test_item_edit_problem.text.toString().trim()
-            val editedAnswer = view.editText_test_item_edit_answer.text.toString().trim()
+            val editedProblem = problemEditText.text.toString().trim()
+            val editedAnswer = answerEditText.text.toString().trim()
 
             if (editedProblem.isEmpty() || editedAnswer.isEmpty()) {
                 Toast.makeText(
                     this,
-                    R.string.test_item_edit_dialog_input_empty,
+                    R.string.app_input_empty,
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
@@ -376,11 +380,74 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         when (mode) {
             ActivityMode.TEST_NORMAL -> {
-                Toast.makeText(this, "$item", Toast.LENGTH_SHORT).show()
+                setItemTest(item)
             }
             ActivityMode.TEST_EDIT -> {
                 setItemEdit(item, false)
             }
+        }
+    }
+
+    private fun setItemTest(data: MainDataContent) {
+        val view = View.inflate(this, R.layout.dialog_test_item_test, null)
+        val answerEditText = view.editText_test_item_test_answer
+
+        answerEditText.requestFocus()
+        KeyboardManager.show(this)
+
+        val title = data.problem
+        val dataAnswer = data.answer.trim()
+
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setTitle(title)
+            .setView(view)
+            .setPositiveButton(R.string.app_dialog_ok, null)
+            .setNegativeButton(R.string.app_dialog_cancel, null)
+            .setNeutralButton(R.string.test_item_test_dialog_answer_view, null)
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+            Toast.makeText(
+                this,
+                dataAnswer,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val editedAnswer = answerEditText.text.toString().trim()
+            if (editedAnswer.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    R.string.app_input_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            if (editedAnswer != dataAnswer) {
+                Toast.makeText(
+                    this,
+                    TestManager.getWrongReason(this, editedAnswer, dataAnswer),
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            Toast.makeText(
+                this,
+                R.string.test_item_test_dialog_pass,
+                Toast.LENGTH_SHORT
+            ).show()
+
+            data.testCheck = TestCheck.PASS
+            cancelDialog(view, dialog)
+        }
+
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+            cancelDialog(view, dialog)
         }
     }
 
@@ -436,6 +503,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 .setNegativeButton(R.string.app_dialog_cancel, null)
                 .show()
 
+            dialog.setCanceledOnTouchOutside(false)
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 setEditComplete()
                 dialog.dismiss()
