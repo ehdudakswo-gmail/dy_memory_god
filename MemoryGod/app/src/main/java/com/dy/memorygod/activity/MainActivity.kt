@@ -12,10 +12,14 @@ import com.dy.memorygod.adapter.MainRecyclerViewAdapter
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.DataType
+import com.dy.memorygod.enums.DataTypePhone
 import com.dy.memorygod.enums.PreferenceKey
+import com.dy.memorygod.manager.ContactManager
 import com.dy.memorygod.manager.JsonManager
 import com.dy.memorygod.manager.MainDataManager
 import com.dy.memorygod.manager.PreferenceManager
+import com.gun0912.tedpermission.PermissionListener
+import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -51,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         val title = getString(R.string.app_main_phoneNumber_title)
         val contentList = ArrayList<MainDataContent>()
 
-        val data = MainData(DataType.PhoneNumber, title, contentList, null)
+        val data = MainData(title, contentList, null, DataType.PHONE, DataTypePhone.NUMBER)
         MainDataManager.dataList.add(data)
     }
 
@@ -59,16 +63,16 @@ class MainActivity : AppCompatActivity() {
         val title = getString(R.string.app_main_wordSample_title)
         val contentList = ArrayList<MainDataContent>()
 
-        contentList.add(MainDataContent("사과", "apple"))
-        contentList.add(MainDataContent("한국", "korea"))
-        contentList.add(MainDataContent("영어", "english"))
+        contentList.add(MainDataContent("Apple", "사과"))
+        contentList.add(MainDataContent("Korea", "한국"))
+        contentList.add(MainDataContent("English", "영어"))
 
-        val data = MainData(DataType.Normal, title, contentList, Date())
+        val data = MainData(title, contentList, Date(), DataType.NORMAL)
         MainDataManager.dataList.add(data)
     }
 
     private fun loadBackup() {
-        val key = PreferenceKey.MainBackupDataList.toString()
+        val key = PreferenceKey.MAIN_DATA_LIST.get()
         val value = PreferenceManager.get(this, key)
 
         if (value == PreferenceManager.PREFERENCE_DEFAULT_VALUE) {
@@ -81,7 +85,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun saveBackup() {
         val dataList = MainDataManager.dataList
-        val key = PreferenceKey.MainBackupDataList.toString()
+        val key = PreferenceKey.MAIN_DATA_LIST.get()
         val value = JsonManager.toJson(dataList)
 
         PreferenceManager.set(this, key, value)
@@ -106,25 +110,88 @@ class MainActivity : AppCompatActivity() {
             MainRecyclerViewAdapter.ItemClickListener {
             override fun onClick() {
                 val selectedItem = recyclerViewAdapter.selectedItem
-                setUpdatedDate(selectedItem)
                 MainDataManager.selectedData = selectedItem
 
-                val intent = Intent(this@MainActivity, TestActivity::class.java)
-                startActivity(intent)
+                when (selectedItem.dataType) {
+                    DataType.NORMAL -> {
+                        startTest()
+                    }
+                    DataType.PHONE -> {
+                        checkPermissions()
+                    }
+                }
             }
         })
 
         refreshRecyclerView()
     }
 
-    private fun setUpdatedDate(data: MainData) {
-        when (data.dataType) {
-            DataType.Normal -> {
-                data.updatedDate = Date()
+    private fun startTest() {
+        val selectedData = MainDataManager.selectedData
+        selectedData.updatedDate = Date()
+
+        val intent = Intent(this@MainActivity, TestActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun checkPermissions() {
+        TedPermission.with(this)
+            .setPermissionListener(permissionListener)
+            .setPermissions(
+                android.Manifest.permission.READ_CONTACTS
+            )
+            .check()
+    }
+
+    private val permissionListener: PermissionListener =
+        object : PermissionListener {
+            override fun onPermissionGranted() {
+                val selectedData = MainDataManager.selectedData
+                val contentList = selectedData.contentList
+
+                when (selectedData.dataType) {
+                    DataType.PHONE -> {
+                        when (selectedData.dataTypePhone) {
+                            DataTypePhone.NUMBER -> {
+                                if (setPhoneNumberList(contentList)) {
+                                    startTest()
+                                }
+                            }
+                            else -> {
+                            }
+                        }
+                    }
+                    else -> {
+                    }
+                }
             }
-            else -> {
+
+            override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
+                Toast.makeText(
+                    this@MainActivity,
+                    R.string.app_permission_request, Toast.LENGTH_SHORT
+                )
+                    .show()
             }
         }
+
+    private fun setPhoneNumberList(contentList: ArrayList<MainDataContent>): Boolean {
+        val phoneNumberList = ContactManager.getPhoneNumberList(this)
+        if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
+            Toast.makeText(this, ContactManager.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        contentList.clear()
+        for (phoneNumber in phoneNumberList) {
+            val title = phoneNumber.name
+            val data = phoneNumber.phoneNumber
+
+            val content = MainDataContent(title, data)
+            contentList.add(content)
+        }
+
+        return true
     }
 
     private fun refreshRecyclerView() {
@@ -139,7 +206,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.main_toolBar_action_item_add -> {
+            R.id.main_toolBar_menu_add -> {
                 Toast.makeText(this, "main_toolBar_action_item_add", Toast.LENGTH_SHORT).show()
                 true
             }

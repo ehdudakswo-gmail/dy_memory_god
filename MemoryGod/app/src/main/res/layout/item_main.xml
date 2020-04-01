@@ -3,16 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp">
+    android:layout_margin="@dimen/item_view_margin">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView_main_recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="@dimen/item_view_height"
         android:foreground="?android:attr/selectableItemBackground"
-        app:cardBackgroundColor="@color/colorWhite"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:cardBackgroundColor="@color/color_item_bg_normal"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
@@ -25,13 +23,13 @@
                 android:layout_height="match_parent" />
 
             <TextView
-                android:id="@+id/textView_main_recyclerView_title"
+                android:id="@+id/textView_main_item_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textSize="20sp" />
+                android:textSize="@dimen/item_view_title_text_size" />
 
         </LinearLayout>
 

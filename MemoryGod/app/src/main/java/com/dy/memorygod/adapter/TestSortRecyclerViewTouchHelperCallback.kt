@@ -4,7 +4,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 
 
-class TestRecyclerViewTouchHelperCallback(private val listener: TestRecyclerViewTouchHelperListener) :
+class TestSortRecyclerViewTouchHelperCallback(private val listener: TestSortRecyclerViewTouchHelperListener) :
     ItemTouchHelper.Callback() {
 
     override fun getMovementFlags(

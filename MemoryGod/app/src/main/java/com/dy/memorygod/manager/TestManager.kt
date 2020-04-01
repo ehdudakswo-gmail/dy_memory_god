@@ -6,18 +6,11 @@ import java.util.*
 
 object TestManager {
 
-    fun getWrongReason(context: Context, user: String, data: String): String {
+    fun getWrongResult(context: Context, user: String, data: String): String {
         val userRaw = user.replace(" ", "")
         val dataRaw = data.replace(" ", "")
         if (userRaw == dataRaw) {
             return context.getString(R.string.test_item_test_dialog_wrong_space)
-        }
-
-        val userLen = user.length
-        val dataLen = data.length
-        if (userLen != dataLen) {
-            val format = context.getString(R.string.test_item_test_dialog_wrong_length)
-            return String.format(format, dataLen)
         }
 
         val userLower = user.toLowerCase(Locale.ROOT)

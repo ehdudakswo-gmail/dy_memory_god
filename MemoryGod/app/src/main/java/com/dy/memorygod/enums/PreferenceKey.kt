@@ -1,5 +1,11 @@
 package com.dy.memorygod.enums
 
 enum class PreferenceKey {
-    MainBackupDataList,
+
+    MAIN_DATA_LIST;
+
+    fun get(): String {
+        return toString()
+    }
+
 }

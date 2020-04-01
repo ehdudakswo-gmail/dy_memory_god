@@ -6,19 +6,15 @@
     <color name="colorBlack">#000000</color>
     <color name="colorWhite">#FFFFFF</color>
 
-    <color name="color_main_toolBar_bg">@color/colorBlack</color>
-    <color name="color_main_toolBar_title">@color/colorWhite</color>
-    <color name="color_main_recyclerView_bg">#E2E2E2</color>
+    <color name="color_toolBar_bg">@color/colorBlack</color>
+    <color name="color_toolBar_title">@color/colorWhite</color>
+    <color name="color_content_view_bg">#E2E2E2</color>
 
-    <color name="color_test_toolBar_bg">@color/colorBlack</color>
-    <color name="color_test_toolBar_title">@color/colorWhite</color>
-    <color name="color_test_toolBar_icon_tint">@color/colorWhite</color>
-    <color name="color_test_contentView_bg">#E2E2E2</color>
-    <color name="color_test_recyclerView_item_bg_normal">@color/colorWhite</color>
-    <color name="color_test_recyclerView_item_bg_move">@android:color/holo_blue_light</color>
-    <color name="color_test_recyclerView_item_bg_delete">@android:color/holo_red_light</color>
-    <color name="color_test_recyclerView_item_test_check_none">@android:color/holo_red_dark</color>
-    <color name="color_test_recyclerView_item_test_check_pass">@android:color/holo_green_dark</color>
+    <color name="color_item_bg_normal">@color/colorWhite</color>
+    <color name="color_item_bg_selection">@android:color/holo_blue_light</color>
+    <color name="color_item_bg_reorder">@android:color/holo_blue_light</color>
+    <color name="color_item_test_check_none">@color/colorBlack</color>
+    <color name="color_item_test_check_pass">@android:color/holo_green_dark</color>
 
     <color name="color_item_add_button_tint">@color/colorWhite</color>
     <color name="color_item_add_button_backgroundTint">@color/colorBlack</color>

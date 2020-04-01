@@ -1,4 +1,10 @@
 <resources>
-    <dimen name="main_toolBar_title">20sp</dimen>
-    <dimen name="test_toolBar_title">20sp</dimen>
+    <dimen name="toolBar_title_text_size">20sp</dimen>
+    <dimen name="item_view_margin">5dp</dimen>
+    <dimen name="item_view_height">50dp</dimen>
+    <dimen name="item_view_title_text_size">20sp</dimen>
+    <dimen name="item_view_reorder_width">50dp</dimen>
+    <dimen name="item_view_reorder_height">30dp</dimen>
+    <dimen name="item_add_button_margin">20dp</dimen>
+    <dimen name="item_empty_text_size">20sp</dimen>
 </resources>

@@ -1,0 +1,26 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.dy.memorygod.activity.TestSortActivity">
+
+    <item
+        android:id="@+id/test_sort_toolBar_menu_name"
+        android:title="@string/test_sort_toolBar_menu_name"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/test_sort_toolBar_menu_name_reverse"
+        android:title="@string/test_sort_toolBar_menu_name_reverse"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/test_sort_toolBar_menu_test_check"
+        android:title="@string/test_sort_toolBar_menu_test_check"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/test_sort_toolBar_menu_test_check_reverse"
+        android:title="@string/test_sort_toolBar_menu_test_check_reverse"
+        app:showAsAction="never" />
+
+</menu>

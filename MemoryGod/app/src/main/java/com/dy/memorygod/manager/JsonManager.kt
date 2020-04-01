@@ -17,4 +17,8 @@ object JsonManager {
         return Gson().fromJson(json, listType.type)
     }
 
+    fun toMainData(json: String): MainData {
+        return Gson().fromJson(json, MainData::class.java)
+    }
+
 }

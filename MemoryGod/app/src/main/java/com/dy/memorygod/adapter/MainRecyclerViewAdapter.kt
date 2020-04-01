@@ -17,7 +17,7 @@ class MainRecyclerViewAdapter(private val context: Context) :
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val titleTextView: TextView =
-            itemView.findViewById(R.id.textView_main_recyclerView_title)
+            itemView.findViewById(R.id.textView_main_item_title)
 
         fun bind(data: MainData) {
             titleTextView.text = getTitleText(data)
@@ -44,7 +44,7 @@ class MainRecyclerViewAdapter(private val context: Context) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view =
-            LayoutInflater.from(context).inflate(R.layout.item_main_recycler_view, parent, false)
+            LayoutInflater.from(context).inflate(R.layout.item_main, parent, false)
 
         return ViewHolder(view)
     }

@@ -7,70 +7,134 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.selection.*
 import androidx.recyclerview.widget.RecyclerView
 import com.dy.memorygod.R
 import com.dy.memorygod.data.MainDataContent
-import com.dy.memorygod.enums.ActivityMode
-import kotlinx.android.synthetic.main.item_test_recycler_view.view.*
+import kotlinx.android.synthetic.main.item_test.view.*
 
 class TestRecyclerViewAdapter(
     private val context: Context,
     private val onEventListener: TestRecyclerViewEventListener
 ) :
-    RecyclerView.Adapter<TestRecyclerViewAdapter.ViewHolder>(),
-    TestRecyclerViewTouchHelperListener {
+    RecyclerView.Adapter<TestRecyclerViewAdapter.ViewHolder>() {
 
-    private var activityMode: ActivityMode = ActivityMode.TEST_NORMAL
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var tracker: SelectionTracker<Long>
     lateinit var dataList: MutableList<MainDataContent>
-    var trashList: MutableList<MainDataContent> = ArrayList()
+
+    init {
+        setHasStableIds(true)
+    }
+
+    fun init(recyclerView: RecyclerView) {
+        this.recyclerView = recyclerView
+        setTracker()
+    }
+
+    private fun setTracker() {
+        tracker = SelectionTracker.Builder(
+            javaClass.name,
+            recyclerView,
+            MyItemKeyProvider(recyclerView),
+            MyItemDetailsLookup(recyclerView),
+            StorageStrategy.createLongStorage()
+        ).withSelectionPredicate(
+            SelectionPredicates.createSelectAnything()
+        ).build()
+
+        tracker.addObserver(
+            object : SelectionTracker.SelectionObserver<Long>() {
+                override fun onSelectionChanged() {
+                    super.onSelectionChanged()
+
+                    val selection = tracker.selection
+                    val size = selection.size()
+                    onEventListener.onItemSelected(size)
+                }
+            })
+    }
+
+    inner class MyItemKeyProvider(private val recyclerView: RecyclerView) :
+        ItemKeyProvider<Long>(SCOPE_MAPPED) {
+
+        override fun getKey(position: Int): Long? {
+            return recyclerView.adapter?.getItemId(position)
+        }
+
+        override fun getPosition(key: Long): Int {
+            val viewHolder = recyclerView.findViewHolderForItemId(key)
+            return viewHolder?.layoutPosition ?: RecyclerView.NO_POSITION
+        }
+    }
+
+    inner class MyItemDetailsLookup(private val recyclerView: RecyclerView) :
+        ItemDetailsLookup<Long>() {
+        override fun getItemDetails(event: MotionEvent): ItemDetails<Long>? {
+            val view = recyclerView.findChildViewUnder(event.x, event.y)
+            if (view != null) {
+                return (recyclerView.getChildViewHolder(view) as TestRecyclerViewAdapter.ViewHolder)
+                    .getItemDetails()
+            }
+
+            return null
+        }
+    }
+
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view =
-            LayoutInflater.from(context).inflate(R.layout.item_test_recycler_view, parent, false)
+            LayoutInflater.from(context).inflate(R.layout.item_test, parent, false)
 
         return ViewHolder(view)
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val cardView: View =
-            itemView.cardView_test_recyclerView
         private val titleTextView: TextView =
-            itemView.textView_test_recyclerView_title
+            itemView.textView_test_item_title
 
-
-        fun bind(data: MainDataContent) {
+        fun bind(data: MainDataContent, isActivated: Boolean) {
+            itemView.isActivated = isActivated
             titleTextView.text = data.problem
-            cardView.setBackgroundResource(R.color.color_test_recyclerView_item_bg_normal)
-            refreshTestCheck(itemView, data)
+
             refreshVisibility(itemView)
+            refreshBgColor(itemView)
+            refreshTestCheckColor(itemView, data)
         }
-    }
 
-    private fun refreshTestCheck(itemView: View, data: MainDataContent) {
-        val testCheckView: View =
-            itemView.view_test_recyclerView_item_test_check
-
-        val color = data.testCheck.color
-        testCheckView.setBackgroundResource(color)
+        fun getItemDetails(): ItemDetailsLookup.ItemDetails<Long> =
+            object : ItemDetailsLookup.ItemDetails<Long>() {
+                override fun getPosition(): Int = adapterPosition
+                override fun getSelectionKey(): Long? = itemId
+            }
     }
 
     private fun refreshVisibility(itemView: View) {
-        val moveImageView: ImageView =
-            itemView.imageView_test_recyclerView_item_move
-        val deleteImageView: ImageView =
-            itemView.imageView_test_recyclerView_item_delete
+        val reorderImageView: ImageView =
+            itemView.imageView_test_item_reorder
 
-        when (activityMode) {
-            ActivityMode.TEST_NORMAL -> {
-                moveImageView.visibility = View.GONE
-                deleteImageView.visibility = View.GONE
-            }
-            ActivityMode.TEST_EDIT -> {
-                moveImageView.visibility = View.VISIBLE
-                deleteImageView.visibility = View.VISIBLE
-            }
+        reorderImageView.visibility = View.GONE
+    }
+
+    private fun refreshBgColor(itemView: View) {
+        val cardView: View =
+            itemView.cardView_test_recyclerView
+
+        when (itemView.isActivated) {
+            true -> cardView.setBackgroundResource(R.color.color_item_bg_selection)
+            false -> cardView.setBackgroundResource(R.color.color_item_bg_normal)
         }
+    }
+
+    private fun refreshTestCheckColor(itemView: View, data: MainDataContent) {
+        val testCheckView: View =
+            itemView.view_test_item_test_check
+
+        val color = data.testCheck.color
+        testCheckView.setBackgroundResource(color)
     }
 
     override fun getItemCount(): Int {
@@ -81,90 +145,73 @@ class TestRecyclerViewAdapter(
         val itemView = holder.itemView
         val data = dataList[position]
 
-        holder.bind(data)
+        val selectedPosition = position.toLong()
+        val isSelected = tracker.isSelected(selectedPosition)
+
+        holder.bind(data, isSelected)
 
         itemView.setOnClickListener {
             onEventListener.onItemClicked(position)
         }
-
-        itemView.imageView_test_recyclerView_item_delete.setOnClickListener {
-            onEventListener.onItemDeleted(position)
-        }
-
-        itemView.imageView_test_recyclerView_item_delete.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    val view = itemView.cardView_test_recyclerView
-                    view.setBackgroundResource(R.color.color_test_recyclerView_item_bg_delete)
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    val view = itemView.cardView_test_recyclerView
-                    view.setBackgroundResource(R.color.color_test_recyclerView_item_bg_normal)
-                }
-            }
-
-            false
-        }
-
-        itemView.imageView_test_recyclerView_item_move.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    onEventListener.onDragStarted(holder)
-                    val view = itemView.cardView_test_recyclerView
-                    view.setBackgroundResource(R.color.color_test_recyclerView_item_bg_move)
-                }
-            }
-
-            false
-        }
     }
 
-    override fun onItemMove(from: Int, to: Int): Boolean {
-        val fromItem = dataList[from]
-        dataList.removeAt(from)
-        dataList.add(to, fromItem)
-
-        notifyItemMoved(from, to)
-        return true
-    }
-
-    override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-        when (actionState) {
-            ItemTouchHelper.ACTION_STATE_IDLE -> {
-                notifyDataSetChanged()
-            }
-        }
-    }
-
-    override fun onItemSwipe(position: Int) {
-        deleteItem(position)
-    }
-
-    fun refresh(activityMode: ActivityMode, dataList: MutableList<MainDataContent>) {
-        this.activityMode = activityMode
+    fun refresh(dataList: MutableList<MainDataContent>) {
         this.dataList = dataList
-
         notifyDataSetChanged()
     }
 
-    fun addItem(data: MainDataContent) {
-        dataList.add(data)
-
-        notifyDataSetChanged()
-    }
-
-    fun deleteItem(position: Int) {
-        val trashItem = dataList.removeAt(position)
-        trashList.add(0, trashItem)
-
-        notifyDataSetChanged()
-    }
-
-    fun restoreItem(data: MainDataContent) {
-        trashList.remove(data)
+    fun addItemAtFirst(data: MainDataContent) {
         dataList.add(0, data)
-
+        refreshSelection(data)
         notifyDataSetChanged()
+    }
+
+    fun addItemAtLast(data: MainDataContent) {
+        dataList.add(data)
+        refreshSelection(data)
+        notifyDataSetChanged()
+    }
+
+    private fun refreshSelection(data: MainDataContent) {
+        clearSelection()
+        select(data)
+    }
+
+    fun getSelectionSize(): Int {
+        return tracker.selection.size()
+    }
+
+    fun getSelectedList(): List<MainDataContent> {
+        return tracker.selection.map { dataList[it.toInt()] }
+    }
+
+    fun select(data: MainDataContent) {
+        val idx = dataList.indexOf(data)
+        val key = idx.toLong()
+
+        if (idx == -1) {
+            return
+        }
+
+        tracker.select(key)
+        scrollToPosition(idx)
+    }
+
+    fun scrollToPosition(idx: Int) {
+        if (idx == -1 || idx >= itemCount) {
+            return
+        }
+
+        recyclerView.scrollToPosition(idx)
+    }
+
+    fun selectAll() {
+        val keys = (0 until dataList.size).map { it.toLong() }
+        tracker.setItemsSelected(keys, true)
+    }
+
+    fun clearSelection() {
+        tracker.clearSelection()
     }
 
 }
