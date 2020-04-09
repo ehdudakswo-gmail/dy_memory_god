@@ -4,8 +4,6 @@ enum class PreferenceKey {
 
     MAIN_DATA_LIST;
 
-    fun get(): String {
-        return toString()
-    }
+    fun get() = toString()
 
 }

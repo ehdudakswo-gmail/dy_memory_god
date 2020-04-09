@@ -7,6 +7,7 @@ object MainDataManager {
 
     lateinit var dataList: ArrayList<MainData>
     lateinit var selectedData: MainData
+    var searchData: MainData? = null
     var searchContentData: MainDataContent? = null
 
     fun init() {

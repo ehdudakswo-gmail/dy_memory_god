@@ -21,7 +21,6 @@
             app:popupTheme="@style/AppTheme.PopupOverlay">
 
             <FrameLayout
-                android:id="@+id/frameLayout_test_toolbar_title"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -88,19 +87,5 @@
             android:visibility="gone" />
 
     </FrameLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton_test_item_add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/item_add_button_margin"
-        android:backgroundTint="@color/color_item_add_button_backgroundTint"
-        android:clickable="true"
-        android:focusable="true"
-        android:tint="@color/color_item_add_button_tint"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:rippleColor="@color/color_item_add_button_rippleColor"
-        app:srcCompat="@drawable/ic_item_add" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

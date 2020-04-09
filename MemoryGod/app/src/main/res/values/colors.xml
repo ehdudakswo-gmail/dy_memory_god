@@ -15,8 +15,4 @@
     <color name="color_item_bg_reorder">@android:color/holo_blue_light</color>
     <color name="color_item_test_check_none">@color/colorBlack</color>
     <color name="color_item_test_check_pass">@android:color/holo_green_dark</color>
-
-    <color name="color_item_add_button_tint">@color/colorWhite</color>
-    <color name="color_item_add_button_backgroundTint">@color/colorBlack</color>
-    <color name="color_item_add_button_rippleColor">@color/colorWhite</color>
 </resources>

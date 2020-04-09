@@ -11,18 +11,18 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dy.memorygod.R
-import com.dy.memorygod.adapter.TestSearchRecyclerViewAdapter
-import com.dy.memorygod.adapter.TestSearchRecyclerViewEventListener
-import com.dy.memorygod.data.MainDataContent
+import com.dy.memorygod.adapter.MainSearchRecyclerViewAdapter
+import com.dy.memorygod.adapter.MainSearchRecyclerViewEventListener
+import com.dy.memorygod.data.MainData
 import com.dy.memorygod.manager.KeyboardManager
 import com.dy.memorygod.manager.MainDataManager
-import kotlinx.android.synthetic.main.activity_test_search.*
+import kotlinx.android.synthetic.main.activity_main_search.*
 import java.util.*
 
-class TestSearchActivity : AppCompatActivity(), TestSearchRecyclerViewEventListener {
+class MainSearchActivity : AppCompatActivity(), MainSearchRecyclerViewEventListener {
 
-    private val selectedData = MainDataManager.selectedData
-    private val recyclerViewAdapter = TestSearchRecyclerViewAdapter(this, this)
+    private val selectedData = MainDataManager.dataList
+    private val recyclerViewAdapter = MainSearchRecyclerViewAdapter(this, this)
 
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
@@ -30,7 +30,7 @@ class TestSearchActivity : AppCompatActivity(), TestSearchRecyclerViewEventListe
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_test_search)
+        setContentView(R.layout.activity_main_search)
 
         setToolbar()
         setRecyclerView()
@@ -38,7 +38,7 @@ class TestSearchActivity : AppCompatActivity(), TestSearchRecyclerViewEventListe
     }
 
     private fun setToolbar() {
-        setSupportActionBar(toolbar_test_search)
+        setSupportActionBar(toolbar_main_search)
         val actionBar = supportActionBar!!
 
         actionBar.setDisplayShowTitleEnabled(false)
@@ -46,32 +46,32 @@ class TestSearchActivity : AppCompatActivity(), TestSearchRecyclerViewEventListe
     }
 
     private fun setRecyclerView() {
-        emptyTextView = textView_test_search_item_empty
-        recyclerView = recyclerView_test_search
+        emptyTextView = textView_main_search_item_empty
+        recyclerView = recyclerView_main_search
 
         recyclerView.adapter = recyclerViewAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.setHasFixedSize(true)
 
-        recyclerView_test_search.setOnTouchListener { _, event ->
+        recyclerView_main_search.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP -> {
-                    KeyboardManager.hide(this, recyclerView)
+                    KeyboardManager.hide(this, recyclerView_main_search)
                 }
             }
 
             false
         }
 
-        refreshContentView(selectedData.contentList)
+        refreshContentView(selectedData)
     }
 
-    private fun refreshContentView(dataList: MutableList<MainDataContent>) {
+    private fun refreshContentView(dataList: MutableList<MainData>) {
         recyclerViewAdapter.refresh(dataList)
         refreshContentViewVisibility(dataList)
     }
 
-    private fun refreshContentViewVisibility(dataList: MutableList<MainDataContent>) {
+    private fun refreshContentViewVisibility(dataList: MutableList<MainData>) {
         when (dataList.count()) {
             0 -> {
                 emptyTextView.visibility = View.VISIBLE
@@ -85,17 +85,17 @@ class TestSearchActivity : AppCompatActivity(), TestSearchRecyclerViewEventListe
     }
 
     private fun setOnClickListener() {
-        frameLayout_test_search_content.setOnClickListener {
-            KeyboardManager.hide(this, frameLayout_test_search_content)
+        frameLayout_main_search_content.setOnClickListener {
+            KeyboardManager.hide(this, frameLayout_main_search_content)
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_test_search, menu)
-        searchView = menu.findItem(R.id.test_search_toolBar_menu_search).actionView as SearchView
+        menuInflater.inflate(R.menu.menu_main_search, menu)
+        searchView = menu.findItem(R.id.main_search_toolBar_menu_search).actionView as SearchView
 
         val hintFormat = getString(R.string.app_search_toolBar_hint)
-        val hintDescription = selectedData.title
+        val hintDescription = getString(R.string.app_name)
         val hint = String.format(hintFormat, hintDescription)
 
         searchView.queryHint = hint
@@ -112,8 +112,8 @@ class TestSearchActivity : AppCompatActivity(), TestSearchRecyclerViewEventListe
                 val lowerText = text.toLowerCase(Locale.ROOT)
 
                 val filterList =
-                    selectedData.contentList.filter {
-                        val lowerData = it.problem.toLowerCase(Locale.ROOT)
+                    selectedData.filter {
+                        val lowerData = it.title.toLowerCase(Locale.ROOT)
                         lowerData.contains(lowerText)
                     }.toMutableList()
 
@@ -149,7 +149,7 @@ class TestSearchActivity : AppCompatActivity(), TestSearchRecyclerViewEventListe
 
     override fun onItemClicked(position: Int) {
         val data = recyclerViewAdapter.dataList[position]
-        MainDataManager.searchContentData = data
+        MainDataManager.searchData = data
 
         setResult(RESULT_OK)
         finish()

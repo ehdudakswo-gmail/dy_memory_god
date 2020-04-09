@@ -13,25 +13,41 @@
         app:cardBackgroundColor="@color/color_item_bg_normal"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:gravity="center_vertical">
 
-            <Space
+            <View
+                android:id="@+id/view_main_item_left_space"
                 android:layout_width="10dp"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
             <TextView
                 android:id="@+id/textView_main_item_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5dp"
                 android:ellipsize="end"
+                android:gravity="center_vertical"
                 android:maxLines="1"
-                android:textSize="@dimen/item_view_title_text_size" />
+                android:singleLine="true"
+                android:textSize="@dimen/item_view_title_text_size"
+                app:layout_constraintEnd_toStartOf="@+id/imageView_main_item_reorder"
+                app:layout_constraintStart_toEndOf="@+id/view_main_item_left_space" />
 
-        </LinearLayout>
+            <ImageView
+                android:id="@+id/imageView_main_item_reorder"
+                android:layout_width="@dimen/item_view_reorder_width"
+                android:layout_height="@dimen/item_view_reorder_height"
+                android:contentDescription="@string/app_content_description_item_reorder"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_item_reorder" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
 

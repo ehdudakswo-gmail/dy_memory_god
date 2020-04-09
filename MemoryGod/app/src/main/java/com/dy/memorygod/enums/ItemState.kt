@@ -1,6 +1,7 @@
 package com.dy.memorygod.enums
 
 enum class ItemState {
-    ADD,
+    ADD_FIRST,
+    ADD_LAST,
     EDIT,
 }

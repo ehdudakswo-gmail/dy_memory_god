@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.dy.memorygod.activity.MainSortActivity">
+
+    <item
+        android:id="@+id/main_sort_toolBar_menu_name"
+        android:title="@string/main_sort_toolBar_menu_name"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_sort_toolBar_menu_name_reverse"
+        android:title="@string/main_sort_toolBar_menu_name_reverse"
+        app:showAsAction="never" />
+
+</menu>

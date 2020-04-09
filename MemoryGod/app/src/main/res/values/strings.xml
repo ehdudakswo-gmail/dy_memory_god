@@ -37,8 +37,12 @@
     <string name="app_item_add_position_first">처음</string>
     <string name="app_item_add_position_last">마지막</string>
 
-    <string name="main_toolBar_title">암기신</string>
-    <string name="main_toolBar_menu_add">아이템 추가</string>
+    <string name="app_sort_toolBar_title">정렬 (%s)</string>
+    <string name="app_search_toolBar_menu_search">검색</string>
+    <string name="app_search_toolBar_hint">검색 (%s)</string>
+
+    <string name="main_sort_toolBar_menu_name">이름 순</string>
+    <string name="main_sort_toolBar_menu_name_reverse">이름 역순</string>
 
     <string name="test_toolBar_title">테스트</string>
     <string name="test_toolBar_title_input_empty">제목 입력값이 필요합니다.</string>
@@ -57,12 +61,9 @@
     <string name="test_item_test_dialog_wrong_space">오답입니다. (공백을 확인해주세요)</string>
     <string name="test_item_test_dialog_wrong_case_sensitive">오답입니다. (대소문자를 확인해주세요)</string>
 
-    <string name="test_search_toolBar_menu_search">검색</string>
-    <string name="test_search_toolBar_menu_search_hint">검색 (%s)</string>
-
-    <string name="test_sort_toolBar_title">정렬 (%s)</string>
     <string name="test_sort_toolBar_menu_name">이름 순</string>
     <string name="test_sort_toolBar_menu_name_reverse">이름 역순</string>
     <string name="test_sort_toolBar_menu_test_check">채점 순</string>
     <string name="test_sort_toolBar_menu_test_check_reverse">채점 역순</string>
+
 </resources>

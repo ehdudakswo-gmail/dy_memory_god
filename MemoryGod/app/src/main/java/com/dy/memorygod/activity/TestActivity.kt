@@ -6,10 +6,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.dy.memorygod.R
 import com.dy.memorygod.adapter.TestRecyclerViewAdapter
 import com.dy.memorygod.adapter.TestRecyclerViewEventListener
@@ -25,9 +27,12 @@ import kotlinx.android.synthetic.main.dialog_test_item_test.view.*
 
 class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
-    private val selectedMainData = MainDataManager.selectedData
+    private val selectedData = MainDataManager.selectedData
     private val recyclerViewAdapter = TestRecyclerViewAdapter(this, this)
-    private var mode = ActivityMode.TEST_NORMAL
+    private var mode = ActivityModeTest.NORMAL
+
+    private lateinit var emptyTextView: TextView
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +41,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         setToolbar()
         setRecyclerView()
         setOnClickListener()
-        refreshMode(ActivityMode.TEST_NORMAL)
+        refreshMode()
     }
 
     private fun setToolbar() {
@@ -46,20 +51,20 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         actionBar.setDisplayShowTitleEnabled(false)
         actionBar.setDisplayHomeAsUpEnabled(true)
 
-        val title = selectedMainData.title
+        val title = selectedData.title
         textView_test_toolbar_title.text = title
         editText_test_toolbar_title.setText(title)
     }
 
     private fun setRecyclerView() {
-        val recyclerView = recyclerView_test
-        val layoutManager = LinearLayoutManager(this)
+        emptyTextView = textView_test_item_empty
+        recyclerView = recyclerView_test
 
         recyclerView.adapter = recyclerViewAdapter
-        recyclerView.layoutManager = layoutManager
+        recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.setHasFixedSize(true)
 
-        recyclerView.setOnTouchListener { _, event ->
+        recyclerView_test.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP -> {
                     KeyboardManager.hide(this, recyclerView)
@@ -70,7 +75,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
 
         recyclerViewAdapter.init(recyclerView)
-        refreshContentView(selectedMainData.contentList)
+        refreshContentView(selectedData.contentList)
     }
 
     private fun refreshContentView(dataList: MutableList<MainDataContent>) {
@@ -79,9 +84,6 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun refreshContentViewVisibility(dataList: MutableList<MainDataContent>) {
-        val emptyTextView = textView_test_item_empty
-        val recyclerView = recyclerView_test
-
         when (dataList.count()) {
             0 -> {
                 emptyTextView.visibility = View.VISIBLE
@@ -96,30 +98,29 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
     private fun setOnClickListener() {
         textView_test_toolbar_title.setOnClickListener {
-            refreshMode(ActivityMode.TEST_TITLE_EDIT)
-        }
-
-        frameLayout_test_content.setOnClickListener {
-            KeyboardManager.hide(this, frameLayout_test_content)
-        }
-
-        floatingActionButton_test_item_add.setOnClickListener {
-            when (selectedMainData.dataType) {
+            when (selectedData.dataType) {
                 DataType.NORMAL -> {
-                    handelItem(
-                        ItemState.ADD,
-                        MainDataContent("", "")
-                    )
+                    refreshMode(ActivityModeTest.TITLE_EDIT)
                 }
-                else -> {
+                DataType.PHONE -> {
                     Toast.makeText(this, R.string.app_item_edit_not_allowed, Toast.LENGTH_SHORT)
                         .show()
                 }
             }
         }
+
+        frameLayout_test_content.setOnClickListener {
+            KeyboardManager.hide(this, frameLayout_test_content)
+        }
     }
 
-    private fun refreshMode(mode: ActivityMode) {
+    private fun refreshMode() {
+        val name = IntentName.ACTIVITY_MODE.get()
+        val mode = intent.getSerializableExtra(name) as ActivityModeTest
+        refreshMode(mode)
+    }
+
+    private fun refreshMode(mode: ActivityModeTest) {
         this.mode = mode
 
         clearMode()
@@ -134,22 +135,14 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
     private fun setMode() {
         when (mode) {
-            ActivityMode.TEST_NORMAL -> {
+            ActivityModeTest.NORMAL -> {
                 val titleTextView = textView_test_toolbar_title
-                titleTextView.text = selectedMainData.title
+                titleTextView.text = selectedData.title
                 titleTextView.visibility = View.VISIBLE
 
                 KeyboardManager.hide(this, editText_test_toolbar_title)
             }
-            ActivityMode.TEST_TITLE_EDIT -> {
-                val titleEditText = editText_test_toolbar_title
-                titleEditText.setText(selectedMainData.title)
-                titleEditText.visibility = View.VISIBLE
-
-                titleEditText.requestFocus()
-                KeyboardManager.show(this)
-            }
-            ActivityMode.TEST_SELECTION -> {
+            ActivityModeTest.SELECTION -> {
                 val selectionInfoTextView = textView_test_toolbar_selection_info
                 val selectionInfoFormat = getString(R.string.app_toolBar_selection_info)
                 val selectionSize = recyclerViewAdapter.getSelectionSize()
@@ -160,20 +153,27 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
                 selectionInfoTextView.visibility = View.VISIBLE
             }
+            ActivityModeTest.TITLE_EDIT -> {
+                val titleEditText = editText_test_toolbar_title
+                titleEditText.setText(selectedData.title)
+                titleEditText.visibility = View.VISIBLE
+
+                titleEditText.requestFocus()
+                KeyboardManager.show(this)
+            }
         }
     }
 
-
     override fun onBackPressed() {
         when (mode) {
-            ActivityMode.TEST_NORMAL -> {
+            ActivityModeTest.NORMAL -> {
                 super.onBackPressed()
             }
-            ActivityMode.TEST_TITLE_EDIT -> {
-                handleTitleEdit()
-            }
-            ActivityMode.TEST_SELECTION -> {
+            ActivityModeTest.SELECTION -> {
                 recyclerViewAdapter.clearSelection()
+            }
+            ActivityModeTest.TITLE_EDIT -> {
+                handleTitleEdit()
             }
         }
     }
@@ -189,12 +189,12 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             return
         }
 
-        selectedMainData.title = editedTitle
-        refreshMode(ActivityMode.TEST_NORMAL)
+        selectedData.title = editedTitle
+        refreshMode(ActivityModeTest.NORMAL)
     }
 
     override fun onItemClicked(position: Int) {
-        if (mode == ActivityMode.TEST_SELECTION) {
+        if (mode == ActivityModeTest.SELECTION) {
             return
         }
 
@@ -274,10 +274,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     override fun onItemSelected(size: Int) {
         when (size) {
             0 -> {
-                refreshMode(ActivityMode.TEST_NORMAL)
+                refreshMode(ActivityModeTest.NORMAL)
             }
             else -> {
-                refreshMode(ActivityMode.TEST_SELECTION)
+                refreshMode(ActivityModeTest.SELECTION)
             }
         }
     }
@@ -299,10 +299,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 onBackPressed()
             }
             R.id.test_toolBar_menu_add -> {
-                handelItem(
-                    ItemState.ADD,
-                    MainDataContent("", "")
-                )
+                handleItemAdd()
             }
             R.id.test_toolBar_menu_edit -> {
                 when (recyclerViewAdapter.getSelectionSize()) {
@@ -316,8 +313,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                     }
                     1 -> {
                         val selectedDataList = recyclerViewAdapter.getSelectedList()
-                        val selectedItem = selectedDataList[0]
-                        handelItem(ItemState.EDIT, selectedItem)
+                        val selectedData = selectedDataList[0]
+                        handleItem(ItemState.EDIT, selectedData)
                     }
                     else -> {
                         Toast.makeText(
@@ -400,7 +397,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun isNotEditable(item: MenuItem): Boolean {
-        return when (selectedMainData.dataType) {
+        return when (selectedData.dataType) {
             DataType.NORMAL -> {
                 false
             }
@@ -420,12 +417,28 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
     }
 
-    private fun refreshView() {
-        refreshContentView(recyclerViewAdapter.dataList)
-        recyclerViewAdapter.clearSelection()
+    private fun handleItemAdd() {
+        val itemArr = ItemAddPosition.getDescriptionArr(this)
+        val builder = AlertDialog.Builder(this)
+
+        val dialog = builder
+            .setTitle(R.string.app_item_add_position_title)
+            .setItems(itemArr) { _, which ->
+                when (ItemAddPosition.get(which)) {
+                    ItemAddPosition.FIRST -> {
+                        handleItem(ItemState.ADD_FIRST, MainDataContent("", ""))
+                    }
+                    ItemAddPosition.LAST -> {
+                        handleItem(ItemState.ADD_LAST, MainDataContent("", ""))
+                    }
+                }
+            }
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
     }
 
-    private fun handelItem(itemState: ItemState, data: MainDataContent) {
+    private fun handleItem(itemState: ItemState, data: MainDataContent) {
         val view = View.inflate(this, R.layout.dialog_test_item_edit, null)
         val problemEditText = view.editText_test_item_edit_problem
         val answerEditText = view.editText_test_item_edit_answer
@@ -437,7 +450,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         KeyboardManager.show(this)
 
         val title = when (itemState) {
-            ItemState.ADD -> R.string.test_item_edit_dialog_title_add
+            ItemState.ADD_FIRST -> R.string.test_item_edit_dialog_title_add
+            ItemState.ADD_LAST -> R.string.test_item_edit_dialog_title_add
             ItemState.EDIT -> R.string.test_item_edit_dialog_title_edit
         }
 
@@ -466,37 +480,23 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             data.problem = editedProblem
             data.answer = editedAnswer
 
-            cancelDialog(view, dialog)
-
-            if (itemState == ItemState.ADD) {
-                handleItemAdd(data)
+            when (itemState) {
+                ItemState.ADD_FIRST -> {
+                    recyclerViewAdapter.addItemAtFirst(data)
+                }
+                ItemState.ADD_LAST -> {
+                    recyclerViewAdapter.addItemAtLast(data)
+                }
+                ItemState.EDIT -> {
+                }
             }
+
+            cancelDialog(view, dialog)
         }
 
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
             cancelDialog(view, dialog)
         }
-    }
-
-    private fun handleItemAdd(data: MainDataContent) {
-        val itemArr = ItemAddPosition.getDescriptionArr(this)
-        val builder = AlertDialog.Builder(this)
-
-        val dialog = builder
-            .setTitle(R.string.app_item_add_position_title)
-            .setItems(itemArr) { _, which ->
-                when (ItemAddPosition.get(which)) {
-                    ItemAddPosition.FIRST -> {
-                        recyclerViewAdapter.addItemAtFirst(data)
-                    }
-                    ItemAddPosition.LAST -> {
-                        recyclerViewAdapter.addItemAtLast(data)
-                    }
-                }
-            }
-            .show()
-
-        dialog.setCanceledOnTouchOutside(false)
     }
 
     private fun handleItemDelete() {
@@ -529,17 +529,22 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
     }
 
+    private fun refreshView() {
+        refreshContentView(recyclerViewAdapter.dataList)
+        recyclerViewAdapter.clearSelection()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         when (requestCode) {
-            RequestCode.TEST_SEARCH.get() -> {
-                val searchData = MainDataManager.searchContentData ?: return
-                recyclerViewAdapter.select(searchData)
-            }
             RequestCode.TEST_SORT.get() -> {
                 recyclerViewAdapter.notifyDataSetChanged()
                 recyclerViewAdapter.scrollToPosition(0)
+            }
+            RequestCode.TEST_SEARCH.get() -> {
+                val searchData = MainDataManager.searchContentData ?: return
+                recyclerViewAdapter.select(searchData)
             }
         }
     }

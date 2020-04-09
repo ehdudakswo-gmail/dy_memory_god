@@ -97,8 +97,8 @@ class TestRecyclerViewAdapter(
             itemView.textView_test_item_title
 
         fun bind(data: MainDataContent, isActivated: Boolean) {
-            itemView.isActivated = isActivated
             titleTextView.text = data.problem
+            itemView.isActivated = isActivated
 
             refreshVisibility(itemView)
             refreshBgColor(itemView)
@@ -163,13 +163,11 @@ class TestRecyclerViewAdapter(
     fun addItemAtFirst(data: MainDataContent) {
         dataList.add(0, data)
         refreshSelection(data)
-        notifyDataSetChanged()
     }
 
     fun addItemAtLast(data: MainDataContent) {
         dataList.add(data)
         refreshSelection(data)
-        notifyDataSetChanged()
     }
 
     private fun refreshSelection(data: MainDataContent) {

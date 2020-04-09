@@ -5,7 +5,27 @@
 
     <item
         android:id="@+id/main_toolBar_menu_add"
-        android:title="@string/main_toolBar_menu_add"
+        android:title="@string/app_toolBar_menu_add"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_toolBar_menu_delete"
+        android:title="@string/app_toolBar_menu_delete"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_toolBar_menu_sort"
+        android:title="@string/app_toolBar_menu_sort"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_toolBar_menu_search"
+        android:title="@string/app_toolBar_menu_search"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_toolBar_menu_select_all"
+        android:title="@string/app_toolBar_menu_select_all"
         app:showAsAction="never" />
 
 </menu>

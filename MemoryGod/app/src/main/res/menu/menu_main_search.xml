@@ -1,10 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.dy.memorygod.activity.TestSearchActivity">
+    tools:context="com.dy.memorygod.activity.MainSearchActivity">
 
     <item
-        android:id="@+id/test_search_toolBar_menu_search"
+        android:id="@+id/main_search_toolBar_menu_search"
         android:title="@string/app_search_toolBar_menu_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="ifRoom" />

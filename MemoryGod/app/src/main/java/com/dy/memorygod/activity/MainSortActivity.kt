@@ -11,17 +11,17 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dy.memorygod.R
-import com.dy.memorygod.adapter.TestSortRecyclerViewAdapter
-import com.dy.memorygod.adapter.TestSortRecyclerViewEventListener
-import com.dy.memorygod.adapter.TestSortRecyclerViewTouchHelperCallback
-import com.dy.memorygod.data.MainDataContent
+import com.dy.memorygod.adapter.MainSortRecyclerViewAdapter
+import com.dy.memorygod.adapter.MainSortRecyclerViewEventListener
+import com.dy.memorygod.adapter.MainSortRecyclerViewTouchHelperCallback
+import com.dy.memorygod.data.MainData
 import com.dy.memorygod.manager.MainDataManager
-import kotlinx.android.synthetic.main.activity_test_sort.*
+import kotlinx.android.synthetic.main.activity_main_sort.*
 
-class TestSortActivity : AppCompatActivity(), TestSortRecyclerViewEventListener {
+class MainSortActivity : AppCompatActivity(), MainSortRecyclerViewEventListener {
 
-    private val selectedData = MainDataManager.selectedData
-    private val recyclerViewAdapter = TestSortRecyclerViewAdapter(this, this)
+    private val selectedData = MainDataManager.dataList
+    private val recyclerViewAdapter = MainSortRecyclerViewAdapter(this, this)
 
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
@@ -29,7 +29,7 @@ class TestSortActivity : AppCompatActivity(), TestSortRecyclerViewEventListener 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_test_sort)
+        setContentView(R.layout.activity_main_sort)
 
         setToolbar()
         setRecyclerView()
@@ -37,36 +37,36 @@ class TestSortActivity : AppCompatActivity(), TestSortRecyclerViewEventListener 
     }
 
     private fun setToolbar() {
-        setSupportActionBar(toolbar_test_sort)
+        setSupportActionBar(toolbar_main_sort)
         val actionBar = supportActionBar!!
 
         actionBar.setDisplayShowTitleEnabled(false)
         actionBar.setDisplayHomeAsUpEnabled(true)
 
         val titleFormat = getString(R.string.app_sort_toolBar_title)
-        val titleDescription = MainDataManager.selectedData.title
+        val titleDescription = getString(R.string.app_name)
         val title = String.format(titleFormat, titleDescription)
-        textView_test_sort_toolbar_title.text = title
+        textView_main_sort_toolbar_title.text = title
     }
 
     private fun setRecyclerView() {
-        emptyTextView = textView_test_sort_item_empty
-        recyclerView = recyclerView_test_sort
+        emptyTextView = textView_main_sort_item_empty
+        recyclerView = recyclerView_main_sort
 
         recyclerView.adapter = recyclerViewAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.setHasFixedSize(true)
 
-        refreshContentView(selectedData.contentList)
+        refreshContentView(selectedData)
         recyclerViewAdapter.initIdx()
     }
 
-    private fun refreshContentView(dataList: MutableList<MainDataContent>) {
+    private fun refreshContentView(dataList: MutableList<MainData>) {
         recyclerViewAdapter.refresh(dataList)
         refreshContentViewVisibility(dataList)
     }
 
-    private fun refreshContentViewVisibility(dataList: MutableList<MainDataContent>) {
+    private fun refreshContentViewVisibility(dataList: MutableList<MainData>) {
         when (dataList.count()) {
             0 -> {
                 emptyTextView.visibility = View.VISIBLE
@@ -80,9 +80,9 @@ class TestSortActivity : AppCompatActivity(), TestSortRecyclerViewEventListener 
     }
 
     private fun setItemTouchHelper() {
-        val callBack = TestSortRecyclerViewTouchHelperCallback(recyclerViewAdapter)
+        val callBack = MainSortRecyclerViewTouchHelperCallback(recyclerViewAdapter)
         itemTouchHelper = ItemTouchHelper(callBack)
-        itemTouchHelper.attachToRecyclerView(recyclerView_test_sort)
+        itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
     override fun onDragStarted(viewHolder: RecyclerView.ViewHolder) {
@@ -90,7 +90,7 @@ class TestSortActivity : AppCompatActivity(), TestSortRecyclerViewEventListener 
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_test_sort, menu)
+        menuInflater.inflate(R.menu.menu_main_sort, menu)
 
         return super.onCreateOptionsMenu(menu)
     }

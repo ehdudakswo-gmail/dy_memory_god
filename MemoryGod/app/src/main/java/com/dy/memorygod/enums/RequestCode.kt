@@ -2,8 +2,11 @@ package com.dy.memorygod.enums
 
 enum class RequestCode {
 
-    TEST_SEARCH,
-    TEST_SORT;
+    MAIN_SORT,
+    MAIN_SEARCH,
+
+    TEST_SORT,
+    TEST_SEARCH;
 
     fun get() = ordinal
 
