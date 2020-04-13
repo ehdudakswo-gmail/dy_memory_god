@@ -28,4 +28,14 @@
         android:title="@string/app_toolBar_menu_select_all"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/main_toolBar_menu_file_save"
+        android:title="@string/app_toolBar_menu_file_save"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/main_toolBar_menu_file_load"
+        android:title="@string/app_toolBar_menu_file_load"
+        app:showAsAction="never" />
+
 </menu>

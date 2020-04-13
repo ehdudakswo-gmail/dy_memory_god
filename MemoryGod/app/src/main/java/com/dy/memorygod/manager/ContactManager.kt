@@ -9,6 +9,7 @@ object ContactManager {
 
     private const val ERROR_CONTACT_CURSOR = "ERROR_CONTACT_CURSOR"
     private const val ERROR_CONTACT_EMPTY = "ERROR_CONTACT_EMPTY"
+    private const val PHONE_NUMBER_SEPARATOR = "-"
 
     var ERROR_MESSAGE = "ERROR_MESSAGE"
     val ERROR_CONTACT_PHONE_NUMBER = emptyList<ContactPhoneNumberData>()
@@ -34,7 +35,8 @@ object ContactManager {
         val list = ArrayList<ContactPhoneNumberData>()
         while (cursor.moveToNext()) {
             val name = cursor.getString(0)
-            val phoneNumber = cursor.getString(1)
+            var phoneNumber = cursor.getString(1)
+            phoneNumber = phoneNumber.replace(PHONE_NUMBER_SEPARATOR, "")
 
             val data = ContactPhoneNumberData(name, phoneNumber)
             list.add(data)
@@ -88,4 +90,5 @@ object ContactManager {
 
         return list
     }
+
 }

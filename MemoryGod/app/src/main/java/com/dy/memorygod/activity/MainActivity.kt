@@ -1,5 +1,7 @@
 package com.dy.memorygod.activity
 
+import android.app.DownloadManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -64,7 +66,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setPhoneNumber() {
-        val title = getString(R.string.app_main_phoneNumber_title)
+        val title = getString(R.string.app_phone_number_title)
         val contentList = ArrayList<MainDataContent>()
 
         val data = MainData(title, contentList, null, DataType.PHONE, DataTypePhone.NUMBER)
@@ -72,7 +74,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setWordSample() {
-        val title = getString(R.string.app_main_wordSample_title)
+        val title = getString(R.string.app_word_sample_title)
         val contentList = ArrayList<MainDataContent>()
 
         contentList.add(MainDataContent("Apple", "사과"))
@@ -150,25 +152,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
     }
 
-    private fun setPhoneNumberList(contentList: ArrayList<MainDataContent>): Boolean {
-        val phoneNumberList = ContactManager.getPhoneNumberList(this)
-        if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
-            Toast.makeText(this, ContactManager.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
-            return false
-        }
-
-        contentList.clear()
-        for (phoneNumber in phoneNumberList) {
-            val title = phoneNumber.name
-            val data = phoneNumber.phoneNumber
-
-            val content = MainDataContent(title, data)
-            contentList.add(content)
-        }
-
-        return true
-    }
-
     private fun refreshMode(mode: ActivityModeMain) {
         this.mode = mode
 
@@ -214,7 +197,13 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 startTest(data, ActivityModeTest.NORMAL)
             }
             DataType.PHONE -> {
-                checkPermissions()
+                when (data.dataTypePhone) {
+                    DataTypePhone.NUMBER -> {
+                        checkPhoneNumberPermission()
+                    }
+                    else -> {
+                    }
+                }
             }
         }
     }
@@ -225,40 +214,52 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         val intent = Intent(this@MainActivity, TestActivity::class.java)
         val name = IntentName.ACTIVITY_MODE.get()
+
         intent.putExtra(name, activityMode)
         startActivity(intent)
     }
 
-    private fun checkPermissions() {
+    private fun checkPhoneNumberPermission() {
         TedPermission.with(this)
-            .setPermissionListener(permissionListener)
+            .setPermissionListener(phoneNumberPermissionListener)
             .setPermissions(
                 android.Manifest.permission.READ_CONTACTS
             )
             .check()
     }
 
-    private val permissionListener: PermissionListener =
+    private val phoneNumberPermissionListener: PermissionListener =
         object : PermissionListener {
             override fun onPermissionGranted() {
+                val phoneNumberList = ContactManager.getPhoneNumberList(this@MainActivity)
+                if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        ContactManager.ERROR_MESSAGE,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+
                 val selectedData = MainDataManager.selectedData
                 val contentList = selectedData.contentList
+                contentList.clear()
 
-                when (selectedData.dataType) {
-                    DataType.PHONE -> {
-                        when (selectedData.dataTypePhone) {
-                            DataTypePhone.NUMBER -> {
-                                if (setPhoneNumberList(contentList)) {
-                                    startTest(selectedData, ActivityModeTest.NORMAL)
-                                }
-                            }
-                            else -> {
-                            }
-                        }
-                    }
-                    else -> {
-                    }
+                for (phoneNumber in phoneNumberList) {
+                    val problem = phoneNumber.name
+                    val answer = phoneNumber.phoneNumber
+
+                    val content = MainDataContent(problem, answer)
+                    contentList.add(content)
                 }
+
+                val activeTitleFormat = getString(R.string.app_phone_number_title_active)
+                val title = getString(R.string.app_phone_number_title)
+                val date = DateManager.getPhoneNumberActive()
+                val activeTitle = String.format(activeTitleFormat, title, date)
+
+                selectedData.title = activeTitle
+                startTest(selectedData, ActivityModeTest.NORMAL)
             }
 
             override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
@@ -348,6 +349,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             R.id.main_toolBar_menu_select_all -> {
                 recyclerViewAdapter.selectAll()
             }
+            R.id.main_toolBar_menu_file_save -> {
+                checkFileSavePermission()
+            }
+            R.id.main_toolBar_menu_file_load -> {
+                checkFileLoadPermission()
+            }
         }
 
         return super.onOptionsItemSelected(item)
@@ -428,6 +435,235 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 recyclerViewAdapter.select(searchData)
             }
         }
+    }
+
+    private fun checkFileSavePermission() {
+        TedPermission.with(this)
+            .setPermissionListener(fileSavePermissionListener)
+            .setPermissions(
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+            .check()
+    }
+
+    private val fileSavePermissionListener: PermissionListener =
+        object : PermissionListener {
+            override fun onPermissionGranted() {
+                handleFileSave()
+            }
+
+            override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
+                Toast.makeText(
+                    this@MainActivity,
+                    R.string.app_permission_request, Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+        }
+
+    private fun handleFileSave() {
+        try {
+            val dataList = MainDataManager.dataList
+            if (dataList.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    R.string.app_file_save_data_none,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return
+            }
+
+            val appName = getString(R.string.app_name)
+            val date = DateManager.getExcelFileName()
+
+            val fileExtension = ExcelManager.fileExtension
+            val fileNameFormat = getString(R.string.app_file_name_format)
+            val fileName = String.format(fileNameFormat, appName, date, fileExtension)
+
+            val file = ExcelManager.save(fileName, dataList)
+            if (file.isFile && file.exists()) {
+                val downloadManager =
+                    getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+                downloadManager.addCompletedDownload(
+                    file.name,
+                    file.name,
+                    false,
+                    "application/vnd.ms-excel",
+                    file.absolutePath,
+                    file.length(),
+                    true
+                )
+
+                val filePathType = ExcelManager.filePathType
+                val directoryFormat = getString(R.string.app_directory)
+                val directory = String.format(directoryFormat, filePathType)
+
+                val messageFormat = getString(R.string.app_toolBar_menu_file_save_complete)
+                val message = String.format(messageFormat, directory)
+
+                Toast.makeText(
+                    this,
+                    message,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } catch (ex: Exception) {
+            val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
+            val error = String.format(errorFormat, ex.toString())
+            Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+        } finally {
+            ExcelManager.close()
+        }
+    }
+
+    private fun checkFileLoadPermission() {
+        TedPermission.with(this)
+            .setPermissionListener(fileLoadPermissionListener)
+            .setPermissions(
+                android.Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            .check()
+    }
+
+    private val fileLoadPermissionListener: PermissionListener =
+        object : PermissionListener {
+            override fun onPermissionGranted() {
+                handleFileLoad()
+            }
+
+            override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
+                Toast.makeText(
+                    this@MainActivity,
+                    R.string.app_permission_request, Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+        }
+
+    private fun handleFileLoad() {
+        try {
+            val filePathType = ExcelManager.filePathType
+            val directoryFormat = getString(R.string.app_directory)
+            val directory = String.format(directoryFormat, filePathType)
+
+            val excelFileList = ExcelManager.getFileList()
+            val itemArr = excelFileList.map { it.name }.toTypedArray()
+
+            if (itemArr.isEmpty()) {
+                val fileExtension = ExcelManager.fileExtension
+                val messageFormat = getString(R.string.app_file_load_data_none)
+                val message = String.format(messageFormat, fileExtension, directory)
+
+                Toast.makeText(
+                    this@MainActivity,
+                    message,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return
+            }
+
+            val builder = AlertDialog.Builder(this@MainActivity)
+            val dialog = builder
+                .setTitle(directory)
+                .setItems(itemArr) { _, which ->
+                    val file = excelFileList[which]
+                    val dataList = ExcelManager.load(file)
+                    handleFileLoadData(dataList)
+                }
+                .show()
+
+            dialog.setCanceledOnTouchOutside(false)
+        } catch (ex: Exception) {
+            val error = ex.toString()
+            val messageFormat = getString(R.string.app_toolBar_menu_file_load_error)
+            val message = String.format(messageFormat, error)
+            Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+        } finally {
+            ExcelManager.close()
+        }
+    }
+
+    private fun handleFileLoadData(dataList: List<MainData>) {
+        val itemArr = dataList.map { it.title }.toTypedArray()
+        val checkArr = dataList.map { false }.toBooleanArray()
+
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setTitle(R.string.app_file_load_data_title)
+            .setPositiveButton(R.string.app_dialog_ok, null)
+            .setNegativeButton(R.string.app_dialog_cancel, null)
+            .setNeutralButton(R.string.app_dialog_all_selection_flag, null)
+            .setMultiChoiceItems(itemArr, checkArr, null)
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val checkedDataList = ArrayList<MainData>()
+            val listView = dialog.listView
+
+            for (i in dataList.indices) {
+                if (listView.isItemChecked(i)) {
+                    val data = dataList[i]
+                    checkedDataList.add(data)
+                }
+            }
+
+            if (checkedDataList.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    R.string.app_toolBar_menu_file_load_data_check_none,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            dialog.dismiss()
+            handleFileLoadDataPosition(checkedDataList)
+        }
+
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+            val listView = dialog.listView
+            val checkedCount = listView.checkedItemCount
+            val isAllCheck = (checkedCount == dataList.size)
+            val setCheck = !isAllCheck
+
+            for (i in dataList.indices) {
+                listView.setItemChecked(i, setCheck)
+            }
+        }
+    }
+
+    private fun handleFileLoadDataPosition(checkedDataList: List<MainData>) {
+        val itemArr = ItemAddPosition.getDescriptionArr(this)
+        val dataList = MainDataManager.dataList
+
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setTitle(R.string.app_item_add_position_title)
+            .setItems(itemArr) { _, which ->
+                when (ItemAddPosition.get(which)) {
+                    ItemAddPosition.FIRST -> {
+                        for (i in checkedDataList.lastIndex downTo 0) {
+                            val checkedData = checkedDataList[i]
+                            dataList.add(0, checkedData)
+                        }
+                    }
+                    ItemAddPosition.LAST -> {
+                        for (checkedData in checkedDataList) {
+                            dataList.add(checkedData)
+                        }
+                    }
+                }
+
+                refreshView()
+            }
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
     }
 
 }
