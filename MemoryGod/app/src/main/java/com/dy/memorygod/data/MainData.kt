@@ -6,7 +6,7 @@ import java.util.*
 
 data class MainData(
     var title: String,
-    val contentList: ArrayList<MainDataContent>,
+    val contentList: MutableList<MainDataContent>,
     var updatedDate: Date?,
     val dataType: DataType,
 

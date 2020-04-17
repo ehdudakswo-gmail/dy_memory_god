@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -21,6 +22,8 @@ import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
+import com.dy.memorygod.thread.MainDataLoadThread
+import com.dy.memorygod.thread.MainDataSaveThread
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
@@ -34,30 +37,38 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
+    private val threadDelay = 100L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         MainDataManager.init()
-        setDefaultList()
-        loadBackup()
         setToolbar()
-        setRecyclerView()
-        refreshMode(ActivityModeMain.NORMAL)
+        setDefaultList()
+        loadBackupData()
     }
 
     override fun onStart() {
         super.onStart()
 
-        refreshContentView(recyclerViewAdapter.dataList)
-        saveBackup()
+        if (MainDataManager.isLoadingComplete) {
+            refreshContentView(recyclerViewAdapter.dataList)
+            saveBackupData()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        saveBackup()
+        ProgressDialogManager.hide()
+    }
+
+    private fun setToolbar() {
+        setSupportActionBar(toolbar_main)
+        val actionBar = supportActionBar!!
+
+        actionBar.setDisplayShowTitleEnabled(false)
     }
 
     private fun setDefaultList() {
@@ -77,39 +88,40 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val title = getString(R.string.app_word_sample_title)
         val contentList = ArrayList<MainDataContent>()
 
-        contentList.add(MainDataContent("Apple", "사과"))
-        contentList.add(MainDataContent("Korea", "한국"))
-        contentList.add(MainDataContent("English", "영어"))
+        contentList.add(MainDataContent("Apple", "사과", TestCheck.NONE))
+        contentList.add(MainDataContent("Korea", "한국", TestCheck.NONE))
+        contentList.add(MainDataContent("English", "영어", TestCheck.NONE))
 
         val data = MainData(title, contentList, Date(), DataType.NORMAL)
         MainDataManager.dataList.add(data)
     }
 
-    private fun loadBackup() {
-        val key = PreferenceKey.MAIN_DATA_LIST.get()
-        val value = PreferenceManager.get(this, key)
-
-        if (value == PreferenceManager.PREFERENCE_DEFAULT_VALUE) {
-            return
-        }
-
-        val backupDataList = JsonManager.toMainBackupDataList(value)
-        MainDataManager.refreshBackup(backupDataList)
+    private fun saveBackupData() {
+        val thread = MainDataSaveThread(this)
+        thread.start()
     }
 
-    private fun saveBackup() {
-        val dataList = MainDataManager.dataList
-        val key = PreferenceKey.MAIN_DATA_LIST.get()
-        val value = JsonManager.toJson(dataList)
+    private fun loadBackupData() {
+        val message = getString(R.string.app_backup_load_message)
+        ProgressDialogManager.show(this, message)
 
-        PreferenceManager.set(this, key, value)
-    }
+        Handler().postDelayed({
+            val thread = MainDataLoadThread(this)
+            thread.start()
+            thread.join()
 
-    private fun setToolbar() {
-        setSupportActionBar(toolbar_main)
-        val actionBar = supportActionBar!!
+            val exception = thread.exception
+            if (exception != null) {
+                val errorFormat = getString(R.string.app_backup_load_error)
+                val errorMessage = String.format(errorFormat, exception)
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+            }
 
-        actionBar.setDisplayShowTitleEnabled(false)
+            setRecyclerView()
+            refreshMode(ActivityModeMain.NORMAL)
+            MainDataManager.setLoadingComplete()
+            ProgressDialogManager.hide()
+        }, threadDelay)
     }
 
     private fun setRecyclerView() {
@@ -249,7 +261,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                     val problem = phoneNumber.name
                     val answer = phoneNumber.phoneNumber
 
-                    val content = MainDataContent(problem, answer)
+                    val content = MainDataContent(problem, answer, TestCheck.NONE)
                     contentList.add(content)
                 }
 
@@ -285,12 +297,32 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     override fun onBackPressed() {
         when (mode) {
             ActivityModeMain.NORMAL -> {
-                super.onBackPressed()
+                finishWithBackup()
             }
             ActivityModeMain.SELECTION -> {
                 recyclerViewAdapter.clearSelection()
             }
         }
+    }
+
+    private fun finishWithBackup() {
+        val message = getString(R.string.app_backup_save_message)
+        ProgressDialogManager.show(this, message)
+
+        Handler().postDelayed({
+            val thread = MainDataSaveThread(this)
+            thread.start()
+            thread.join()
+
+            val exception = thread.exception
+            if (exception != null) {
+                val errorFormat = getString(R.string.app_backup_save_error)
+                val errorMessage = String.format(errorFormat, exception)
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+
+            super.onBackPressed()
+        }, threadDelay)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -314,7 +346,18 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                             .show()
                     }
                     else -> {
-                        handleItemDelete()
+                        val selectedDataList = recyclerViewAdapter.getSelectedList()
+                        val phoneData = selectedDataList.find { it.dataType == DataType.PHONE }
+
+                        if (phoneData != null) {
+                            val format = getString(R.string.app_item_delete_selection_not_allowed)
+                            val title = phoneData.title
+                            val message = String.format(format, title)
+                            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                            return true
+                        }
+
+                        handleItemDelete(selectedDataList)
                     }
                 }
             }
@@ -387,7 +430,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         dialog.setCanceledOnTouchOutside(false)
     }
 
-    private fun handleItemDelete() {
+    private fun handleItemDelete(selectedDataList: List<MainData>) {
         val selectionSize = recyclerViewAdapter.getSelectionSize()
         val messageFormat = getString(R.string.app_item_delete_check_message)
         val message = String.format(messageFormat, selectionSize)
@@ -402,7 +445,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         dialog.setCanceledOnTouchOutside(false)
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val dataList = recyclerViewAdapter.dataList
-            val selectedDataList = recyclerViewAdapter.getSelectedList()
 
             for (selectedData in selectedDataList) {
                 dataList.remove(selectedData)
@@ -480,7 +522,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             val fileNameFormat = getString(R.string.app_file_name_format)
             val fileName = String.format(fileNameFormat, appName, date, fileExtension)
 
-            val file = ExcelManager.save(fileName, dataList)
+            val file = ExcelManager.save(this, fileName, dataList)
             if (file.isFile && file.exists()) {
                 val downloadManager =
                     getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager

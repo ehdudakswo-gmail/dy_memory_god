@@ -5,7 +5,6 @@ import com.dy.memorygod.enums.TestCheck
 data class MainDataContent(
     var problem: String,
     var answer: String,
-
-    var testCheck: TestCheck = TestCheck.NONE,
+    var testCheck: TestCheck,
     var idx: Int = 0
 )

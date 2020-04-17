@@ -1,9 +1,12 @@
 package com.dy.memorygod.manager
 
+import android.content.Context
 import android.os.Environment
+import com.dy.memorygod.R
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.DataType
+import com.dy.memorygod.enums.TestCheck
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import java.io.File
 import java.io.FileInputStream
@@ -18,19 +21,19 @@ object ExcelManager {
 
     private val filePath =
         Environment.getExternalStoragePublicDirectory(filePathType)
-    private val problemColIdx = 0
-    private val answerColIdx = 1
+    private const val problemColIdx = 0
+    private const val answerColIdx = 1
 
     private lateinit var workbook: HSSFWorkbook
     private lateinit var outputStream: FileOutputStream
     private lateinit var inputStream: FileInputStream
 
-    fun save(fileName: String, dataList: List<MainData>): File {
+    fun save(context: Context, fileName: String, dataList: List<MainData>): File {
 //        val workbook = SXSSFWorkbook()
         workbook = HSSFWorkbook()
 
         for (data in dataList) {
-            val title = data.title
+            val title = getTitle(context, data)
             val contentList = data.contentList
             val sheet = workbook.createSheet(title)
 
@@ -56,6 +59,18 @@ object ExcelManager {
         return file
     }
 
+    private fun getTitle(context: Context, data: MainData): String {
+        return when (data.dataType) {
+            DataType.NORMAL -> {
+                data.title
+            }
+            DataType.PHONE -> {
+                val format = context.getString(R.string.app_file_copy_title_format)
+                String.format(format, data.title)
+            }
+        }
+    }
+
     fun load(file: File): List<MainData> {
         inputStream = FileInputStream(file)
         workbook = HSSFWorkbook(inputStream)
@@ -72,7 +87,7 @@ object ExcelManager {
                 val problem = row.getCell(problemColIdx).toString().trim()
                 val answer = row.getCell(answerColIdx).toString().trim()
 
-                val content = MainDataContent(problem, answer)
+                val content = MainDataContent(problem, answer, TestCheck.NONE)
                 contentList.add(content)
             }
 

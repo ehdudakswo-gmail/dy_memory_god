@@ -5,17 +5,23 @@ import com.dy.memorygod.data.MainDataContent
 
 object MainDataManager {
 
-    lateinit var dataList: ArrayList<MainData>
+    var isLoadingComplete = false
+    lateinit var dataList: MutableList<MainData>
     lateinit var selectedData: MainData
     var searchData: MainData? = null
     var searchContentData: MainDataContent? = null
 
     fun init() {
-        this.dataList = ArrayList()
+        this.isLoadingComplete = false
+        this.dataList = mutableListOf()
     }
 
-    fun refreshBackup(backupDataList: ArrayList<MainData>) {
-        dataList = backupDataList
+    fun refresh(dataList: MutableList<MainData>) {
+        this.dataList = dataList
+    }
+
+    fun setLoadingComplete() {
+        isLoadingComplete = true
     }
 
 }

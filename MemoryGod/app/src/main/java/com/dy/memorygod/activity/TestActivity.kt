@@ -289,11 +289,6 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (isNotEditable(item)) {
-            Toast.makeText(this, R.string.app_item_edit_not_allowed, Toast.LENGTH_SHORT).show()
-            return true
-        }
-
         when (item.itemId) {
             android.R.id.home -> {
                 onBackPressed()
@@ -396,27 +391,6 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun isNotEditable(item: MenuItem): Boolean {
-        return when (selectedData.dataType) {
-            DataType.NORMAL -> {
-                false
-            }
-            else -> {
-                return when (item.itemId) {
-                    R.id.test_toolBar_menu_add,
-                    R.id.test_toolBar_menu_edit,
-                    R.id.test_toolBar_menu_delete,
-                    R.id.test_toolBar_menu_sort -> {
-                        true
-                    }
-                    else -> {
-                        false
-                    }
-                }
-            }
-        }
-    }
-
     private fun handleItemAdd() {
         val itemArr = ItemAddPosition.getDescriptionArr(this)
         val builder = AlertDialog.Builder(this)
@@ -426,10 +400,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             .setItems(itemArr) { _, which ->
                 when (ItemAddPosition.get(which)) {
                     ItemAddPosition.FIRST -> {
-                        handleItem(ItemState.ADD_FIRST, MainDataContent("", ""))
+                        handleItem(ItemState.ADD_FIRST, MainDataContent("", "", TestCheck.NONE))
                     }
                     ItemAddPosition.LAST -> {
-                        handleItem(ItemState.ADD_LAST, MainDataContent("", ""))
+                        handleItem(ItemState.ADD_LAST, MainDataContent("", "", TestCheck.NONE))
                     }
                 }
             }

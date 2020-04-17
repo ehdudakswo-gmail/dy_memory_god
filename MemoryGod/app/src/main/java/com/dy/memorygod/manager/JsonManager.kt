@@ -1,8 +1,9 @@
 package com.dy.memorygod.manager
 
-import com.dy.memorygod.data.MainData
+import com.dy.memorygod.enums.DataType
+import com.dy.memorygod.enums.DataTypePhone
+import com.dy.memorygod.enums.TestCheck
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 object JsonManager {
 
@@ -10,11 +11,16 @@ object JsonManager {
         return Gson().toJson(src)
     }
 
-    fun toMainBackupDataList(json: String): ArrayList<MainData> {
-        val listType: TypeToken<ArrayList<MainData>> =
-            object : TypeToken<ArrayList<MainData>>() {}
+    fun toDataType(json: String): DataType {
+        return Gson().fromJson(json, DataType::class.java)
+    }
 
-        return Gson().fromJson(json, listType.type)
+    fun toDataTypePhone(json: String): DataTypePhone {
+        return Gson().fromJson(json, DataTypePhone::class.java)
+    }
+
+    fun toTestCheck(json: String): TestCheck {
+        return Gson().fromJson(json, TestCheck::class.java)
     }
 
 }

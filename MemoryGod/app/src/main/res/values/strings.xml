@@ -2,9 +2,14 @@
     <string name="app_name">암기신</string>
     <string name="app_directory">%s 폴더</string>
     <string name="app_file_name_format">%s (%s)%s</string>
+    <string name="app_file_copy_title_format">%s 사본</string>
     <string name="app_file_save_data_none">저장할 데이터가 없습니다.</string>
     <string name="app_file_load_data_none">%s 파일이 없습니다. (%s)</string>
     <string name="app_file_load_data_title">데이터 추가</string>
+    <string name="app_backup_save_message">데이터를 저장중입니다.</string>
+    <string name="app_backup_load_message">데이터를 로딩중입니다.</string>
+    <string name="app_backup_save_error">저장 에러 (%s)</string>
+    <string name="app_backup_load_error">로딩 에러 (%s)</string>
 
     <string name="app_permission_request">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
     <string name="app_phone_number_title">전화번호</string>
@@ -42,6 +47,7 @@
     <string name="app_item_edit_selection_empty">수정할 아이템을 선택해주세요.</string>
     <string name="app_item_edit_selection_one_request">수정할 아이템을 1개만 선택해주세요.</string>
     <string name="app_item_delete_selection_empty">삭제할 아이템을 선택해주세요.</string>
+    <string name="app_item_delete_selection_not_allowed">삭제가 불가능한 아이템이 있습니다. (%s) </string>
     <string name="app_item_delete_check_message">%d개 아이템을 영구적으로 삭제합니다.</string>
     <string name="app_item_sort_empty">정렬할 아이템이 없습니다.</string>
     <string name="app_item_sort_check_message">아이템 순서가 변경되었습니다. 적용하겠습니까?</string>
