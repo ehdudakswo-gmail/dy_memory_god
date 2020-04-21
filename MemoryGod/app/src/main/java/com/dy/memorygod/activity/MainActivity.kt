@@ -22,6 +22,8 @@ import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
+import com.dy.memorygod.thread.ExcelFileLoadThread
+import com.dy.memorygod.thread.ExcelFileSaveThread
 import com.dy.memorygod.thread.MainDataLoadThread
 import com.dy.memorygod.thread.MainDataSaveThread
 import com.gun0912.tedpermission.PermissionListener
@@ -504,59 +506,83 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
 
     private fun handleFileSave() {
-        try {
-            val dataList = MainDataManager.dataList
-            if (dataList.isEmpty()) {
-                Toast.makeText(
-                    this,
-                    R.string.app_file_save_data_none,
-                    Toast.LENGTH_SHORT
-                ).show()
-                return
-            }
-
-            val appName = getString(R.string.app_name)
-            val date = DateManager.getExcelFileName()
-
-            val fileExtension = ExcelManager.fileExtension
-            val fileNameFormat = getString(R.string.app_file_name_format)
-            val fileName = String.format(fileNameFormat, appName, date, fileExtension)
-
-            val file = ExcelManager.save(this, fileName, dataList)
-            if (file.isFile && file.exists()) {
-                val downloadManager =
-                    getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-                downloadManager.addCompletedDownload(
-                    file.name,
-                    file.name,
-                    false,
-                    "application/vnd.ms-excel",
-                    file.absolutePath,
-                    file.length(),
-                    true
-                )
-
-                val filePathType = ExcelManager.filePathType
-                val directoryFormat = getString(R.string.app_directory)
-                val directory = String.format(directoryFormat, filePathType)
-
-                val messageFormat = getString(R.string.app_toolBar_menu_file_save_complete)
-                val message = String.format(messageFormat, directory)
-
-                Toast.makeText(
-                    this,
-                    message,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        } catch (ex: Exception) {
-            val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
-            val error = String.format(errorFormat, ex.toString())
-            Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
-        } finally {
-            ExcelManager.close()
+        val dataList = MainDataManager.dataList
+        if (dataList.isEmpty()) {
+            Toast.makeText(
+                this,
+                R.string.app_file_save_data_none,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
         }
+
+        val appName = getString(R.string.app_name)
+        val date = DateManager.getExcelFileName()
+
+        val fileExtension = ExcelManager.fileExtension
+        val fileNameFormat = getString(R.string.app_file_name_format)
+        val fileName = String.format(fileNameFormat, appName, date, fileExtension)
+
+        val message = getString(R.string.app_toolBar_menu_file_save_progress_message)
+        ProgressDialogManager.show(this, message)
+
+        Handler().postDelayed({
+            val thread = ExcelFileSaveThread(this, dataList, fileName)
+            thread.start()
+            thread.join()
+
+            val exception = thread.exception
+            if (exception != null) {
+                val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
+                val errorMessage = String.format(errorFormat, exception)
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                ProgressDialogManager.hide()
+                return@postDelayed
+            }
+
+            val file = thread.file
+            val isFileNone = !(file.isFile && file.exists())
+
+            if (isFileNone) {
+                val fileNoneFormat = getString(R.string.app_toolBar_menu_file_save_error)
+                val fileNoneDescription =
+                    getString(R.string.app_toolBar_menu_file_save_error_file_none)
+                val fileNoneMessage = String.format(fileNoneFormat, fileNoneDescription)
+
+                Toast.makeText(this, fileNoneMessage, Toast.LENGTH_SHORT).show()
+                ProgressDialogManager.hide()
+                return@postDelayed
+            }
+
+            val downloadManager =
+                getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+            downloadManager.addCompletedDownload(
+                file.name,
+                file.name,
+                false,
+                "application/vnd.ms-excel",
+                file.absolutePath,
+                file.length(),
+                true
+            )
+
+            val filePathType = ExcelManager.filePathType
+            val directoryFormat = getString(R.string.app_directory)
+            val directory = String.format(directoryFormat, filePathType)
+
+            val completeMessageFormat =
+                getString(R.string.app_toolBar_menu_file_save_complete)
+            val completeMessage = String.format(completeMessageFormat, directory)
+
+            Toast.makeText(
+                this,
+                completeMessage,
+                Toast.LENGTH_SHORT
+            ).show()
+            ProgressDialogManager.hide()
+
+        }, threadDelay)
     }
 
     private fun checkFileLoadPermission() {
@@ -584,46 +610,56 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
 
     private fun handleFileLoad() {
-        try {
-            val filePathType = ExcelManager.filePathType
-            val directoryFormat = getString(R.string.app_directory)
-            val directory = String.format(directoryFormat, filePathType)
+        val filePathType = ExcelManager.filePathType
+        val directoryFormat = getString(R.string.app_directory)
+        val directory = String.format(directoryFormat, filePathType)
 
-            val excelFileList = ExcelManager.getFileList()
-            val itemArr = excelFileList.map { it.name }.toTypedArray()
+        val excelFileList = ExcelManager.getFileList()
+        val itemArr = excelFileList.map { it.name }.toTypedArray()
 
-            if (itemArr.isEmpty()) {
-                val fileExtension = ExcelManager.fileExtension
-                val messageFormat = getString(R.string.app_file_load_data_none)
-                val message = String.format(messageFormat, fileExtension, directory)
+        if (itemArr.isEmpty()) {
+            val fileExtension = ExcelManager.fileExtension
+            val messageFormat = getString(R.string.app_file_load_data_none)
+            val message = String.format(messageFormat, fileExtension, directory)
 
-                Toast.makeText(
-                    this@MainActivity,
-                    message,
-                    Toast.LENGTH_SHORT
-                ).show()
-                return
-            }
-
-            val builder = AlertDialog.Builder(this@MainActivity)
-            val dialog = builder
-                .setTitle(directory)
-                .setItems(itemArr) { _, which ->
-                    val file = excelFileList[which]
-                    val dataList = ExcelManager.load(file)
-                    handleFileLoadData(dataList)
-                }
-                .show()
-
-            dialog.setCanceledOnTouchOutside(false)
-        } catch (ex: Exception) {
-            val error = ex.toString()
-            val messageFormat = getString(R.string.app_toolBar_menu_file_load_error)
-            val message = String.format(messageFormat, error)
-            Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
-        } finally {
-            ExcelManager.close()
+            Toast.makeText(
+                this,
+                message,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
         }
+
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setTitle(directory)
+            .setItems(itemArr) { _, which ->
+                val message = getString(R.string.app_toolBar_menu_file_load_progress_message)
+                ProgressDialogManager.show(this, message)
+
+                Handler().postDelayed({
+                    val file = excelFileList[which]
+                    val thread = ExcelFileLoadThread(file)
+                    thread.start()
+                    thread.join()
+
+                    val exception = thread.exception
+                    if (exception != null) {
+                        val errorFormat = getString(R.string.app_toolBar_menu_file_load_error)
+                        val errorMessage = String.format(errorFormat, exception)
+                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                        ProgressDialogManager.hide()
+                        return@postDelayed
+                    }
+
+                    val dataList = thread.dataList
+                    handleFileLoadData(dataList)
+                    ProgressDialogManager.hide()
+                }, threadDelay)
+            }
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
     }
 
     private fun handleFileLoadData(dataList: List<MainData>) {

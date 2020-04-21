@@ -36,8 +36,11 @@
     <string name="app_toolBar_selection_info">%d / %d 선택</string>
     <string name="app_toolBar_menu_sort_data_empty">정렬할 데이터가 없습니다.</string>
     <string name="app_toolBar_menu_search_data_empty">검색할 데이터가 없습니다.</string>
+    <string name="app_toolBar_menu_file_save_progress_message">파일을 저장중입니다.</string>
     <string name="app_toolBar_menu_file_save_complete">파일 저장 완료 (%s)</string>
     <string name="app_toolBar_menu_file_save_error">파일 저장 에러 (%s)</string>
+    <string name="app_toolBar_menu_file_save_error_file_none">FILE NONE</string>
+    <string name="app_toolBar_menu_file_load_progress_message">파일을 로딩중입니다.</string>
     <string name="app_toolBar_menu_file_load_error">파일 열기 에러 (%s)</string>
     <string name="app_toolBar_menu_file_load_data_check_none">데이터를 선택해주세요.</string>
 

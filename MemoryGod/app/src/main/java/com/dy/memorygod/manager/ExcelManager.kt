@@ -28,7 +28,7 @@ object ExcelManager {
     private lateinit var outputStream: FileOutputStream
     private lateinit var inputStream: FileInputStream
 
-    fun save(context: Context, fileName: String, dataList: List<MainData>): File {
+    fun save(context: Context, dataList: List<MainData>, fileName: String): File {
 //        val workbook = SXSSFWorkbook()
         workbook = HSSFWorkbook()
 
