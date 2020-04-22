@@ -1,5 +1,18 @@
 <resources>
     <string name="app_name">암기신</string>
+    <string name="app_permission_request">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
+    <string name="app_content_description_item_reorder">아이템 이동</string>
+
+    <string name="app_phone_number_title">전화번호</string>
+    <string name="app_phone_number_title_active">%s (%s)</string>
+    <string name="app_sample_title">영어단어 샘플</string>
+    <string name="app_sample_content1_problem">Apple</string>
+    <string name="app_sample_content1_answer">사과</string>
+    <string name="app_sample_content2_problem">Korea</string>
+    <string name="app_sample_content2_answer">한국</string>
+    <string name="app_sample_content3_problem">English</string>
+    <string name="app_sample_content3_answer">영어</string>
+
     <string name="app_directory">%s 폴더</string>
     <string name="app_file_name_format">%s (%s)%s</string>
     <string name="app_file_copy_title_format">%s 사본</string>
@@ -10,12 +23,6 @@
     <string name="app_backup_load_message">데이터를 로딩중입니다.</string>
     <string name="app_backup_save_error">저장 에러 (%s)</string>
     <string name="app_backup_load_error">로딩 에러 (%s)</string>
-
-    <string name="app_permission_request">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
-    <string name="app_phone_number_title">전화번호</string>
-    <string name="app_phone_number_title_active">%s (%s)</string>
-    <string name="app_word_sample_title">영어단어 샘플</string>
-    <string name="app_content_description_item_reorder">아이템 이동</string>
 
     <string name="app_dialog_ok">확인</string>
     <string name="app_dialog_cancel">취소</string>

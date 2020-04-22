@@ -3,6 +3,7 @@ package com.dy.memorygod.thread
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.DataType
+import com.dy.memorygod.enums.DataTypePhone
 import com.dy.memorygod.enums.TestCheck
 import com.dy.memorygod.manager.ExcelManager
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
@@ -42,7 +43,8 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
                     contentList.add(content)
                 }
 
-                val mainData = MainData(title, contentList, Date(), DataType.NORMAL)
+                val mainData =
+                    MainData(title, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
                 dataList.add(mainData)
             }
         } catch (ex: Exception) {

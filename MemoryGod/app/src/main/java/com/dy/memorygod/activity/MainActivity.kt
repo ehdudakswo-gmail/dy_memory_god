@@ -45,9 +45,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        MainDataManager.init()
         setToolbar()
-        setDefaultList()
+        setDefaultData()
         loadBackupData()
     }
 
@@ -73,34 +72,48 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         actionBar.setDisplayShowTitleEnabled(false)
     }
 
-    private fun setDefaultList() {
-        setPhoneNumber()
-        setWordSample()
+    private fun setDefaultData() {
+        MainDataManager.init()
+        setPhoneNumberData()
+        setSampleData()
     }
 
-    private fun setPhoneNumber() {
+    private fun setPhoneNumberData() {
         val title = getString(R.string.app_phone_number_title)
-        val contentList = ArrayList<MainDataContent>()
+        val contentList = mutableListOf<MainDataContent>()
 
         val data = MainData(title, contentList, null, DataType.PHONE, DataTypePhone.NUMBER)
         MainDataManager.dataList.add(data)
     }
 
-    private fun setWordSample() {
-        val title = getString(R.string.app_word_sample_title)
-        val contentList = ArrayList<MainDataContent>()
+    private fun setSampleData() {
+        val title = getString(R.string.app_sample_title)
+        val contentList = mutableListOf<MainDataContent>()
 
-        contentList.add(MainDataContent("Apple", "사과", TestCheck.NONE))
-        contentList.add(MainDataContent("Korea", "한국", TestCheck.NONE))
-        contentList.add(MainDataContent("English", "영어", TestCheck.NONE))
+        contentList.add(
+            MainDataContent(
+                getString(R.string.app_sample_content1_problem),
+                getString(R.string.app_sample_content1_answer),
+                TestCheck.NONE
+            )
+        )
+        contentList.add(
+            MainDataContent(
+                getString(R.string.app_sample_content2_problem),
+                getString(R.string.app_sample_content2_answer),
+                TestCheck.NONE
+            )
+        )
+        contentList.add(
+            MainDataContent(
+                getString(R.string.app_sample_content3_problem),
+                getString(R.string.app_sample_content3_answer),
+                TestCheck.NONE
+            )
+        )
 
-        val data = MainData(title, contentList, Date(), DataType.NORMAL)
+        val data = MainData(title, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
         MainDataManager.dataList.add(data)
-    }
-
-    private fun saveBackupData() {
-        val thread = MainDataSaveThread(this)
-        thread.start()
     }
 
     private fun loadBackupData() {
@@ -124,6 +137,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             MainDataManager.setLoadingComplete()
             ProgressDialogManager.hide()
         }, threadDelay)
+    }
+
+    private fun saveBackupData() {
+        val thread = MainDataSaveThread(this)
+        thread.start()
     }
 
     private fun setRecyclerView() {
@@ -414,7 +432,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             .setItems(itemArr) { _, which ->
                 val title = ""
                 val contentList = ArrayList<MainDataContent>()
-                val data = MainData(title, contentList, Date(), DataType.NORMAL)
+                val data = MainData(title, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
 
                 when (ItemAddPosition.get(which)) {
                     ItemAddPosition.FIRST -> {

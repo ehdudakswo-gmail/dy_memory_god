@@ -9,7 +9,6 @@ data class MainData(
     val contentList: MutableList<MainDataContent>,
     var updatedDate: Date?,
     val dataType: DataType,
-
-    val dataTypePhone: DataTypePhone = DataTypePhone.NONE,
+    val dataTypePhone: DataTypePhone,
     var idx: Int = 0
 )
