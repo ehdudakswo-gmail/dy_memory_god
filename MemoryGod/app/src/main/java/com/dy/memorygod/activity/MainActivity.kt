@@ -527,7 +527,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         ProgressDialogManager.show(this, message)
 
         Handler().postDelayed({
-            val thread = ExcelFileSaveThread(this, dataList, fileName)
+            val filePath = ExcelManager.filePath
+            val thread = ExcelFileSaveThread(this, dataList, filePath, fileName)
             thread.start()
             thread.join()
 
