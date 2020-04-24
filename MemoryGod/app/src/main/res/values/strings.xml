@@ -3,6 +3,10 @@
     <string name="app_permission_request">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
     <string name="app_content_description_item_reorder">아이템 이동</string>
 
+    <string name="ad_mob_app_id">ca-app-pub-9781828508992303~2035825882</string>
+    <string name="ad_mob_main_banner_id">ca-app-pub-9781828508992303/8841687636</string>
+    <string name="ad_mob_main_banner_id_sample">ca-app-pub-3940256099942544/6300978111</string>
+
     <string name="app_phone_number_title">전화번호</string>
     <string name="app_phone_number_title_active">%s (%s)</string>
     <string name="app_sample_title">영어단어 샘플</string>

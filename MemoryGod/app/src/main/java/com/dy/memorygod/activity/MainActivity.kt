@@ -26,6 +26,9 @@ import com.dy.memorygod.thread.ExcelFileLoadThread
 import com.dy.memorygod.thread.ExcelFileSaveThread
 import com.dy.memorygod.thread.MainDataLoadThread
 import com.dy.memorygod.thread.MainDataSaveThread
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
@@ -46,6 +49,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         setContentView(R.layout.activity_main)
 
         setToolbar()
+        setAD()
         setDefaultData()
         loadBackupData()
     }
@@ -70,6 +74,21 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val actionBar = supportActionBar!!
 
         actionBar.setDisplayShowTitleEnabled(false)
+    }
+
+    private fun setAD() {
+        MobileAds.initialize(this) {}
+
+        val adView = adView_main
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+
+        adView.adListener = object : AdListener() {
+            override fun onAdFailedToLoad(p0: Int) {
+                super.onAdFailedToLoad(p0)
+                Toast.makeText(this@MainActivity, "onAdFailedToLoad $p0", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun setDefaultData() {
@@ -370,7 +389,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         val phoneData = selectedDataList.find { it.dataType == DataType.PHONE }
 
                         if (phoneData != null) {
-                            val format = getString(R.string.app_item_delete_selection_not_allowed)
+                            val format =
+                                getString(R.string.app_item_delete_selection_not_allowed)
                             val title = phoneData.title
                             val message = String.format(format, title)
                             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -432,7 +452,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             .setItems(itemArr) { _, which ->
                 val title = ""
                 val contentList = ArrayList<MainDataContent>()
-                val data = MainData(title, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
+                val data =
+                    MainData(title, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
 
                 when (ItemAddPosition.get(which)) {
                     ItemAddPosition.FIRST -> {
