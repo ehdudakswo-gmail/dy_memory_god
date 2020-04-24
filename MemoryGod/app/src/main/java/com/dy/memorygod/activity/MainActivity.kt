@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.crashlytics.android.Crashlytics
 import com.dy.memorygod.R
 import com.dy.memorygod.adapter.MainRecyclerViewAdapter
 import com.dy.memorygod.adapter.MainRecyclerViewEventListener
@@ -31,6 +32,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
+import io.fabric.sdk.android.Fabric
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -48,6 +50,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Fabric.with(this, Crashlytics())
         setToolbar()
         setAD()
         setDefaultData()
@@ -83,10 +86,15 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
 
+
         adView.adListener = object : AdListener() {
             override fun onAdFailedToLoad(p0: Int) {
                 super.onAdFailedToLoad(p0)
-                Toast.makeText(this@MainActivity, "onAdFailedToLoad $p0", Toast.LENGTH_SHORT).show()
+
+                Crashlytics.getInstance().core.setInt(
+                    CrashlyticsKey.AD_FAILED_TO_LOAD.get(),
+                    p0
+                )
             }
         }
     }
@@ -149,6 +157,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val errorFormat = getString(R.string.app_backup_load_error)
                 val errorMessage = String.format(errorFormat, exception)
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+
+                Crashlytics.getInstance().core.setString(
+                    CrashlyticsKey.MAIN_DATA_DB_LOAD_ERROR.get(),
+                    errorMessage
+                )
             }
 
             setRecyclerView()
@@ -358,6 +371,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val errorFormat = getString(R.string.app_backup_save_error)
                 val errorMessage = String.format(errorFormat, exception)
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+
+                Crashlytics.getInstance().core.setString(
+                    CrashlyticsKey.MAIN_DATA_DB_SAVE_ERROR.get(),
+                    errorMessage
+                )
             }
 
             super.onBackPressed()
@@ -577,6 +595,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val errorMessage = String.format(errorFormat, exception)
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                 ProgressDialogManager.hide()
+
+                Crashlytics.getInstance().core.setString(
+                    CrashlyticsKey.MAIN_DATA_EXCEL_SAVE_ERROR.get(),
+                    errorMessage
+                )
                 return@postDelayed
             }
 
@@ -689,6 +712,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         val errorMessage = String.format(errorFormat, exception)
                         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                         ProgressDialogManager.hide()
+
+                        Crashlytics.getInstance().core.setString(
+                            CrashlyticsKey.MAIN_DATA_EXCEL_LOAD_ERROR.get(),
+                            errorMessage
+                        )
                         return@postDelayed
                     }
 

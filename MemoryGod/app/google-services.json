@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "825097239856",
+    "firebase_url": "https://dy-memory-god.firebaseio.com",
+    "project_id": "dy-memory-god",
+    "storage_bucket": "dy-memory-god.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825097239856:android:c0f8d07cf2e3d15ec19cf5",
+        "android_client_info": {
+          "package_name": "com.dy.memorygod"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "825097239856-amph7o97qsetsoeelavqpbf3b90a82f2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRSyPtnzZaen05cXFqcHo8Qy4sEnyh29A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "825097239856-amph7o97qsetsoeelavqpbf3b90a82f2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
