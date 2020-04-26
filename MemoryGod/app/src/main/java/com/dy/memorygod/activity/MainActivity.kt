@@ -3,6 +3,7 @@ package com.dy.memorygod.activity
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.os.Bundle
 import android.os.Handler
 import android.view.Menu
@@ -79,6 +80,18 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val actionBar = supportActionBar!!
 
         actionBar.setDisplayShowTitleEnabled(false)
+
+        toolbar_main.setOnLongClickListener {
+            val info: PackageInfo = packageManager.getPackageInfo(packageName, 0)
+            val version = info.versionName
+
+            Toast.makeText(
+                this,
+                version,
+                Toast.LENGTH_SHORT
+            ).show()
+            true
+        }
     }
 
     private fun setAD() {
