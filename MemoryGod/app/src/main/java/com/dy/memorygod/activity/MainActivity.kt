@@ -30,6 +30,7 @@ import com.dy.memorygod.thread.MainDataSaveThread
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import io.fabric.sdk.android.Fabric
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
     private val threadDelay = 100L
+    private val firebaseAnalytics: FirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,10 +93,10 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             override fun onAdFailedToLoad(p0: Int) {
                 super.onAdFailedToLoad(p0)
 
-                Crashlytics.getInstance().core.setInt(
-                    CrashlyticsKey.AD_FAILED_TO_LOAD.get(),
-                    p0
-                )
+                val name = FirebaseAnalyticsEventName.AD_FAILED_TO_LOAD.get()
+                val bundle = Bundle()
+                bundle.putInt(FirebaseAnalyticsEventParam.INT_VALUE.get(), p0)
+                firebaseAnalytics.logEvent(name, bundle)
             }
         }
     }
@@ -158,10 +160,10 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val errorMessage = String.format(errorFormat, exception)
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
 
-                Crashlytics.getInstance().core.setString(
-                    CrashlyticsKey.MAIN_DATA_DB_LOAD_ERROR.get(),
-                    errorMessage
-                )
+                val name = FirebaseAnalyticsEventName.MAIN_DATA_DB_LOAD_ERROR.get()
+                val bundle = Bundle()
+                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
+                firebaseAnalytics.logEvent(name, bundle)
             }
 
             setRecyclerView()
@@ -372,10 +374,10 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val errorMessage = String.format(errorFormat, exception)
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
 
-                Crashlytics.getInstance().core.setString(
-                    CrashlyticsKey.MAIN_DATA_DB_SAVE_ERROR.get(),
-                    errorMessage
-                )
+                val name = FirebaseAnalyticsEventName.MAIN_DATA_DB_SAVE_ERROR.get()
+                val bundle = Bundle()
+                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
+                firebaseAnalytics.logEvent(name, bundle)
             }
 
             super.onBackPressed()
@@ -596,10 +598,10 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                 ProgressDialogManager.hide()
 
-                Crashlytics.getInstance().core.setString(
-                    CrashlyticsKey.MAIN_DATA_EXCEL_SAVE_ERROR.get(),
-                    errorMessage
-                )
+                val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_SAVE_ERROR.get()
+                val bundle = Bundle()
+                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
+                firebaseAnalytics.logEvent(name, bundle)
                 return@postDelayed
             }
 
@@ -713,10 +715,10 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                         ProgressDialogManager.hide()
 
-                        Crashlytics.getInstance().core.setString(
-                            CrashlyticsKey.MAIN_DATA_EXCEL_LOAD_ERROR.get(),
-                            errorMessage
-                        )
+                        val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_LOAD_ERROR.get()
+                        val bundle = Bundle()
+                        bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
+                        firebaseAnalytics.logEvent(name, bundle)
                         return@postDelayed
                     }
 

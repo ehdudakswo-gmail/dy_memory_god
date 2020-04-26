@@ -1,6 +1,6 @@
 package com.dy.memorygod.enums
 
-enum class CrashlyticsKey {
+enum class FirebaseAnalyticsEventName {
 
     MAIN_DATA_DB_LOAD_ERROR,
     MAIN_DATA_DB_SAVE_ERROR,
