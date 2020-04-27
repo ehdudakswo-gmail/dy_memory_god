@@ -20,9 +20,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            resValue("string", "admob_main_banner_id", "ca-app-pub-3940256099942544/6300978111")
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue("string", "admob_main_banner_id", "ca-app-pub-9781828508992303/8841687636")
         }
     }
 

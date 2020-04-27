@@ -99,9 +99,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         val adView = adView_main
         val adRequest = AdRequest.Builder().build()
+
         adView.loadAd(adRequest)
-
-
         adView.adListener = object : AdListener() {
             override fun onAdFailedToLoad(p0: Int) {
                 super.onAdFailedToLoad(p0)
