@@ -1,0 +1,13 @@
+#Mon Apr 27 16:08:06 KST 2020
+path.3=classes4.dex
+path.2=classes3.dex
+path.1=classes2.dex
+path.0=classes.dex
+renamed.3=classes4.dex
+renamed.2=classes3.dex
+renamed.1=classes2.dex
+renamed.0=classes.dex
+base.3=C\:\\GitHub\\dy_memory_god\\MemoryGod\\app\\build\\intermediates\\dex\\release\\out\\classes4.dex
+base.2=C\:\\GitHub\\dy_memory_god\\MemoryGod\\app\\build\\intermediates\\dex\\release\\out\\classes3.dex
+base.1=C\:\\GitHub\\dy_memory_god\\MemoryGod\\app\\build\\intermediates\\dex\\release\\out\\classes2.dex
+base.0=C\:\\GitHub\\dy_memory_god\\MemoryGod\\app\\build\\intermediates\\dex\\release\\out\\classes.dex
