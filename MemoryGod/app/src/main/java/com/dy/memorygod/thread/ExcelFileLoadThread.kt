@@ -36,8 +36,16 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
                 for (row in rowIterator) {
                     val problemColIdx = ExcelManager.problemColIdx
                     val answerColIdx = ExcelManager.answerColIdx
-                    val problem = row.getCell(problemColIdx).toString().trim()
-                    val answer = row.getCell(answerColIdx).toString().trim()
+
+                    val problemCell = row.getCell(problemColIdx)
+                    val answerCell = row.getCell(answerColIdx)
+
+                    if (problemCell == null || answerCell == null) {
+                        continue
+                    }
+
+                    val problem = problemCell.toString().trim()
+                    val answer = answerCell.toString().trim()
 
                     val content = MainDataContent(problem, answer, TestCheck.NONE)
                     contentList.add(content)
