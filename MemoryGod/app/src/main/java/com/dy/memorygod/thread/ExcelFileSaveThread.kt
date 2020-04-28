@@ -5,7 +5,7 @@ import com.dy.memorygod.R
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.enums.DataType
 import com.dy.memorygod.manager.ExcelManager
-import org.apache.poi.hssf.usermodel.HSSFWorkbook
+import org.apache.poi.xssf.streaming.SXSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
 
@@ -19,14 +19,14 @@ class ExcelFileSaveThread(
     var exception: String? = null
     lateinit var file: File
 
-    private lateinit var workbook: HSSFWorkbook
+    private lateinit var workbook: SXSSFWorkbook
     private lateinit var outputStream: FileOutputStream
 
     override fun run() {
         super.run()
 
         try {
-            workbook = HSSFWorkbook()
+            workbook = SXSSFWorkbook()
 
             for (data in dataList) {
                 val title = getTitle(context, data)
@@ -57,7 +57,7 @@ class ExcelFileSaveThread(
             exception = ex.toString()
         } finally {
             if (this::workbook.isInitialized) {
-                workbook.close()
+//                workbook.close()
             }
 
             if (this::outputStream.isInitialized) {

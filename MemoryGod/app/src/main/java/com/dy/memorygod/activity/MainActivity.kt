@@ -638,7 +638,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 file.name,
                 file.name,
                 false,
-                "application/vnd.ms-excel",
+                ExcelManager.fileMimeType,
                 file.absolutePath,
                 file.length(),
                 true
