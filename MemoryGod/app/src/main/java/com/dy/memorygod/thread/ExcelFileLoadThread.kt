@@ -44,8 +44,20 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
                         continue
                     }
 
-                    val problem = problemCell.toString().trim()
-                    val answer = answerCell.toString().trim()
+                    var problem = problemCell.toString().trim()
+                    var answer = answerCell.toString().trim()
+
+                    problem.toDoubleOrNull()?.let {
+                        if (it == kotlin.math.floor(it)) {
+                            problem = it.toLong().toString()
+                        }
+                    }
+
+                    answer.toDoubleOrNull()?.let {
+                        if (it == kotlin.math.floor(it)) {
+                            answer = it.toLong().toString()
+                        }
+                    }
 
                     val content = MainDataContent(problem, answer, TestCheck.NONE)
                     contentList.add(content)
