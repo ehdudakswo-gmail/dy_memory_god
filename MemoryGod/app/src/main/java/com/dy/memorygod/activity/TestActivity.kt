@@ -136,8 +136,11 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private fun setMode() {
         when (mode) {
             ActivityModeTest.NORMAL -> {
+                val editedTitle = editText_test_toolbar_title.text.toString().trim()
+                selectedData.title = editedTitle
+
                 val titleTextView = textView_test_toolbar_title
-                titleTextView.text = selectedData.title
+                titleTextView.text = editedTitle
                 titleTextView.visibility = View.VISIBLE
 
                 KeyboardManager.hide(this, editText_test_toolbar_title)
@@ -167,7 +170,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     override fun onBackPressed() {
         when (mode) {
             ActivityModeTest.NORMAL -> {
-                super.onBackPressed()
+                handleFinish()
             }
             ActivityModeTest.SELECTION -> {
                 recyclerViewAdapter.clearSelection()
@@ -176,6 +179,22 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 handleTitleEdit()
             }
         }
+    }
+
+    private fun handleFinish() {
+        val dataTitle = selectedData.title
+        if (dataTitle.isEmpty()) {
+            Toast.makeText(
+                this,
+                R.string.test_toolBar_title_input_empty,
+                Toast.LENGTH_SHORT
+            ).show()
+
+            refreshMode(ActivityModeTest.TITLE_EDIT)
+            return
+        }
+
+        super.onBackPressed()
     }
 
     private fun handleTitleEdit() {
@@ -284,7 +303,6 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_test, menu)
-
         return true
     }
 
