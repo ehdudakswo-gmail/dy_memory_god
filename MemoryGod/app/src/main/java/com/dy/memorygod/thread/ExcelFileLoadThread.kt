@@ -6,7 +6,7 @@ import com.dy.memorygod.enums.DataType
 import com.dy.memorygod.enums.DataTypePhone
 import com.dy.memorygod.enums.TestCheck
 import com.dy.memorygod.manager.ExcelManager
-import org.apache.poi.hssf.usermodel.HSSFWorkbook
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
@@ -16,7 +16,7 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
     var exception: String? = null
     lateinit var dataList: MutableList<MainData>
 
-    private lateinit var workbook: HSSFWorkbook
+    private lateinit var workbook: XSSFWorkbook
     private lateinit var inputStream: FileInputStream
 
     override fun run() {
@@ -25,9 +25,9 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
         try {
             dataList = mutableListOf()
             inputStream = FileInputStream(file)
-            workbook = HSSFWorkbook(inputStream)
+            workbook = XSSFWorkbook(inputStream)
 
-            val sheetIterator = workbook.sheetIterator()
+            val sheetIterator = workbook.iterator()
             for (sheet in sheetIterator) {
                 val title = sheet.sheetName.trim()
                 val contentList = mutableListOf<MainDataContent>()
@@ -36,8 +36,28 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
                 for (row in rowIterator) {
                     val problemColIdx = ExcelManager.problemColIdx
                     val answerColIdx = ExcelManager.answerColIdx
-                    val problem = row.getCell(problemColIdx).toString().trim()
-                    val answer = row.getCell(answerColIdx).toString().trim()
+
+                    val problemCell = row.getCell(problemColIdx)
+                    val answerCell = row.getCell(answerColIdx)
+
+                    if (problemCell == null || answerCell == null) {
+                        continue
+                    }
+
+                    var problem = problemCell.toString().trim()
+                    var answer = answerCell.toString().trim()
+
+                    problem.toDoubleOrNull()?.let {
+                        if (it == kotlin.math.floor(it)) {
+                            problem = it.toLong().toString()
+                        }
+                    }
+
+                    answer.toDoubleOrNull()?.let {
+                        if (it == kotlin.math.floor(it)) {
+                            answer = it.toLong().toString()
+                        }
+                    }
 
                     val content = MainDataContent(problem, answer, TestCheck.NONE)
                     contentList.add(content)
@@ -51,7 +71,7 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
             exception = ex.toString()
         } finally {
             if (this::workbook.isInitialized) {
-                workbook.close()
+//                workbook.close()
             }
 
             if (this::inputStream.isInitialized) {

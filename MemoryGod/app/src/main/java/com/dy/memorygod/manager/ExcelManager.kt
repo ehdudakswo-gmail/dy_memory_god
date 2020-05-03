@@ -8,7 +8,8 @@ object ExcelManager {
     val filePathType: String = Environment.DIRECTORY_DOWNLOADS
     val filePath: File =
         Environment.getExternalStoragePublicDirectory(filePathType)
-    const val fileExtension = ".xls"
+    const val fileExtension = ".xlsx"
+    const val fileMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
     const val problemColIdx = 0
     const val answerColIdx = 1

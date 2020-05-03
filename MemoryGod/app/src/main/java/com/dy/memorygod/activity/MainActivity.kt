@@ -20,6 +20,7 @@ import com.crashlytics.android.Crashlytics
 import com.dy.memorygod.R
 import com.dy.memorygod.adapter.MainRecyclerViewAdapter
 import com.dy.memorygod.adapter.MainRecyclerViewEventListener
+import com.dy.memorygod.data.ContactPhoneNumberData
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
@@ -309,34 +310,23 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private val phoneNumberPermissionListener: PermissionListener =
         object : PermissionListener {
             override fun onPermissionGranted() {
+                val selectedData = MainDataManager.selectedData
+                clearPhoneNumber(selectedData)
+
                 val phoneNumberList = ContactManager.getPhoneNumberList(this@MainActivity)
                 if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        ContactManager.ERROR_MESSAGE,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    val errorMessage = ContactManager.ERROR_MESSAGE
+                    AlertDialogManager.show(this@MainActivity, errorMessage)
+                    refreshContentView(MainDataManager.dataList)
+
+                    val name = FirebaseAnalyticsEventName.PHONE_NUMBER_LOAD_ERROR.get()
+                    val bundle = Bundle()
+                    bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
+                    firebaseAnalytics.logEvent(name, bundle)
                     return
                 }
 
-                val selectedData = MainDataManager.selectedData
-                val contentList = selectedData.contentList
-                contentList.clear()
-
-                for (phoneNumber in phoneNumberList) {
-                    val problem = phoneNumber.name
-                    val answer = phoneNumber.phoneNumber
-
-                    val content = MainDataContent(problem, answer, TestCheck.NONE)
-                    contentList.add(content)
-                }
-
-                val activeTitleFormat = getString(R.string.app_phone_number_title_active)
-                val title = getString(R.string.app_phone_number_title)
-                val date = DateManager.getPhoneNumberActive()
-                val activeTitle = String.format(activeTitleFormat, title, date)
-
-                selectedData.title = activeTitle
+                setPhoneNumber(selectedData, phoneNumberList)
                 startTest(selectedData, ActivityModeTest.NORMAL)
             }
 
@@ -348,6 +338,33 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                     .show()
             }
         }
+
+    private fun clearPhoneNumber(data: MainData) {
+        val title = getString(R.string.app_phone_number_title)
+        val contentList = data.contentList
+
+        data.title = title
+        contentList.clear()
+    }
+
+    private fun setPhoneNumber(data: MainData, phoneNumberList: List<ContactPhoneNumberData>) {
+        val contentList = data.contentList
+
+        for (phoneNumber in phoneNumberList) {
+            val problem = phoneNumber.name
+            val answer = phoneNumber.phoneNumber
+
+            val content = MainDataContent(problem, answer, TestCheck.NONE)
+            contentList.add(content)
+        }
+
+        val activeTitleFormat = getString(R.string.app_phone_number_title_active)
+        val title = getString(R.string.app_phone_number_title)
+        val date = DateManager.getPhoneNumberActive()
+        val activeTitle = String.format(activeTitleFormat, title, date)
+
+        data.title = activeTitle
+    }
 
     override fun onItemSelected(size: Int) {
         when (size) {
@@ -587,6 +604,29 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             return
         }
 
+        val hashSet = HashSet<String>()
+        for (data in dataList) {
+            val title = data.title
+            if (hashSet.contains(title)) {
+                val errorFormat = getString(R.string.app_toolBar_menu_file_save_error_title_overlap)
+                val errorMessage = String.format(errorFormat, title)
+                AlertDialogManager.show(this, errorMessage)
+                return
+            }
+
+            hashSet.add(title)
+        }
+
+        val message = getString(R.string.app_toolBar_menu_file_save_progress_message)
+        ProgressDialogManager.show(this, message)
+
+        for (data in dataList) {
+            if (data.dataType == DataType.PHONE && data.dataTypePhone == DataTypePhone.NUMBER) {
+                handlePhoneNumberExcelSave(data)
+            }
+        }
+        refreshContentView(MainDataManager.dataList)
+
         val appName = getString(R.string.app_name)
         val date = DateManager.getExcelFileName()
 
@@ -594,12 +634,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val fileNameFormat = getString(R.string.app_file_name_format)
         val fileName = String.format(fileNameFormat, appName, date, fileExtension)
 
-        val message = getString(R.string.app_toolBar_menu_file_save_progress_message)
-        ProgressDialogManager.show(this, message)
-
         Handler().postDelayed({
             val filePath = ExcelManager.filePath
-            val thread = ExcelFileSaveThread(this, dataList, filePath, fileName)
+            val thread = ExcelFileSaveThread(dataList, filePath, fileName)
             thread.start()
             thread.join()
 
@@ -607,7 +644,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             if (exception != null) {
                 val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
                 val errorMessage = String.format(errorFormat, exception)
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+
+                AlertDialogManager.show(this, errorMessage)
                 ProgressDialogManager.hide()
 
                 val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_SAVE_ERROR.get()
@@ -638,7 +676,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 file.name,
                 file.name,
                 false,
-                "application/vnd.ms-excel",
+                ExcelManager.fileMimeType,
                 file.absolutePath,
                 file.length(),
                 true
@@ -657,9 +695,36 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 completeMessage,
                 Toast.LENGTH_SHORT
             ).show()
+
             ProgressDialogManager.hide()
 
         }, threadDelay)
+    }
+
+    private fun handlePhoneNumberExcelSave(data: MainData) {
+        if (data.contentList.isEmpty()) {
+            return
+        }
+
+        clearPhoneNumber(data)
+        val phoneNumberList = ContactManager.getPhoneNumberList(this@MainActivity)
+
+        if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
+            val errorMessage = ContactManager.ERROR_MESSAGE
+            Toast.makeText(
+                this@MainActivity,
+                errorMessage,
+                Toast.LENGTH_SHORT
+            ).show()
+
+            val name = FirebaseAnalyticsEventName.PHONE_NUMBER_LOAD_ERROR_EXCEL_SAVE.get()
+            val bundle = Bundle()
+            bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
+            firebaseAnalytics.logEvent(name, bundle)
+            return
+        }
+
+        setPhoneNumber(data, phoneNumberList)
     }
 
     private fun checkFileLoadPermission() {
@@ -724,7 +789,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                     if (exception != null) {
                         val errorFormat = getString(R.string.app_toolBar_menu_file_load_error)
                         val errorMessage = String.format(errorFormat, exception)
-                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+
+                        AlertDialogManager.show(this, errorMessage)
                         ProgressDialogManager.hide()
 
                         val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_LOAD_ERROR.get()
