@@ -1,16 +1,12 @@
 package com.dy.memorygod.thread
 
-import android.content.Context
-import com.dy.memorygod.R
 import com.dy.memorygod.data.MainData
-import com.dy.memorygod.enums.DataType
 import com.dy.memorygod.manager.ExcelManager
 import org.apache.poi.xssf.streaming.SXSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
 
 class ExcelFileSaveThread(
-    private val context: Context,
     private val dataList: List<MainData>,
     private val filePath: File,
     private val fileName: String
@@ -29,7 +25,7 @@ class ExcelFileSaveThread(
             workbook = SXSSFWorkbook()
 
             for (data in dataList) {
-                val title = getTitle(context, data)
+                val title = data.title
                 val contentList = data.contentList
                 val sheet = workbook.createSheet(title)
 
@@ -62,18 +58,6 @@ class ExcelFileSaveThread(
 
             if (this::outputStream.isInitialized) {
                 outputStream.close()
-            }
-        }
-    }
-
-    private fun getTitle(context: Context, data: MainData): String {
-        return when (data.dataType) {
-            DataType.NORMAL -> {
-                data.title
-            }
-            DataType.PHONE -> {
-                val format = context.getString(R.string.app_file_copy_title_format)
-                String.format(format, data.title)
             }
         }
     }

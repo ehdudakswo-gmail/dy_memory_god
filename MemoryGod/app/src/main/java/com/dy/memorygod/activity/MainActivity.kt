@@ -587,6 +587,22 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             return
         }
 
+        val hashSet = HashSet<String>()
+        for (data in dataList) {
+            val title = data.title
+            if (hashSet.contains(title)) {
+                val errorFormat = getString(R.string.app_toolBar_menu_file_save_error_title_overlap)
+                val errorMessage = String.format(errorFormat, title)
+                AlertDialogManager.show(this, errorMessage)
+                return
+            }
+
+            hashSet.add(title)
+        }
+
+        val message = getString(R.string.app_toolBar_menu_file_save_progress_message)
+        ProgressDialogManager.show(this, message)
+
         val appName = getString(R.string.app_name)
         val date = DateManager.getExcelFileName()
 
@@ -594,12 +610,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val fileNameFormat = getString(R.string.app_file_name_format)
         val fileName = String.format(fileNameFormat, appName, date, fileExtension)
 
-        val message = getString(R.string.app_toolBar_menu_file_save_progress_message)
-        ProgressDialogManager.show(this, message)
-
         Handler().postDelayed({
             val filePath = ExcelManager.filePath
-            val thread = ExcelFileSaveThread(this, dataList, filePath, fileName)
+            val thread = ExcelFileSaveThread(dataList, filePath, fileName)
             thread.start()
             thread.join()
 
@@ -607,7 +620,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             if (exception != null) {
                 val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
                 val errorMessage = String.format(errorFormat, exception)
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+
+                AlertDialogManager.show(this, errorMessage)
                 ProgressDialogManager.hide()
 
                 val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_SAVE_ERROR.get()
@@ -724,7 +738,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                     if (exception != null) {
                         val errorFormat = getString(R.string.app_toolBar_menu_file_load_error)
                         val errorMessage = String.format(errorFormat, exception)
-                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+
+                        AlertDialogManager.show(this, errorMessage)
                         ProgressDialogManager.hide()
 
                         val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_LOAD_ERROR.get()

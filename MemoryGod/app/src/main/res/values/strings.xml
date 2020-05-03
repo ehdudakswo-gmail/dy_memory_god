@@ -2,7 +2,6 @@
     <string name="app_name">암기신</string>
     <string name="app_permission_request">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
     <string name="app_content_description_item_reorder">아이템 이동</string>
-    <string name="admob_app_id">ca-app-pub-9781828508992303~2035825882</string>
 
     <string name="app_phone_number_title">전화번호</string>
     <string name="app_phone_number_title_active">%s (%s)</string>
@@ -16,7 +15,6 @@
 
     <string name="app_directory">%s 폴더</string>
     <string name="app_file_name_format">%s (%s)%s</string>
-    <string name="app_file_copy_title_format">%s 사본</string>
     <string name="app_file_save_data_none">저장할 데이터가 없습니다.</string>
     <string name="app_file_load_data_none">%s 파일이 없습니다. (%s)</string>
     <string name="app_file_load_data_title">데이터 추가</string>
@@ -47,6 +45,7 @@
     <string name="app_toolBar_menu_file_save_progress_message">파일을 저장중입니다.</string>
     <string name="app_toolBar_menu_file_save_complete">파일 저장 완료 (%s)</string>
     <string name="app_toolBar_menu_file_save_error">파일 저장 에러 (%s)</string>
+    <string name="app_toolBar_menu_file_save_error_title_overlap">아이템 이름 중복은 불가능합니다. (%s)</string>
     <string name="app_toolBar_menu_file_save_error_file_none">FILE NONE</string>
     <string name="app_toolBar_menu_file_load_progress_message">파일을 로딩중입니다.</string>
     <string name="app_toolBar_menu_file_load_error">파일 열기 에러 (%s)</string>
