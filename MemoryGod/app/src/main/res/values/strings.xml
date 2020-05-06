@@ -30,6 +30,7 @@
     <string name="app_dialog_all_selection_flag">전체선택/해제</string>
 
     <string name="app_toolBar_menu_add">추가</string>
+    <string name="app_toolBar_menu_copy">복사</string>
     <string name="app_toolBar_menu_edit">수정</string>
     <string name="app_toolBar_menu_delete">삭제</string>
     <string name="app_toolBar_menu_sort">정렬</string>
@@ -53,8 +54,13 @@
     <string name="app_item_empty">아이템이 없습니다.</string>
     <string name="app_item_input_empty">입력값이 필요합니다.</string>
     <string name="app_item_edit_not_allowed">편집이 불가능한 데이터입니다.</string>
+    <string name="app_item_edit_not_allowed_init_message_format">%s 데이터는 편집 내용이 저장되지 않습니다. 편집 적용을 원하시면 아이템 복사 기능을 활용해주세요.</string>
     <string name="app_item_edit_selection_empty">수정할 아이템을 선택해주세요.</string>
     <string name="app_item_edit_selection_one_request">수정할 아이템을 1개만 선택해주세요.</string>
+    <string name="app_item_copy_selection_empty">복사할 아이템을 선택해주세요.</string>
+    <string name="app_item_copy_selection_one_request">복사할 아이템을 1개만 선택해주세요.</string>
+    <string name="app_item_copy_not_found">copy error (idx -1)</string>
+    <string name="app_item_copy_title_format">%s 복사</string>
     <string name="app_item_delete_selection_empty">삭제할 아이템을 선택해주세요.</string>
     <string name="app_item_delete_selection_not_allowed">삭제가 불가능한 아이템이 있습니다. (%s) </string>
     <string name="app_item_delete_check_message">%d개 아이템을 영구적으로 삭제합니다.</string>

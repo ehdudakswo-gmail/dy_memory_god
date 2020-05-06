@@ -413,6 +413,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             R.id.main_toolBar_menu_add -> {
                 handleItemAdd()
             }
+            R.id.main_toolBar_menu_copy -> {
+                handleItemCopy()
+            }
             R.id.main_toolBar_menu_delete -> {
                 when (recyclerViewAdapter.getSelectionSize()) {
                     0 -> {
@@ -420,8 +423,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                             this,
                             R.string.app_item_delete_selection_empty,
                             Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        ).show()
                     }
                     else -> {
                         val selectedDataList = recyclerViewAdapter.getSelectedList()
@@ -508,6 +510,47 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             .show()
 
         dialog.setCanceledOnTouchOutside(false)
+    }
+
+    private fun handleItemCopy() {
+        when (recyclerViewAdapter.getSelectionSize()) {
+            0 -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_copy_selection_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            1 -> {
+                val dataList = recyclerViewAdapter.dataList
+                val selectedDataList = recyclerViewAdapter.getSelectedList()
+                val selectedData = selectedDataList[0]
+                val selectedIdx = dataList.indexOf(selectedData)
+
+                if (selectedIdx == -1) {
+                    Toast.makeText(this, R.string.app_item_copy_not_found, Toast.LENGTH_SHORT)
+                        .show()
+                    return
+                }
+
+                refreshPhoneData(dataList)
+
+                val copyIdx = selectedIdx + 1
+                val copyData = ItemCopyManager.create(this, selectedData)
+
+                dataList.add(copyIdx, copyData)
+                recyclerViewAdapter.clearSelection()
+                recyclerViewAdapter.select(copyData)
+                refreshContentView(dataList)
+            }
+            else -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_copy_selection_one_request,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     private fun handleItemDelete(selectedDataList: List<MainData>) {
@@ -610,12 +653,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val message = getString(R.string.app_toolBar_menu_file_save_progress_message)
         ProgressDialogManager.show(this, message)
 
-        for (data in dataList) {
-            if (data.dataType == DataType.PHONE && data.dataTypePhone == DataTypePhone.NUMBER) {
-                handlePhoneNumberExcelSave(data)
-            }
-        }
-        refreshContentView(MainDataManager.dataList)
+        refreshPhoneData(dataList)
 
         val appName = getString(R.string.app_name)
         val date = DateManager.getExcelFileName()
@@ -691,7 +729,15 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }, threadDelay)
     }
 
-    private fun handlePhoneNumberExcelSave(data: MainData) {
+    private fun refreshPhoneData(dataList: MutableList<MainData>) {
+        for (data in dataList) {
+            if (data.dataType == DataType.PHONE && data.dataTypePhone == DataTypePhone.NUMBER) {
+                refreshPhoneNumber(data)
+            }
+        }
+    }
+
+    private fun refreshPhoneNumber(data: MainData) {
         if (data.contentList.isEmpty()) {
             return
         }
@@ -707,7 +753,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 Toast.LENGTH_SHORT
             ).show()
 
-            val name = FirebaseAnalyticsEventName.PHONE_NUMBER_LOAD_ERROR_EXCEL_SAVE.get()
+            val name = FirebaseAnalyticsEventName.PHONE_NUMBER_REFRESH_ERROR.get()
             val bundle = Bundle()
             bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
             firebaseAnalytics.logEvent(name, bundle)

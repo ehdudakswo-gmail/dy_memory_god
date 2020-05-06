@@ -17,6 +17,7 @@ import com.dy.memorygod.adapter.TestRecyclerViewAdapter
 import com.dy.memorygod.adapter.TestRecyclerViewEventListener
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
+import com.dy.memorygod.manager.AlertDialogManager
 import com.dy.memorygod.manager.KeyboardManager
 import com.dy.memorygod.manager.MainDataManager
 import com.dy.memorygod.manager.TestManager
@@ -41,6 +42,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         setToolbar()
         setRecyclerView()
         setOnClickListener()
+        showInitMessage()
         refreshMode()
     }
 
@@ -111,6 +113,21 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         frameLayout_test_content.setOnClickListener {
             KeyboardManager.hide(this, frameLayout_test_content)
+        }
+    }
+
+    private fun showInitMessage() {
+        when (selectedData.dataType) {
+            DataType.NORMAL -> {
+            }
+            DataType.PHONE -> {
+                val phoneDataMessageFormat =
+                    getString(R.string.app_item_edit_not_allowed_init_message_format)
+                val title = selectedData.title
+
+                val phoneDataMessage = String.format(phoneDataMessageFormat, title)
+                AlertDialogManager.show(this, phoneDataMessage)
+            }
         }
     }
 
