@@ -340,10 +340,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
 
     private fun clearPhoneNumber(data: MainData) {
-        val title = getString(R.string.app_phone_number_title)
         val contentList = data.contentList
-
-        data.title = title
         contentList.clear()
     }
 
@@ -357,13 +354,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             val content = MainDataContent(problem, answer, TestCheck.NONE)
             contentList.add(content)
         }
-
-        val activeTitleFormat = getString(R.string.app_phone_number_title_active)
-        val title = getString(R.string.app_phone_number_title)
-        val date = DateManager.getPhoneNumberActive()
-        val activeTitle = String.format(activeTitleFormat, title, date)
-
-        data.title = activeTitle
     }
 
     override fun onItemSelected(size: Int) {
@@ -423,60 +413,17 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             R.id.main_toolBar_menu_add -> {
                 handleItemAdd()
             }
+            R.id.main_toolBar_menu_copy -> {
+                handleItemCopy()
+            }
             R.id.main_toolBar_menu_delete -> {
-                when (recyclerViewAdapter.getSelectionSize()) {
-                    0 -> {
-                        Toast.makeText(
-                            this,
-                            R.string.app_item_delete_selection_empty,
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                    else -> {
-                        val selectedDataList = recyclerViewAdapter.getSelectedList()
-                        val phoneData = selectedDataList.find { it.dataType == DataType.PHONE }
-
-                        if (phoneData != null) {
-                            val format =
-                                getString(R.string.app_item_delete_selection_not_allowed)
-                            val title = phoneData.title
-                            val message = String.format(format, title)
-                            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                            return true
-                        }
-
-                        handleItemDelete(selectedDataList)
-                    }
-                }
+                handleItemDelete()
             }
             R.id.main_toolBar_menu_sort -> {
-                if (recyclerViewAdapter.itemCount == 0) {
-                    Toast.makeText(
-                        this,
-                        R.string.app_toolBar_menu_sort_data_empty,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return true
-                }
-
-                recyclerViewAdapter.clearSelection()
-                val intent = Intent(this@MainActivity, MainSortActivity::class.java)
-                startActivityForResult(intent, RequestCode.MAIN_SORT.get())
+                handleItemSort()
             }
             R.id.main_toolBar_menu_search -> {
-                if (recyclerViewAdapter.itemCount == 0) {
-                    Toast.makeText(
-                        this,
-                        R.string.app_toolBar_menu_search_data_empty,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return true
-                }
-
-                recyclerViewAdapter.clearSelection()
-                val intent = Intent(this@MainActivity, MainSearchActivity::class.java)
-                startActivityForResult(intent, RequestCode.MAIN_SEARCH.get())
+                handleItemSearch()
             }
             R.id.main_toolBar_menu_select_all -> {
                 recyclerViewAdapter.selectAll()
@@ -520,6 +467,74 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         dialog.setCanceledOnTouchOutside(false)
     }
 
+    private fun handleItemCopy() {
+        when (recyclerViewAdapter.getSelectionSize()) {
+            0 -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_copy_selection_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            1 -> {
+                val dataList = recyclerViewAdapter.dataList
+                val selectedDataList = recyclerViewAdapter.getSelectedList()
+                val selectedData = selectedDataList[0]
+                val selectedIdx = dataList.indexOf(selectedData)
+
+                if (selectedIdx == -1) {
+                    Toast.makeText(this, R.string.app_item_copy_not_found, Toast.LENGTH_SHORT)
+                        .show()
+                    return
+                }
+
+                refreshPhoneData(dataList)
+
+                val copyIdx = selectedIdx + 1
+                val copyData = ItemCopyManager.create(this, selectedData)
+
+                dataList.add(copyIdx, copyData)
+                recyclerViewAdapter.clearSelection()
+                recyclerViewAdapter.select(copyData)
+                refreshContentView(dataList)
+            }
+            else -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_copy_selection_one_request,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun handleItemDelete() {
+        when (recyclerViewAdapter.getSelectionSize()) {
+            0 -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_delete_selection_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else -> {
+                val selectedDataList = recyclerViewAdapter.getSelectedList()
+                val phoneData = selectedDataList.find { it.dataType == DataType.PHONE }
+
+                if (phoneData != null) {
+                    val format =
+                        getString(R.string.app_item_delete_selection_not_allowed)
+                    val title = phoneData.title
+                    val message = String.format(format, title)
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    return
+                }
+
+                handleItemDelete(selectedDataList)
+            }
+        }
+    }
+
     private fun handleItemDelete(selectedDataList: List<MainData>) {
         val selectionSize = recyclerViewAdapter.getSelectionSize()
         val messageFormat = getString(R.string.app_item_delete_check_message)
@@ -549,9 +564,34 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
     }
 
-    private fun refreshView() {
-        refreshContentView(recyclerViewAdapter.dataList)
+    private fun handleItemSort() {
+        if (recyclerViewAdapter.itemCount == 0) {
+            Toast.makeText(
+                this,
+                R.string.app_toolBar_menu_sort_data_empty,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
         recyclerViewAdapter.clearSelection()
+        val intent = Intent(this@MainActivity, MainSortActivity::class.java)
+        startActivityForResult(intent, RequestCode.MAIN_SORT.get())
+    }
+
+    private fun handleItemSearch() {
+        if (recyclerViewAdapter.itemCount == 0) {
+            Toast.makeText(
+                this,
+                R.string.app_toolBar_menu_search_data_empty,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        recyclerViewAdapter.clearSelection()
+        val intent = Intent(this@MainActivity, MainSearchActivity::class.java)
+        startActivityForResult(intent, RequestCode.MAIN_SEARCH.get())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -620,12 +660,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val message = getString(R.string.app_toolBar_menu_file_save_progress_message)
         ProgressDialogManager.show(this, message)
 
-        for (data in dataList) {
-            if (data.dataType == DataType.PHONE && data.dataTypePhone == DataTypePhone.NUMBER) {
-                handlePhoneNumberExcelSave(data)
-            }
-        }
-        refreshContentView(MainDataManager.dataList)
+        refreshPhoneData(dataList)
 
         val appName = getString(R.string.app_name)
         val date = DateManager.getExcelFileName()
@@ -701,7 +736,15 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }, threadDelay)
     }
 
-    private fun handlePhoneNumberExcelSave(data: MainData) {
+    private fun refreshPhoneData(dataList: MutableList<MainData>) {
+        for (data in dataList) {
+            if (data.dataType == DataType.PHONE && data.dataTypePhone == DataTypePhone.NUMBER) {
+                refreshPhoneNumber(data)
+            }
+        }
+    }
+
+    private fun refreshPhoneNumber(data: MainData) {
         if (data.contentList.isEmpty()) {
             return
         }
@@ -717,7 +760,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 Toast.LENGTH_SHORT
             ).show()
 
-            val name = FirebaseAnalyticsEventName.PHONE_NUMBER_LOAD_ERROR_EXCEL_SAVE.get()
+            val name = FirebaseAnalyticsEventName.PHONE_NUMBER_REFRESH_ERROR.get()
             val bundle = Bundle()
             bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
             firebaseAnalytics.logEvent(name, bundle)
@@ -890,6 +933,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             .show()
 
         dialog.setCanceledOnTouchOutside(false)
+    }
+
+    private fun refreshView() {
+        refreshContentView(recyclerViewAdapter.dataList)
+        recyclerViewAdapter.clearSelection()
     }
 
 }

@@ -9,6 +9,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/main_toolBar_menu_copy"
+        android:title="@string/app_toolBar_menu_copy"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/main_toolBar_menu_delete"
         android:title="@string/app_toolBar_menu_delete"
         app:showAsAction="never" />

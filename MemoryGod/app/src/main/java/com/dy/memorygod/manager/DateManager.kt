@@ -12,8 +12,4 @@ object DateManager {
         return SimpleDateFormat(pattern, locale).format(Date())
     }
 
-    fun getPhoneNumberActive(): Any {
-        return getExcelFileName()
-    }
-
 }
