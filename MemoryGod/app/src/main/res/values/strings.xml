@@ -4,7 +4,6 @@
     <string name="app_content_description_item_reorder">아이템 이동</string>
 
     <string name="app_phone_number_title">전화번호</string>
-    <string name="app_phone_number_title_active">%s (%s)</string>
     <string name="app_sample_title">영어단어 샘플</string>
     <string name="app_sample_content1_problem">Apple</string>
     <string name="app_sample_content1_answer">사과</string>

@@ -340,10 +340,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
 
     private fun clearPhoneNumber(data: MainData) {
-        val title = getString(R.string.app_phone_number_title)
         val contentList = data.contentList
-
-        data.title = title
         contentList.clear()
     }
 
@@ -357,13 +354,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             val content = MainDataContent(problem, answer, TestCheck.NONE)
             contentList.add(content)
         }
-
-        val activeTitleFormat = getString(R.string.app_phone_number_title_active)
-        val title = getString(R.string.app_phone_number_title)
-        val date = DateManager.getPhoneNumberActive()
-        val activeTitle = String.format(activeTitleFormat, title, date)
-
-        data.title = activeTitle
     }
 
     override fun onItemSelected(size: Int) {
