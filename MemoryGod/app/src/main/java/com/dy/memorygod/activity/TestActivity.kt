@@ -332,94 +332,22 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 handleItemAdd()
             }
             R.id.test_toolBar_menu_edit -> {
-                when (recyclerViewAdapter.getSelectionSize()) {
-                    0 -> {
-                        Toast.makeText(
-                            this,
-                            R.string.app_item_edit_selection_empty,
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                    1 -> {
-                        val selectedDataList = recyclerViewAdapter.getSelectedList()
-                        val selectedData = selectedDataList[0]
-                        handleItem(ItemState.EDIT, selectedData)
-                    }
-                    else -> {
-                        Toast.makeText(
-                            this,
-                            R.string.app_item_edit_selection_one_request,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
+                handleItemEdit()
             }
             R.id.test_toolBar_menu_delete -> {
-                when (recyclerViewAdapter.getSelectionSize()) {
-                    0 -> {
-                        Toast.makeText(
-                            this,
-                            R.string.app_item_delete_selection_empty,
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                    else -> {
-                        handleItemDelete()
-                    }
-                }
+                handleItemDelete()
             }
             R.id.test_toolBar_menu_sort -> {
-                if (recyclerViewAdapter.itemCount == 0) {
-                    Toast.makeText(
-                        this,
-                        R.string.app_toolBar_menu_sort_data_empty,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return true
-                }
-
-                recyclerViewAdapter.clearSelection()
-                val intent = Intent(this@TestActivity, TestSortActivity::class.java)
-                startActivityForResult(intent, RequestCode.TEST_SORT.get())
+                handleItemSort()
             }
             R.id.test_toolBar_menu_search -> {
-                if (recyclerViewAdapter.itemCount == 0) {
-                    Toast.makeText(
-                        this,
-                        R.string.app_toolBar_menu_search_data_empty,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return true
-                }
-
-                recyclerViewAdapter.clearSelection()
-                val intent = Intent(this@TestActivity, TestSearchActivity::class.java)
-                startActivityForResult(intent, RequestCode.TEST_SEARCH.get())
+                handleItemSearch()
             }
             R.id.test_toolBar_menu_select_all -> {
                 recyclerViewAdapter.selectAll()
             }
             R.id.test_toolBar_menu_test_check_init -> {
-                when (recyclerViewAdapter.getSelectionSize()) {
-                    0 -> {
-                        Toast.makeText(
-                            this,
-                            R.string.test_item_test_check_init_selection_empty,
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                    else -> {
-                        val selectedDataList = recyclerViewAdapter.getSelectedList()
-                        for (selectedData in selectedDataList) {
-                            selectedData.testCheck = TestCheck.NONE
-                        }
-
-                        refreshView()
-                    }
-                }
+                handleTestCheckInit()
             }
         }
 
@@ -508,7 +436,47 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
     }
 
+    private fun handleItemEdit() {
+        when (recyclerViewAdapter.getSelectionSize()) {
+            0 -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_edit_selection_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            1 -> {
+                val selectedDataList = recyclerViewAdapter.getSelectedList()
+                val selectedData = selectedDataList[0]
+                handleItem(ItemState.EDIT, selectedData)
+            }
+            else -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_edit_selection_one_request,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
     private fun handleItemDelete() {
+        when (recyclerViewAdapter.getSelectionSize()) {
+            0 -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_delete_selection_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else -> {
+                val selectedDataList = recyclerViewAdapter.getSelectedList()
+                handleItemDelete(selectedDataList)
+            }
+        }
+    }
+
+    private fun handleItemDelete(selectedDataList: List<MainDataContent>) {
         val selectionSize = recyclerViewAdapter.getSelectionSize()
         val messageFormat = getString(R.string.app_item_delete_check_message)
         val message = String.format(messageFormat, selectionSize)
@@ -523,7 +491,6 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         dialog.setCanceledOnTouchOutside(false)
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val dataList = recyclerViewAdapter.dataList
-            val selectedDataList = recyclerViewAdapter.getSelectedList()
 
             for (selectedData in selectedDataList) {
                 dataList.remove(selectedData)
@@ -538,9 +505,34 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
     }
 
-    private fun refreshView() {
-        refreshContentView(recyclerViewAdapter.dataList)
+    private fun handleItemSort() {
+        if (recyclerViewAdapter.itemCount == 0) {
+            Toast.makeText(
+                this,
+                R.string.app_toolBar_menu_sort_data_empty,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
         recyclerViewAdapter.clearSelection()
+        val intent = Intent(this@TestActivity, TestSortActivity::class.java)
+        startActivityForResult(intent, RequestCode.TEST_SORT.get())
+    }
+
+    private fun handleItemSearch() {
+        if (recyclerViewAdapter.itemCount == 0) {
+            Toast.makeText(
+                this,
+                R.string.app_toolBar_menu_search_data_empty,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        recyclerViewAdapter.clearSelection()
+        val intent = Intent(this@TestActivity, TestSearchActivity::class.java)
+        startActivityForResult(intent, RequestCode.TEST_SEARCH.get())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -556,6 +548,31 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 recyclerViewAdapter.select(searchData)
             }
         }
+    }
+
+    private fun handleTestCheckInit() {
+        when (recyclerViewAdapter.getSelectionSize()) {
+            0 -> {
+                Toast.makeText(
+                    this,
+                    R.string.test_item_test_check_init_selection_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else -> {
+                val selectedDataList = recyclerViewAdapter.getSelectedList()
+                for (selectedData in selectedDataList) {
+                    selectedData.testCheck = TestCheck.NONE
+                }
+
+                refreshView()
+            }
+        }
+    }
+
+    private fun refreshView() {
+        refreshContentView(recyclerViewAdapter.dataList)
+        recyclerViewAdapter.clearSelection()
     }
 
 }

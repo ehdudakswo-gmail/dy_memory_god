@@ -417,58 +417,13 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 handleItemCopy()
             }
             R.id.main_toolBar_menu_delete -> {
-                when (recyclerViewAdapter.getSelectionSize()) {
-                    0 -> {
-                        Toast.makeText(
-                            this,
-                            R.string.app_item_delete_selection_empty,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    else -> {
-                        val selectedDataList = recyclerViewAdapter.getSelectedList()
-                        val phoneData = selectedDataList.find { it.dataType == DataType.PHONE }
-
-                        if (phoneData != null) {
-                            val format =
-                                getString(R.string.app_item_delete_selection_not_allowed)
-                            val title = phoneData.title
-                            val message = String.format(format, title)
-                            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                            return true
-                        }
-
-                        handleItemDelete(selectedDataList)
-                    }
-                }
+                handleItemDelete()
             }
             R.id.main_toolBar_menu_sort -> {
-                if (recyclerViewAdapter.itemCount == 0) {
-                    Toast.makeText(
-                        this,
-                        R.string.app_toolBar_menu_sort_data_empty,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return true
-                }
-
-                recyclerViewAdapter.clearSelection()
-                val intent = Intent(this@MainActivity, MainSortActivity::class.java)
-                startActivityForResult(intent, RequestCode.MAIN_SORT.get())
+                handleItemSort()
             }
             R.id.main_toolBar_menu_search -> {
-                if (recyclerViewAdapter.itemCount == 0) {
-                    Toast.makeText(
-                        this,
-                        R.string.app_toolBar_menu_search_data_empty,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return true
-                }
-
-                recyclerViewAdapter.clearSelection()
-                val intent = Intent(this@MainActivity, MainSearchActivity::class.java)
-                startActivityForResult(intent, RequestCode.MAIN_SEARCH.get())
+                handleItemSearch()
             }
             R.id.main_toolBar_menu_select_all -> {
                 recyclerViewAdapter.selectAll()
@@ -553,6 +508,33 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
     }
 
+    private fun handleItemDelete() {
+        when (recyclerViewAdapter.getSelectionSize()) {
+            0 -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_delete_selection_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else -> {
+                val selectedDataList = recyclerViewAdapter.getSelectedList()
+                val phoneData = selectedDataList.find { it.dataType == DataType.PHONE }
+
+                if (phoneData != null) {
+                    val format =
+                        getString(R.string.app_item_delete_selection_not_allowed)
+                    val title = phoneData.title
+                    val message = String.format(format, title)
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    return
+                }
+
+                handleItemDelete(selectedDataList)
+            }
+        }
+    }
+
     private fun handleItemDelete(selectedDataList: List<MainData>) {
         val selectionSize = recyclerViewAdapter.getSelectionSize()
         val messageFormat = getString(R.string.app_item_delete_check_message)
@@ -582,9 +564,34 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
     }
 
-    private fun refreshView() {
-        refreshContentView(recyclerViewAdapter.dataList)
+    private fun handleItemSort() {
+        if (recyclerViewAdapter.itemCount == 0) {
+            Toast.makeText(
+                this,
+                R.string.app_toolBar_menu_sort_data_empty,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
         recyclerViewAdapter.clearSelection()
+        val intent = Intent(this@MainActivity, MainSortActivity::class.java)
+        startActivityForResult(intent, RequestCode.MAIN_SORT.get())
+    }
+
+    private fun handleItemSearch() {
+        if (recyclerViewAdapter.itemCount == 0) {
+            Toast.makeText(
+                this,
+                R.string.app_toolBar_menu_search_data_empty,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        recyclerViewAdapter.clearSelection()
+        val intent = Intent(this@MainActivity, MainSearchActivity::class.java)
+        startActivityForResult(intent, RequestCode.MAIN_SEARCH.get())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -926,6 +933,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             .show()
 
         dialog.setCanceledOnTouchOutside(false)
+    }
+
+    private fun refreshView() {
+        refreshContentView(recyclerViewAdapter.dataList)
+        recyclerViewAdapter.clearSelection()
     }
 
 }
