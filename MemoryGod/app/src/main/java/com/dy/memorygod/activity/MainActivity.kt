@@ -96,7 +96,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setAD() {
-        MobileAds.initialize(this) {}
+        val appID = getString(R.string.admob_app_id)
+        MobileAds.initialize(this, appID)
 
         val adView = adView_main
         val adRequest = AdRequest.Builder().build()
@@ -111,6 +112,14 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val bundle = Bundle()
                 bundle.putInt(FirebaseAnalyticsEventParam.INT_VALUE.get(), p0)
                 firebaseAnalytics.logEvent(nameWithValue, bundle)
+
+                Toast.makeText(this@MainActivity, nameWithValue, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, appID, Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MainActivity,
+                    getString(R.string.admob_main_banner_id),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
