@@ -107,9 +107,10 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 super.onAdFailedToLoad(p0)
 
                 val name = FirebaseAnalyticsEventName.AD_FAILED_TO_LOAD.get()
+                val nameWithValue = "${name}_${p0}"
                 val bundle = Bundle()
                 bundle.putInt(FirebaseAnalyticsEventParam.INT_VALUE.get(), p0)
-                firebaseAnalytics.logEvent(name, bundle)
+                firebaseAnalytics.logEvent(nameWithValue, bundle)
             }
         }
     }
