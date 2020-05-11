@@ -12,8 +12,8 @@ android {
         applicationId "com.dy.memorygod"
         minSdkVersion 26
         targetSdkVersion 28
-        versionCode 6
-        versionName "1.2.3"
+        versionCode 7
+        versionName "1.2.4"
 
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -63,6 +63,7 @@ dependencies {
     kaptTest "android.arch.persistence.room:testing:1.1.1"
 
     implementation 'com.google.android.gms:play-services-ads:19.1.0'
+    implementation 'com.google.firebase:firebase-ads:19.1.0'
     implementation 'com.google.firebase:firebase-analytics:17.4.0'
     implementation 'com.google.firebase:firebase-core:17.4.0'
     implementation('com.crashlytics.sdk.android:crashlytics:2.10.1')
