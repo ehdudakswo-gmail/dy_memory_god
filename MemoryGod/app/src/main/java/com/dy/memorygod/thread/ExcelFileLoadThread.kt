@@ -47,16 +47,12 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
                     var problem = problemCell.toString().trim()
                     var answer = answerCell.toString().trim()
 
-                    problem.toDoubleOrNull()?.let {
-                        if (it == kotlin.math.floor(it)) {
-                            problem = it.toLong().toString()
-                        }
+                    if (isIntValue(problem)) {
+                        problem = toIntValue(problem)
                     }
 
-                    answer.toDoubleOrNull()?.let {
-                        if (it == kotlin.math.floor(it)) {
-                            answer = it.toLong().toString()
-                        }
+                    if (isIntValue(answer)) {
+                        answer = toIntValue(answer)
                     }
 
                     val content = MainDataContent(problem, answer, TestCheck.NONE)
@@ -78,6 +74,23 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
                 inputStream.close()
             }
         }
+    }
+
+    private fun isIntValue(str: String): Boolean {
+        str.toDoubleOrNull()?.let { doubleValue ->
+            return doubleValue == kotlin.math.floor(doubleValue)
+        }
+
+        return false
+    }
+
+    private fun toIntValue(str: String): String {
+        val pointIdx = str.indexOf(".")
+        if (pointIdx != -1) {
+            return str.substring(0, pointIdx)
+        }
+
+        return str
     }
 
 }
