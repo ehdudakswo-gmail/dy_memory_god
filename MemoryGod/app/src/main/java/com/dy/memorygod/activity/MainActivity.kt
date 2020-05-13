@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setAD() {
-        MobileAds.initialize(this)
+        MobileAds.initialize(this) {}
 
         val adView = adView_main
         val adRequest = AdRequest.Builder().build()
