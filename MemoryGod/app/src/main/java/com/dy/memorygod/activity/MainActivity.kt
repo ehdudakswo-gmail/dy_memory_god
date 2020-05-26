@@ -103,13 +103,13 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         adView.loadAd(adRequest)
         adView.adListener = object : AdListener() {
-            override fun onAdFailedToLoad(p0: Int) {
-                super.onAdFailedToLoad(p0)
+            override fun onAdFailedToLoad(errorCode: Int) {
+                super.onAdFailedToLoad(errorCode)
 
                 val name = FirebaseAnalyticsEventName.AD_FAILED_TO_LOAD.get()
-                val nameWithValue = "${name}_${p0}"
+                val nameWithValue = "${name}_${errorCode}"
                 val bundle = Bundle()
-                bundle.putInt(FirebaseAnalyticsEventParam.INT_VALUE.get(), p0)
+                bundle.putInt(FirebaseAnalyticsEventParam.INT_VALUE.get(), errorCode)
                 firebaseAnalytics.logEvent(nameWithValue, bundle)
             }
         }

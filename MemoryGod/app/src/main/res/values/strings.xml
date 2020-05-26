@@ -101,4 +101,7 @@
     <string name="test_sort_toolBar_menu_test_check">채점 순</string>
     <string name="test_sort_toolBar_menu_test_check_reverse">채점 역순</string>
 
+    <string name="admob_app_id">ca-app-pub-9781828508992303~2035825882</string>
+    <string name="admob_main_banner_id">ca-app-pub-9781828508992303/2383206015</string>
+
 </resources>
