@@ -1,1 +1,1 @@
-# dy_memory_god
+https://play.google.com/store/apps/details?id=com.dy.memorygod
