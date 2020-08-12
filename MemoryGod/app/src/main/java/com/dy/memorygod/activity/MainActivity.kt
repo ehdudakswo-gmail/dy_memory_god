@@ -16,7 +16,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.crashlytics.android.Crashlytics
 import com.dy.memorygod.R
 import com.dy.memorygod.adapter.MainRecyclerViewAdapter
 import com.dy.memorygod.adapter.MainRecyclerViewEventListener
@@ -35,7 +34,6 @@ import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
-import io.fabric.sdk.android.Fabric
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -54,7 +52,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Fabric.with(this, Crashlytics())
         setToolbar()
         setAD()
         setDefaultData()
