@@ -283,6 +283,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 }
             }
         }
+
+        val name = FirebaseAnalyticsEventName.MAIN_ITEM_CLICK.get()
+        val bundle = Bundle()
+        bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), data.title)
+        firebaseAnalytics.logEvent(name, bundle)
     }
 
     private fun startTest(data: MainData, activityMode: ActivityModeTest) {

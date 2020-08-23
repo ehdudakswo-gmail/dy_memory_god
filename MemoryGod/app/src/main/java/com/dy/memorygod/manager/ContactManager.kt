@@ -8,6 +8,8 @@ import com.dy.memorygod.data.ContactPhoneNumberData
 object ContactManager {
 
     private const val ERROR_CONTACT_CURSOR = "ERROR_CONTACT_CURSOR"
+    private const val ERROR_CONTACT_CURSOR_NAME = "ERROR_CONTACT_CURSOR_NAME"
+    private const val ERROR_CONTACT_CURSOR_PHONE_NUMBER = "ERROR_CONTACT_CURSOR_PHONE_NUMBER"
     private const val ERROR_CONTACT_EMPTY = "ERROR_CONTACT_EMPTY"
     private const val PHONE_NUMBER_SEPARATOR = "-"
 
@@ -33,10 +35,23 @@ object ContactManager {
         }
 
         val list = ArrayList<ContactPhoneNumberData>()
+        val nameIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+        val phoneNumberIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
         while (cursor.moveToNext()) {
-            val name = cursor.getString(0)
-            var phoneNumber = cursor.getString(1)
+            val name = cursor.getString(nameIdx)
+            var phoneNumber = cursor.getString(phoneNumberIdx)
             phoneNumber = phoneNumber.replace(PHONE_NUMBER_SEPARATOR, "")
+
+            if (name.isNullOrEmpty()) {
+                ERROR_MESSAGE = ERROR_CONTACT_CURSOR_NAME
+                return ERROR_CONTACT_PHONE_NUMBER
+            }
+
+            if (phoneNumber.isNullOrEmpty()) {
+                ERROR_MESSAGE = ERROR_CONTACT_CURSOR_PHONE_NUMBER
+                return ERROR_CONTACT_PHONE_NUMBER
+            }
 
             val data = ContactPhoneNumberData(name, phoneNumber)
             list.add(data)
