@@ -21,16 +21,18 @@
             android:value="@string/admob_app_id" />
 
         <activity
-            android:name=".activity.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-
+            android:name=".activity.HomeActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
+
+        <activity
+            android:name=".activity.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activity.MainSortActivity"
             android:theme="@style/AppTheme.NoActionBar" />
