@@ -9,7 +9,9 @@ enum class FirebaseAnalyticsEventName {
     PHONE_NUMBER_LOAD_ERROR,
     PHONE_NUMBER_REFRESH_ERROR,
     AD_FAILED_TO_LOAD,
-    MAIN_ITEM_CLICK;
+    MAIN_ITEM_CLICK,
+    HOME_UPDATE_OK,
+    HOME_UPDATE_CANCEL;
 
     fun get() = toString()
 
