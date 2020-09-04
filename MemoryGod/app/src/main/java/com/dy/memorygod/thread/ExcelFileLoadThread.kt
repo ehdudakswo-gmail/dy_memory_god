@@ -1,5 +1,8 @@
 package com.dy.memorygod.thread
 
+import android.content.Context
+import android.net.Uri
+import android.os.ParcelFileDescriptor
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.DataType
@@ -7,24 +10,25 @@ import com.dy.memorygod.enums.DataTypePhone
 import com.dy.memorygod.enums.TestCheck
 import com.dy.memorygod.manager.ExcelManager
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
-class ExcelFileLoadThread(private val file: File) : Thread() {
+class ExcelFileLoadThread(private val context: Context, private val uri: Uri) : Thread() {
 
     var exception: String? = null
     lateinit var dataList: MutableList<MainData>
 
-    private lateinit var workbook: XSSFWorkbook
+    private lateinit var parcelFileDescriptor: ParcelFileDescriptor
     private lateinit var inputStream: FileInputStream
+    private lateinit var workbook: XSSFWorkbook
 
     override fun run() {
         super.run()
 
         try {
             dataList = mutableListOf()
-            inputStream = FileInputStream(file)
+            parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r")!!
+            inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
             workbook = XSSFWorkbook(inputStream)
 
             val sheetIterator = workbook.iterator()
@@ -68,6 +72,10 @@ class ExcelFileLoadThread(private val file: File) : Thread() {
         } finally {
             if (this::workbook.isInitialized) {
 //                workbook.close()
+            }
+
+            if (this::parcelFileDescriptor.isInitialized) {
+                parcelFileDescriptor.close()
             }
 
             if (this::inputStream.isInitialized) {

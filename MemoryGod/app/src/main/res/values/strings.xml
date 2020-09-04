@@ -12,10 +12,8 @@
     <string name="app_sample_content3_problem">English</string>
     <string name="app_sample_content3_answer">영어</string>
 
-    <string name="app_directory">%s 폴더</string>
     <string name="app_file_name_format">%s (%s)%s</string>
     <string name="app_file_save_data_none">저장할 데이터가 없습니다.</string>
-    <string name="app_file_load_data_none">%s 파일이 없습니다. (%s)</string>
     <string name="app_file_load_data_title">데이터 추가</string>
     <string name="app_backup_save_message">데이터를 저장중입니다.</string>
     <string name="app_backup_load_message">데이터를 로딩중입니다.</string>
@@ -43,10 +41,9 @@
     <string name="app_toolBar_menu_sort_data_empty">정렬할 데이터가 없습니다.</string>
     <string name="app_toolBar_menu_search_data_empty">검색할 데이터가 없습니다.</string>
     <string name="app_toolBar_menu_file_save_progress_message">파일을 저장중입니다.</string>
-    <string name="app_toolBar_menu_file_save_complete">파일 저장 완료 (%s)</string>
     <string name="app_toolBar_menu_file_save_error">파일 저장 에러 (%s)</string>
     <string name="app_toolBar_menu_file_save_error_title_overlap">아이템 이름 중복은 불가능합니다. (%s)</string>
-    <string name="app_toolBar_menu_file_save_error_file_none">FILE NONE</string>
+    <string name="app_toolBar_menu_file_save_complete">파일 저장 완료</string>
     <string name="app_toolBar_menu_file_load_progress_message">파일을 로딩중입니다.</string>
     <string name="app_toolBar_menu_file_load_error">파일 열기 에러 (%s)</string>
     <string name="app_toolBar_menu_file_load_data_check_none">데이터를 선택해주세요.</string>
