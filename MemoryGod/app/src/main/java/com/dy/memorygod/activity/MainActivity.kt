@@ -1,9 +1,9 @@
 package com.dy.memorygod.activity
 
-import android.app.DownloadManager
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageInfo
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.Menu
@@ -597,148 +597,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         startActivityForResult(intent, RequestCode.MAIN_SEARCH.get())
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            RequestCode.MAIN_SORT.get() -> {
-                recyclerViewAdapter.notifyDataSetChanged()
-                recyclerViewAdapter.scrollToPosition(0)
-            }
-            RequestCode.MAIN_SEARCH.get() -> {
-                val searchData = MainDataManager.searchData ?: return
-                recyclerViewAdapter.select(searchData)
-            }
-        }
-    }
-
-    private fun checkFileSavePermission() {
-        TedPermission.with(this)
-            .setPermissionListener(fileSavePermissionListener)
-            .setPermissions(
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-            .check()
-    }
-
-    private val fileSavePermissionListener: PermissionListener =
-        object : PermissionListener {
-            override fun onPermissionGranted() {
-                handleFileSave()
-            }
-
-            override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
-                Toast.makeText(
-                    this@MainActivity,
-                    R.string.app_permission_request, Toast.LENGTH_SHORT
-                )
-                    .show()
-            }
-        }
-
-    private fun handleFileSave() {
-        val dataList = MainDataManager.dataList
-        if (dataList.isEmpty()) {
-            Toast.makeText(
-                this,
-                R.string.app_file_save_data_none,
-                Toast.LENGTH_SHORT
-            ).show()
-            return
-        }
-
-        val hashSet = HashSet<String>()
-        for (data in dataList) {
-            val title = data.title
-            if (hashSet.contains(title)) {
-                val errorFormat = getString(R.string.app_toolBar_menu_file_save_error_title_overlap)
-                val errorMessage = String.format(errorFormat, title)
-                AlertDialogManager.show(this, errorMessage)
-                return
-            }
-
-            hashSet.add(title)
-        }
-
-        val message = getString(R.string.app_toolBar_menu_file_save_progress_message)
-        ProgressDialogManager.show(this, message)
-
-        refreshPhoneData(dataList)
-
-        val appName = getString(R.string.app_name)
-        val date = DateManager.getExcelFileName()
-
-        val fileExtension = ExcelManager.fileExtension
-        val fileNameFormat = getString(R.string.app_file_name_format)
-        val fileName = String.format(fileNameFormat, appName, date, fileExtension)
-
-        Handler().postDelayed({
-            val filePath = ExcelManager.filePath
-            val thread = ExcelFileSaveThread(dataList, filePath, fileName)
-            thread.start()
-            thread.join()
-
-            val exception = thread.exception
-            if (exception != null) {
-                val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
-                val errorMessage = String.format(errorFormat, exception)
-
-                AlertDialogManager.show(this, errorMessage)
-                ProgressDialogManager.hide()
-
-                val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_SAVE_ERROR.get()
-                val bundle = Bundle()
-                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
-                firebaseAnalytics.logEvent(name, bundle)
-                return@postDelayed
-            }
-
-            val file = thread.file
-            val isFileNone = !(file.isFile && file.exists())
-
-            if (isFileNone) {
-                val fileNoneFormat = getString(R.string.app_toolBar_menu_file_save_error)
-                val fileNoneDescription =
-                    getString(R.string.app_toolBar_menu_file_save_error_file_none)
-                val fileNoneMessage = String.format(fileNoneFormat, fileNoneDescription)
-
-                Toast.makeText(this, fileNoneMessage, Toast.LENGTH_SHORT).show()
-                ProgressDialogManager.hide()
-                return@postDelayed
-            }
-
-            val downloadManager =
-                getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-            downloadManager.addCompletedDownload(
-                file.name,
-                file.name,
-                false,
-                ExcelManager.fileMimeType,
-                file.absolutePath,
-                file.length(),
-                true
-            )
-
-            val filePathType = ExcelManager.filePathType
-            val directoryFormat = getString(R.string.app_directory)
-            val directory = String.format(directoryFormat, filePathType)
-
-            val completeMessageFormat =
-                getString(R.string.app_toolBar_menu_file_save_complete)
-            val completeMessage = String.format(completeMessageFormat, directory)
-
-            Toast.makeText(
-                this,
-                completeMessage,
-                Toast.LENGTH_SHORT
-            ).show()
-
-            ProgressDialogManager.hide()
-
-        }, threadDelay)
-    }
-
     private fun refreshPhoneData(dataList: MutableList<MainData>) {
         for (data in dataList) {
             if (data.dataType == DataType.PHONE && data.dataTypePhone == DataTypePhone.NUMBER) {
@@ -773,6 +631,81 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         setPhoneNumber(data, phoneNumberList)
     }
 
+    private fun refreshView() {
+        refreshContentView(recyclerViewAdapter.dataList)
+        recyclerViewAdapter.clearSelection()
+    }
+
+    private fun checkFileSavePermission() {
+        TedPermission.with(this)
+            .setPermissionListener(fileSavePermissionListener)
+            .setPermissions(
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+            .check()
+    }
+
+    private val fileSavePermissionListener: PermissionListener =
+        object : PermissionListener {
+            override fun onPermissionGranted() {
+                checkDataState()
+            }
+
+            override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
+                Toast.makeText(
+                    this@MainActivity,
+                    R.string.app_permission_request, Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+        }
+
+    private fun checkDataState() {
+        val dataList = MainDataManager.dataList
+        if (dataList.isEmpty()) {
+            Toast.makeText(
+                this,
+                R.string.app_file_save_data_none,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val hashSet = HashSet<String>()
+        for (data in dataList) {
+            val title = data.title
+            if (hashSet.contains(title)) {
+                val errorFormat = getString(R.string.app_toolBar_menu_file_save_error_title_overlap)
+                val errorMessage = String.format(errorFormat, title)
+                AlertDialogManager.show(this, errorMessage)
+                return
+            }
+
+            hashSet.add(title)
+        }
+
+        showFileSaveBrowser()
+    }
+
+    private fun showFileSaveBrowser() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = FileMimeType.EXCEL.value
+            putExtra(Intent.EXTRA_TITLE, getExcelFileName())
+        }
+
+        startActivityForResult(intent, RequestCode.MAIN_FILE_SAVE.get())
+    }
+
+    private fun getExcelFileName(): String {
+        val appName = getString(R.string.app_name)
+        val date = DateManager.getExcelFileName()
+        val fileExtension = ExcelManager.fileExtension
+        val fileNameFormat = getString(R.string.app_file_name_format)
+
+        return String.format(fileNameFormat, appName, date, fileExtension)
+    }
+
     private fun checkFileLoadPermission() {
         TedPermission.with(this)
             .setPermissionListener(fileLoadPermissionListener)
@@ -785,7 +718,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private val fileLoadPermissionListener: PermissionListener =
         object : PermissionListener {
             override fun onPermissionGranted() {
-                handleFileLoad()
+                showFileOpenBrowser()
             }
 
             override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
@@ -797,63 +730,110 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             }
         }
 
-    private fun handleFileLoad() {
-        val filePathType = ExcelManager.filePathType
-        val directoryFormat = getString(R.string.app_directory)
-        val directory = String.format(directoryFormat, filePathType)
+    fun showFileOpenBrowser() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = FileMimeType.EXCEL.value
+        }
 
-        val excelFileList = ExcelManager.getFileList()
-        val itemArr = excelFileList.map { it.name }.toTypedArray()
+        startActivityForResult(intent, RequestCode.MAIN_FILE_OPEN.get())
+    }
 
-        if (itemArr.isEmpty()) {
-            val fileExtension = ExcelManager.fileExtension
-            val messageFormat = getString(R.string.app_file_load_data_none)
-            val message = String.format(messageFormat, fileExtension, directory)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        super.onActivityResult(requestCode, resultCode, resultData)
+
+        when (requestCode) {
+            RequestCode.MAIN_SORT.get() -> {
+                recyclerViewAdapter.notifyDataSetChanged()
+                recyclerViewAdapter.scrollToPosition(0)
+            }
+            RequestCode.MAIN_SEARCH.get() -> {
+                val searchData = MainDataManager.searchData ?: return
+                recyclerViewAdapter.select(searchData)
+            }
+            RequestCode.MAIN_FILE_SAVE.get() -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    resultData?.data?.also { uri ->
+                        handleFileSave(uri)
+                    }
+                }
+            }
+            RequestCode.MAIN_FILE_OPEN.get() -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    resultData?.data?.also { uri ->
+                        handleFileLoad(uri)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleFileSave(uri: Uri) {
+        val loadingMessage = getString(R.string.app_toolBar_menu_file_save_progress_message)
+        ProgressDialogManager.show(this, loadingMessage)
+
+        val dataList = MainDataManager.dataList
+        refreshPhoneData(dataList)
+
+        Handler().postDelayed({
+            val thread = ExcelFileSaveThread(this, uri, dataList)
+            thread.start()
+            thread.join()
+
+            val exception = thread.exception
+            if (exception != null) {
+                val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
+                val errorMessage = String.format(errorFormat, exception)
+
+                AlertDialogManager.show(this, errorMessage)
+                ProgressDialogManager.hide()
+
+                val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_SAVE_ERROR.get()
+                val bundle = Bundle()
+                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
+                firebaseAnalytics.logEvent(name, bundle)
+
+                return@postDelayed
+            }
 
             Toast.makeText(
                 this,
-                message,
+                R.string.app_toolBar_menu_file_save_complete,
                 Toast.LENGTH_SHORT
             ).show()
-            return
-        }
+            ProgressDialogManager.hide()
 
-        val builder = AlertDialog.Builder(this)
-        val dialog = builder
-            .setTitle(directory)
-            .setItems(itemArr) { _, which ->
-                val message = getString(R.string.app_toolBar_menu_file_load_progress_message)
-                ProgressDialogManager.show(this, message)
+        }, threadDelay)
+    }
 
-                Handler().postDelayed({
-                    val file = excelFileList[which]
-                    val thread = ExcelFileLoadThread(file)
-                    thread.start()
-                    thread.join()
+    private fun handleFileLoad(uri: Uri) {
+        val loadingMessage = getString(R.string.app_toolBar_menu_file_load_progress_message)
+        ProgressDialogManager.show(this, loadingMessage)
 
-                    val exception = thread.exception
-                    if (exception != null) {
-                        val errorFormat = getString(R.string.app_toolBar_menu_file_load_error)
-                        val errorMessage = String.format(errorFormat, exception)
+        Handler().postDelayed({
+            val thread = ExcelFileLoadThread(this, uri)
+            thread.start()
+            thread.join()
 
-                        AlertDialogManager.show(this, errorMessage)
-                        ProgressDialogManager.hide()
+            val exception = thread.exception
+            if (exception != null) {
+                val errorFormat = getString(R.string.app_toolBar_menu_file_load_error)
+                val errorMessage = String.format(errorFormat, exception)
 
-                        val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_LOAD_ERROR.get()
-                        val bundle = Bundle()
-                        bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
-                        firebaseAnalytics.logEvent(name, bundle)
-                        return@postDelayed
-                    }
+                AlertDialogManager.show(this, errorMessage)
+                ProgressDialogManager.hide()
 
-                    val dataList = thread.dataList
-                    handleFileLoadData(dataList)
-                    ProgressDialogManager.hide()
-                }, threadDelay)
+                val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_LOAD_ERROR.get()
+                val bundle = Bundle()
+                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
+                firebaseAnalytics.logEvent(name, bundle)
+                return@postDelayed
             }
-            .show()
 
-        dialog.setCanceledOnTouchOutside(false)
+            val dataList = thread.dataList
+            handleFileLoadData(dataList)
+            ProgressDialogManager.hide()
+        }, threadDelay)
     }
 
     private fun handleFileLoadData(dataList: List<MainData>) {
@@ -936,11 +916,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             .show()
 
         dialog.setCanceledOnTouchOutside(false)
-    }
-
-    private fun refreshView() {
-        refreshContentView(recyclerViewAdapter.dataList)
-        recyclerViewAdapter.clearSelection()
     }
 
 }

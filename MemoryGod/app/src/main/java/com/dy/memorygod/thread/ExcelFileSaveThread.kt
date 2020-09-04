@@ -1,21 +1,22 @@
 package com.dy.memorygod.thread
 
+import android.content.Context
+import android.net.Uri
+import android.os.ParcelFileDescriptor
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.manager.ExcelManager
 import org.apache.poi.xssf.streaming.SXSSFWorkbook
-import java.io.File
 import java.io.FileOutputStream
 
 class ExcelFileSaveThread(
-    private val dataList: List<MainData>,
-    private val filePath: File,
-    private val fileName: String
+    private val context: Context,
+    private val uri: Uri,
+    private val dataList: List<MainData>
 ) : Thread() {
 
     var exception: String? = null
-    lateinit var file: File
-
     private lateinit var workbook: SXSSFWorkbook
+    private lateinit var parcelFileDescriptor: ParcelFileDescriptor
     private lateinit var outputStream: FileOutputStream
 
     override fun run() {
@@ -45,8 +46,8 @@ class ExcelFileSaveThread(
                 }
             }
 
-            file = File(filePath, fileName)
-            outputStream = FileOutputStream(file)
+            parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "w")!!
+            outputStream = FileOutputStream(parcelFileDescriptor.fileDescriptor)
             workbook.write(outputStream)
             outputStream.flush()
         } catch (ex: Exception) {
@@ -56,6 +57,10 @@ class ExcelFileSaveThread(
 //                workbook.close()
             }
 
+            if (this::parcelFileDescriptor.isInitialized) {
+                parcelFileDescriptor.close()
+            }
+            
             if (this::outputStream.isInitialized) {
                 outputStream.close()
             }
