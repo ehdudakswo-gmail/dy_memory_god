@@ -2,10 +2,14 @@ package com.dy.memorygod.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -17,10 +21,9 @@ import com.dy.memorygod.adapter.TestRecyclerViewAdapter
 import com.dy.memorygod.adapter.TestRecyclerViewEventListener
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
-import com.dy.memorygod.manager.AlertDialogManager
-import com.dy.memorygod.manager.KeyboardManager
-import com.dy.memorygod.manager.MainDataManager
-import com.dy.memorygod.manager.TestManager
+import com.dy.memorygod.manager.*
+import com.gun0912.tedpermission.PermissionListener
+import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_test.*
 import kotlinx.android.synthetic.main.dialog_test_item_edit.view.*
 import kotlinx.android.synthetic.main.dialog_test_item_test.view.*
@@ -34,6 +37,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
+    private lateinit var answerEditText: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -240,7 +244,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
     private fun setItemTest(data: MainDataContent) {
         val view = View.inflate(this, R.layout.dialog_test_item_test, null)
-        val answerEditText = view.editText_test_item_test_answer
+        answerEditText = view.editText_test_item_test_answer
 
         answerEditText.requestFocus()
         KeyboardManager.show(this)
@@ -299,12 +303,139 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
             cancelDialog(view, dialog)
         }
+
+        view.button_test_item_test_answer_voice.setOnClickListener {
+            KeyboardManager.hide(this, view)
+            checkVoiceInputPermission()
+        }
+
+        view.button_test_item_test_answer_blank_delete.setOnClickListener {
+            val originText = answerEditText.text.toString().trim()
+            val newText = originText.replace(" ", "")
+            answerEditText.setText(newText)
+        }
+
+        view.button_test_item_test_answer_dash_delete.setOnClickListener {
+            val originText = answerEditText.text.toString().trim()
+            val newText = originText.replace("-", "")
+            answerEditText.setText(newText)
+        }
     }
 
     private fun cancelDialog(view: View, dialog: AlertDialog) {
         refreshContentView(recyclerViewAdapter.dataList)
         KeyboardManager.hide(this, view)
         dialog.dismiss()
+    }
+
+    private fun checkVoiceInputPermission() {
+        TedPermission.with(this)
+            .setPermissionListener(voiceInputPermissionListener)
+            .setPermissions(
+                android.Manifest.permission.RECORD_AUDIO
+            )
+            .check()
+    }
+
+    private val voiceInputPermissionListener: PermissionListener =
+        object : PermissionListener {
+            override fun onPermissionGranted() {
+                setVoiceInput()
+            }
+
+            override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
+                Toast.makeText(
+                    this@TestActivity,
+                    R.string.app_permission_request,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    private fun setVoiceInput() {
+        val recognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        recognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {
+                val speechMessage = getString(R.string.test_item_test_dialog_voice_speech_message)
+                ProgressDialogManager.show(this@TestActivity, speechMessage)
+            }
+
+            override fun onRmsChanged(rmsdB: Float) {
+            }
+
+            override fun onBufferReceived(buffer: ByteArray?) {
+            }
+
+            override fun onPartialResults(partialResults: Bundle?) {
+            }
+
+            override fun onEvent(eventType: Int, params: Bundle?) {
+            }
+
+            override fun onBeginningOfSpeech() {
+            }
+
+            override fun onEndOfSpeech() {
+            }
+
+            override fun onError(error: Int) {
+                ProgressDialogManager.hide()
+                val errorMessage = getVoiceErrorMessage(error)
+                Toast.makeText(
+                    this@TestActivity,
+                    errorMessage,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            override fun onResults(results: Bundle) {
+                ProgressDialogManager.hide()
+                val key = SpeechRecognizer.RESULTS_RECOGNITION
+                val result = results.getStringArrayList(key)
+
+                if (result.isNullOrEmpty()) {
+                    Toast.makeText(
+                        this@TestActivity,
+                        R.string.test_item_test_dialog_voice_result_error,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+
+                val data = result[0]
+                answerEditText.setText(data)
+
+                Toast.makeText(
+                    this@TestActivity,
+                    R.string.test_item_test_dialog_voice_result_success,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        })
+
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR")
+        }
+        recognizer.startListening(intent)
+    }
+
+    private fun getVoiceErrorMessage(error: Int): String {
+        return when (error) {
+            SpeechRecognizer.ERROR_AUDIO -> "ERROR_AUDIO"
+            SpeechRecognizer.ERROR_CLIENT -> "ERROR_CLIENT"
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "ERROR_INSUFFICIENT_PERMISSIONS"
+            SpeechRecognizer.ERROR_NETWORK -> "ERROR_NETWORK"
+            SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "ERROR_NETWORK_TIMEOUT"
+            SpeechRecognizer.ERROR_NO_MATCH -> "ERROR_NO_MATCH"
+            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "ERROR_RECOGNIZER_BUSY"
+            SpeechRecognizer.ERROR_SERVER -> "ERROR_SERVER"
+            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "ERROR_SPEECH_TIMEOUT"
+            else -> {
+                val errorFormat = getString(R.string.test_item_test_dialog_voice_error_format)
+                String.format(errorFormat, error)
+            }
+        }
     }
 
     override fun onItemSelected(size: Int) {
