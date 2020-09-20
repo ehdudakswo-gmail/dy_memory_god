@@ -304,21 +304,12 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             cancelDialog(view, dialog)
         }
 
-        view.button_test_item_test_answer_voice.setOnClickListener {
+        view.imageView_test_answer_mic.setOnClickListener {
             KeyboardManager.hide(this, view)
             checkVoiceInputPermission()
         }
-
-        view.button_test_item_test_answer_blank_delete.setOnClickListener {
-            val originText = answerEditText.text.toString().trim()
-            val newText = originText.replace(" ", "")
-            answerEditText.setText(newText)
-        }
-
-        view.button_test_item_test_answer_dash_delete.setOnClickListener {
-            val originText = answerEditText.text.toString().trim()
-            val newText = originText.replace("-", "")
-            answerEditText.setText(newText)
+        view.imageView_test_answer_settings.setOnClickListener {
+            showAnswerSettingsDialog()
         }
     }
 
@@ -436,6 +427,35 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 String.format(errorFormat, error)
             }
         }
+    }
+
+    private fun showAnswerSettingsDialog() {
+        val itemBlankDelete = getString(R.string.test_item_test_dialog_settings_blank_delete)
+        val itemDashDelete = getString(R.string.test_item_test_dialog_settings_dash_delete)
+
+        val itemArr = arrayOf(
+            itemBlankDelete,
+            itemDashDelete
+        )
+
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setItems(itemArr) { _, which ->
+                when (itemArr[which]) {
+                    itemBlankDelete -> {
+                        val originText = answerEditText.text.toString().trim()
+                        val newText = originText.replace(" ", "")
+                        answerEditText.setText(newText)
+                        Toast.makeText(this, itemBlankDelete, Toast.LENGTH_SHORT).show()
+                    }
+                    itemDashDelete -> {
+                        val originText = answerEditText.text.toString().trim()
+                        val newText = originText.replace("-", "")
+                        answerEditText.setText(newText)
+                        Toast.makeText(this, itemDashDelete, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }.show()
     }
 
     override fun onItemSelected(size: Int) {
