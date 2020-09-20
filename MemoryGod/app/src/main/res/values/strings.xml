@@ -2,6 +2,7 @@
     <string name="app_name">암기신</string>
     <string name="app_permission_request">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
     <string name="app_content_description_item_reorder">아이템 이동</string>
+    <string name="app_text_to_speech_error_format">TextToSpeech Error (%d)</string>
 
     <string name="app_phone_number_title">전화번호</string>
     <string name="app_sample_title">영어단어 샘플</string>
@@ -95,7 +96,9 @@
     <string name="test_item_edit_dialog_answer_hint">정답</string>
 
     <string name="test_item_test_dialog_answer_hint">정답 입력</string>
-    <string name="test_item_test_dialog_answer_view">정답 보기</string>
+    <string name="test_item_test_dialog_answer_view">정답 확인</string>
+    <string name="test_item_test_dialog_answer_view_text">텍스트</string>
+    <string name="test_item_test_dialog_answer_view_voice">음성</string>
     <string name="test_item_test_dialog_pass">정답입니다.</string>
     <string name="test_item_test_dialog_wrong">오답입니다.</string>
     <string name="test_item_test_dialog_wrong_space">오답입니다. (공백을 확인해주세요)</string>

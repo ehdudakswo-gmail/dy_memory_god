@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.speech.tts.TextToSpeech
+import android.speech.tts.TextToSpeech.SUCCESS
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -27,6 +29,7 @@ import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_test.*
 import kotlinx.android.synthetic.main.dialog_test_item_edit.view.*
 import kotlinx.android.synthetic.main.dialog_test_item_test.view.*
+import java.util.*
 
 
 class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
@@ -38,6 +41,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var answerEditText: EditText
+    private lateinit var textToSpeech: TextToSpeech
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +50,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         setToolbar()
         setRecyclerView()
         setOnClickListener()
+        setTextToSpeech()
         showInitMessage()
         refreshMode()
     }
@@ -117,6 +122,18 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         frameLayout_test_content.setOnClickListener {
             KeyboardManager.hide(this, frameLayout_test_content)
+        }
+    }
+
+    private fun setTextToSpeech() {
+        textToSpeech = TextToSpeech(this) { status ->
+            if (status == SUCCESS) {
+                textToSpeech.language = Locale.KOREAN
+            } else {
+                val errorFormat = getString(R.string.app_text_to_speech_error_format)
+                val errorMessage = String.format(errorFormat, status)
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -263,11 +280,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         dialog.setCanceledOnTouchOutside(false)
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-            Toast.makeText(
-                this,
-                dataAnswer,
-                Toast.LENGTH_SHORT
-            ).show()
+            showAnswerViewDialog(dataAnswer)
         }
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
@@ -311,6 +324,37 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         view.imageView_test_answer_settings.setOnClickListener {
             showAnswerSettingsDialog()
         }
+    }
+
+    private fun showAnswerViewDialog(dataAnswer: String) {
+        val itemText = getString(R.string.test_item_test_dialog_answer_view_text)
+        val itemVoice = getString(R.string.test_item_test_dialog_answer_view_voice)
+
+        val itemArr = arrayOf(
+            itemText,
+            itemVoice
+        )
+
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setItems(itemArr) { _, which ->
+                when (itemArr[which]) {
+                    itemText -> {
+                        Toast.makeText(
+                            this,
+                            dataAnswer,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    itemVoice -> {
+                        speakVoice(dataAnswer)
+                    }
+                }
+            }.show()
+    }
+
+    private fun speakVoice(dataAnswer: String) {
+        textToSpeech.speak(dataAnswer, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun cancelDialog(view: View, dialog: AlertDialog) {
@@ -724,6 +768,15 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private fun refreshView() {
         refreshContentView(recyclerViewAdapter.dataList)
         recyclerViewAdapter.clearSelection()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (this::textToSpeech.isInitialized) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
     }
 
 }
