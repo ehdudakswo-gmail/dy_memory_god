@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.dy.memorygod.R
 import com.dy.memorygod.adapter.TestRecyclerViewAdapter
 import com.dy.memorygod.adapter.TestRecyclerViewEventListener
+import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
@@ -260,18 +261,19 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun setItemTest(data: MainDataContent) {
-        val view = View.inflate(this, R.layout.dialog_test_item_test, null)
-        answerEditText = view.editText_test_item_test_answer
+        val dataProblem = data.problem
+        val dataAnswer = data.answer.trim()
 
+        val view = View.inflate(this, R.layout.dialog_test_item_test, null)
+        val titleTextView = view.textView_test_dialog_title
+        titleTextView.text = dataProblem
+
+        answerEditText = view.editText_test_item_test_answer
         answerEditText.requestFocus()
         KeyboardManager.show(this)
 
-        val title = data.problem
-        val dataAnswer = data.answer.trim()
-
         val builder = AlertDialog.Builder(this)
         val dialog = builder
-            .setTitle(title)
             .setView(view)
             .setPositiveButton(R.string.app_dialog_ok, null)
             .setNegativeButton(R.string.app_dialog_cancel, null)
@@ -317,6 +319,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             cancelDialog(view, dialog)
         }
 
+        view.imageView_test_dialog_title_speak.setOnClickListener {
+            speakVoice(dataProblem)
+        }
+
         view.imageView_test_answer_mic.setOnClickListener {
             KeyboardManager.hide(this, view)
             checkVoiceInputPermission()
@@ -353,8 +359,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             }.show()
     }
 
-    private fun speakVoice(dataAnswer: String) {
-        textToSpeech.speak(dataAnswer, TextToSpeech.QUEUE_FLUSH, null, null)
+    private fun speakVoice(text: String) {
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun cancelDialog(view: View, dialog: AlertDialog) {
@@ -526,6 +532,9 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             R.id.test_toolBar_menu_add -> {
                 handleItemAdd()
             }
+            R.id.test_toolBar_menu_copy -> {
+                handleItemCopy()
+            }
             R.id.test_toolBar_menu_edit -> {
                 handleItemEdit()
             }
@@ -629,6 +638,116 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
             cancelDialog(view, dialog)
         }
+    }
+
+    private fun handleItemCopy() {
+        when (recyclerViewAdapter.getSelectionSize()) {
+            0 -> {
+                Toast.makeText(
+                    this,
+                    R.string.app_item_copy_selection_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else -> {
+                val selectedDataList = recyclerViewAdapter.getSelectedList()
+                handleItemCopy(selectedDataList)
+            }
+        }
+    }
+
+    private fun handleItemCopy(selectedDataList: List<MainDataContent>) {
+        val mainDataList = MainDataManager.dataList
+        val dataList = mainDataList.filter { it.dataType == DataType.NORMAL }
+
+        if (dataList.isEmpty()) {
+            Toast.makeText(
+                this,
+                R.string.test_item_copy_position_data_empty,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val itemArr = dataList.map { it.title }.toTypedArray()
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setTitle(R.string.test_item_copy_position_dialog_title)
+            .setPositiveButton(R.string.app_dialog_ok, null)
+            .setNegativeButton(R.string.app_dialog_cancel, null)
+            .setSingleChoiceItems(itemArr, -1, null)
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val checkedDataList = ArrayList<MainData>()
+            val listView = dialog.listView
+
+            for (i in dataList.indices) {
+                if (listView.isItemChecked(i)) {
+                    val data = dataList[i]
+                    checkedDataList.add(data)
+                }
+            }
+
+            if (checkedDataList.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    R.string.test_item_copy_position_dialog_check_empty,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            dialog.dismiss()
+            handleItemCopy(checkedDataList, selectedDataList)
+        }
+
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+            dialog.dismiss()
+        }
+    }
+
+    private fun handleItemCopy(
+        checkedDataList: List<MainData>,
+        selectedDataList: List<MainDataContent>
+    ) {
+        val itemArr = ItemAddPosition.getDescriptionArr(this)
+        val builder = AlertDialog.Builder(this)
+
+        val dialog = builder
+            .setTitle(R.string.app_item_add_position_title)
+            .setItems(itemArr) { _, which ->
+                for (checkedData in checkedDataList) {
+                    val copyContentDataList =
+                        ItemCopyManager.createContentList(selectedDataList)
+
+                    when (ItemAddPosition.get(which)) {
+                        ItemAddPosition.FIRST -> {
+                            checkedData.contentList.addAll(0, copyContentDataList)
+                        }
+                        ItemAddPosition.LAST -> {
+                            checkedData.contentList.addAll(copyContentDataList)
+                        }
+                    }
+                }
+
+                refreshView()
+                showCopyCompleteMessage(checkedDataList)
+            }
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
+    }
+
+    private fun showCopyCompleteMessage(checkedDataList: List<MainData>) {
+        val completeInfoSeparator =
+            getString(R.string.test_item_copy_complete_message_format_info_separator)
+        val completeInfo = checkedDataList.joinToString(completeInfoSeparator) { it.title }
+        val completeFormat = getString(R.string.test_item_copy_complete_message_format)
+
+        val completeMessage = String.format(completeFormat, completeInfo)
+        Toast.makeText(this, completeMessage, Toast.LENGTH_SHORT).show()
     }
 
     private fun handleItemEdit() {

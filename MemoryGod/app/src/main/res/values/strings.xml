@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">암기신</string>
+    <string name="app_text_empty">-</string>
     <string name="app_permission_request">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
     <string name="app_content_description_item_reorder">아이템 이동</string>
     <string name="app_text_to_speech_error_format">TextToSpeech Error (%d)</string>
@@ -66,7 +67,7 @@
     <string name="app_item_sort_check_message">아이템 순서가 변경되었습니다. 적용하겠습니까?</string>
     <string name="app_item_search_empty">검색 결과가 없습니다.</string>
 
-    <string name="app_item_add_position_title">추가 위치</string>
+    <string name="app_item_add_position_title">추가 순서</string>
     <string name="app_item_add_position_first">처음</string>
     <string name="app_item_add_position_last">마지막</string>
 
@@ -89,6 +90,12 @@
     <string name="test_toolBar_title_input_empty">제목 입력값이 필요합니다.</string>
     <string name="test_toolBar_menu_test_check_init">채점 초기화</string>
     <string name="test_item_test_check_init_selection_empty">초기화할 아이템을 선택해주세요.</string>
+
+    <string name="test_item_copy_position_data_empty">복사 가능한 위치가 없습니다</string>
+    <string name="test_item_copy_position_dialog_title">복사 위치</string>
+    <string name="test_item_copy_position_dialog_check_empty">복사 위치를 선택해주세요</string>
+    <string name="test_item_copy_complete_message_format_info_separator">,&#160;</string>
+    <string name="test_item_copy_complete_message_format">복사 완료 (%s)</string>
 
     <string name="test_item_edit_dialog_title_add">아이템 추가</string>
     <string name="test_item_edit_dialog_title_edit">아이템 수정</string>
@@ -116,6 +123,7 @@
     <string name="test_sort_toolBar_menu_test_check">채점 순</string>
     <string name="test_sort_toolBar_menu_test_check_reverse">채점 역순</string>
 
+    <string name="imageView_contentDescription_test_dialog_title_speak">문제읽기</string>
     <string name="imageView_contentDescription_test_answer_mic">음성입력</string>
     <string name="imageView_contentDescription_test_answer_settings">설정</string>
 
