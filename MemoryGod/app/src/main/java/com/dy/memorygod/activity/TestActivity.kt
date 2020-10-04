@@ -260,18 +260,19 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun setItemTest(data: MainDataContent) {
-        val view = View.inflate(this, R.layout.dialog_test_item_test, null)
-        answerEditText = view.editText_test_item_test_answer
+        val dataProblem = data.problem
+        val dataAnswer = data.answer.trim()
 
+        val view = View.inflate(this, R.layout.dialog_test_item_test, null)
+        val titleTextView = view.textView_test_dialog_title
+        titleTextView.text = dataProblem
+
+        answerEditText = view.editText_test_item_test_answer
         answerEditText.requestFocus()
         KeyboardManager.show(this)
 
-        val title = data.problem
-        val dataAnswer = data.answer.trim()
-
         val builder = AlertDialog.Builder(this)
         val dialog = builder
-            .setTitle(title)
             .setView(view)
             .setPositiveButton(R.string.app_dialog_ok, null)
             .setNegativeButton(R.string.app_dialog_cancel, null)
@@ -317,6 +318,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             cancelDialog(view, dialog)
         }
 
+        view.imageView_test_dialog_title_speak.setOnClickListener {
+            speakVoice(dataProblem)
+        }
+
         view.imageView_test_answer_mic.setOnClickListener {
             KeyboardManager.hide(this, view)
             checkVoiceInputPermission()
@@ -353,8 +358,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             }.show()
     }
 
-    private fun speakVoice(dataAnswer: String) {
-        textToSpeech.speak(dataAnswer, TextToSpeech.QUEUE_FLUSH, null, null)
+    private fun speakVoice(text: String) {
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun cancelDialog(view: View, dialog: AlertDialog) {
