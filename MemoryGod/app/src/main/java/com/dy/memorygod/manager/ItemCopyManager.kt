@@ -14,18 +14,24 @@ object ItemCopyManager {
     fun create(context: Context, originData: MainData): MainData {
         val titleFormat = context.getString(R.string.app_item_copy_title_format)
         val originTitle = originData.title
-        
-        val title = String.format(titleFormat, originTitle)
-        val contentList = mutableListOf<MainDataContent>()
 
-        for (originContentList in originData.contentList) {
-            val originProblem = originContentList.problem
-            val originAnswer = originContentList.answer
-            val content = MainDataContent(originProblem, originAnswer, TestCheck.NONE)
-            contentList.add(content)
-        }
+        val title = String.format(titleFormat, originTitle)
+        val contentList = createContentList(originData.contentList)
 
         return MainData(title, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
+    }
+
+    fun createContentList(originContentList: List<MainDataContent>): MutableList<MainDataContent> {
+        val newContentList = mutableListOf<MainDataContent>()
+
+        for (originContent in originContentList) {
+            val originProblem = originContent.problem
+            val originAnswer = originContent.answer
+            val content = MainDataContent(originProblem, originAnswer, TestCheck.NONE)
+            newContentList.add(content)
+        }
+
+        return newContentList
     }
 
 }
