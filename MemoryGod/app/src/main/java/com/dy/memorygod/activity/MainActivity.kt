@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.dy.memorygod.GlobalApplication
 import com.dy.memorygod.R
 import com.dy.memorygod.adapter.MainRecyclerViewAdapter
 import com.dy.memorygod.adapter.MainRecyclerViewEventListener
@@ -32,6 +33,7 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.firestore.FirebaseFirestore
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
@@ -46,13 +48,17 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
     private val threadDelay = 100L
+
+    // Firebase
     private val firebaseAnalytics: FirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+    private val firestoreDB = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         setToolbar()
+        setFirestoreConfig()
         setAD()
         setDefaultData()
         loadBackupData()
@@ -90,6 +96,37 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             ).show()
             true
         }
+    }
+
+    private fun setFirestoreConfig() {
+        firestoreDB.collection(FirestoreManager.COLLECTION_CONFIG)
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    if (document.id == FirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE) {
+                        val isAllEnableKey =
+                            FirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isAllEnable
+                        val isLogEnableKey =
+                            FirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isLogEnable
+
+                        val data = document.data
+                        val isAllEnable = data[isAllEnableKey] as Boolean
+                        val isLogEnable = data[isLogEnableKey] as Boolean
+
+                        val appConfig = GlobalApplication.instance.firestoreConfig
+                        appConfig.isAllEnable = isAllEnable
+                        appConfig.isLogEnable = isLogEnable
+
+                        LogsManager.d("setFirestoreConfig addOnSuccessListener data : $data")
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                val errorMessage = exception.toString()
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+
+                LogsManager.d("setFirestoreConfig addOnFailureListener errorMessage : $errorMessage")
+            }
     }
 
     private fun setAD() {
@@ -284,10 +321,31 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             }
         }
 
+        // FirebaseAnalytics Log
         val name = FirebaseAnalyticsEventName.MAIN_ITEM_CLICK.get()
         val bundle = Bundle()
         bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), data.title)
         firebaseAnalytics.logEvent(name, bundle)
+
+        // Firestore Log
+        if (FirestoreManager.isLogEnable()) {
+            firestoreDB.collection(FirestoreManager.COLLECTION_LOGS)
+                .document(FirestoreManager.COLLECTION_LOGS_DOCUMENT_DATE)
+                .collection(FirestoreManager.getLogsDate())
+                .add(
+                    FirestoreManager.getLogData(
+                        this,
+                        FirestoreLogType.MAIN_ITEM_CLICK,
+                        data.title
+                    )
+                )
+                .addOnSuccessListener { documentReference ->
+                    LogsManager.d("MAIN_ITEM_CLICK addOnSuccessListener documentReference.id : ${documentReference.id}")
+                }
+                .addOnFailureListener { error ->
+                    LogsManager.d("MAIN_ITEM_CLICK addOnFailureListener error : $error")
+                }
+        }
     }
 
     private fun startTest(data: MainData, activityMode: ActivityModeTest) {
@@ -788,10 +846,31 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 AlertDialogManager.show(this, errorMessage)
                 ProgressDialogManager.hide()
 
+                // FirebaseAnalytics Log
                 val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_SAVE_ERROR.get()
                 val bundle = Bundle()
                 bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
                 firebaseAnalytics.logEvent(name, bundle)
+
+                // Firestore Log
+                if (FirestoreManager.isLogEnable()) {
+                    firestoreDB.collection(FirestoreManager.COLLECTION_LOGS)
+                        .document(FirestoreManager.COLLECTION_LOGS_DOCUMENT_DATE)
+                        .collection(FirestoreManager.getLogsDate())
+                        .add(
+                            FirestoreManager.getLogData(
+                                this,
+                                FirestoreLogType.MAIN_DATA_EXCEL_SAVE_ERROR,
+                                errorMessage
+                            )
+                        )
+                        .addOnSuccessListener { documentReference ->
+                            LogsManager.d("MAIN_DATA_EXCEL_SAVE_ERROR addOnSuccessListener documentReference.id : ${documentReference.id}")
+                        }
+                        .addOnFailureListener { error ->
+                            LogsManager.d("MAIN_DATA_EXCEL_SAVE_ERROR addOnFailureListener error : $error")
+                        }
+                }
 
                 return@postDelayed
             }
@@ -823,10 +902,32 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 AlertDialogManager.show(this, errorMessage)
                 ProgressDialogManager.hide()
 
+                // FirebaseAnalytics Log
                 val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_LOAD_ERROR.get()
                 val bundle = Bundle()
                 bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
                 firebaseAnalytics.logEvent(name, bundle)
+
+                // Firestore Log
+                if (FirestoreManager.isLogEnable()) {
+                    firestoreDB.collection(FirestoreManager.COLLECTION_LOGS)
+                        .document(FirestoreManager.COLLECTION_LOGS_DOCUMENT_DATE)
+                        .collection(FirestoreManager.getLogsDate())
+                        .add(
+                            FirestoreManager.getLogData(
+                                this,
+                                FirestoreLogType.MAIN_DATA_EXCEL_LOAD_ERROR,
+                                errorMessage
+                            )
+                        )
+                        .addOnSuccessListener { documentReference ->
+                            LogsManager.d("MAIN_DATA_EXCEL_LOAD_ERROR addOnSuccessListener documentReference.id : ${documentReference.id}")
+                        }
+                        .addOnFailureListener { error ->
+                            LogsManager.d("MAIN_DATA_EXCEL_LOAD_ERROR addOnFailureListener error : $error")
+                        }
+                }
+
                 return@postDelayed
             }
 

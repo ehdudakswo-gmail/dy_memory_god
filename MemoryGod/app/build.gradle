@@ -57,10 +57,13 @@ dependencies {
     kapt "android.arch.persistence.room:compiler:1.1.1"
     kaptTest "android.arch.persistence.room:testing:1.1.1"
 
+    // Firebase
     implementation 'com.google.android.gms:play-services-ads:19.4.0'
     implementation 'com.google.firebase:firebase-ads:19.4.0'
     implementation 'com.google.firebase:firebase-analytics:17.5.0'
     implementation 'com.google.firebase:firebase-core:17.5.0'
     implementation 'com.google.firebase:firebase-crashlytics:17.2.1'
+    implementation 'com.google.firebase:firebase-firestore:21.2.1'
+
     implementation 'org.jsoup:jsoup:1.8.3'
 }
