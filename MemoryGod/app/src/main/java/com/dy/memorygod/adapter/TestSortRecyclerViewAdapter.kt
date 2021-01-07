@@ -149,6 +149,9 @@ class TestSortRecyclerViewAdapter(
             R.id.test_sort_toolBar_menu_test_check_reverse -> {
                 dataList.sortByDescending { it.testCheck }
             }
+            R.id.test_sort_toolBar_menu_random -> {
+                dataList.shuffle()
+            }
         }
     }
 
