@@ -25,10 +25,7 @@ import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
-import com.dy.memorygod.thread.ExcelFileLoadThread
-import com.dy.memorygod.thread.ExcelFileSaveThread
-import com.dy.memorygod.thread.MainDataLoadThread
-import com.dy.memorygod.thread.MainDataSaveThread
+import com.dy.memorygod.thread.*
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
@@ -39,6 +36,7 @@ import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import kotlin.collections.ArrayList
+
 
 class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
@@ -60,8 +58,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         setToolbar()
         setFirestoreConfig()
         setAD()
-        setDefaultData()
-        loadBackupData()
+        setData()
     }
 
     override fun onStart() {
@@ -149,7 +146,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
     }
 
-    private fun setDefaultData() {
+    private fun setData() {
         MainDataManager.init()
         setPhoneNumberData()
         setSampleData()
@@ -164,33 +161,42 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setSampleData() {
-        val title = getString(R.string.app_sample_title)
-        val contentList = mutableListOf<MainDataContent>()
+        val message = getString(R.string.app_sample_data_load_progress_message)
+        ProgressDialogManager.show(this, message)
 
-        contentList.add(
-            MainDataContent(
-                getString(R.string.app_sample_content1_problem),
-                getString(R.string.app_sample_content1_answer),
-                TestCheck.NONE
-            )
-        )
-        contentList.add(
-            MainDataContent(
-                getString(R.string.app_sample_content2_problem),
-                getString(R.string.app_sample_content2_answer),
-                TestCheck.NONE
-            )
-        )
-        contentList.add(
-            MainDataContent(
-                getString(R.string.app_sample_content3_problem),
-                getString(R.string.app_sample_content3_answer),
-                TestCheck.NONE
-            )
-        )
+        Handler().postDelayed({
+            val thread = SampleDataLoadThread(this)
+            thread.start()
+            thread.join()
 
-        val data = MainData(title, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
-        MainDataManager.dataList.add(data)
+            ProgressDialogManager.hide()
+            loadBackupData()
+
+            val exception = thread.exception
+            LogsManager.d("setSampleData exception : $exception")
+
+            if (exception != null) {
+                // Firestore Log
+                if (FirestoreManager.isLogEnable()) {
+                    firestoreDB.collection(FirestoreManager.COLLECTION_LOGS)
+                        .document(FirestoreManager.COLLECTION_LOGS_DOCUMENT_DATE)
+                        .collection(FirestoreManager.getLogsDate())
+                        .add(
+                            FirestoreManager.getLogData(
+                                this,
+                                FirestoreLogType.SAMPLE_DATA_LOAD_ERROR,
+                                exception
+                            )
+                        )
+                        .addOnSuccessListener { documentReference ->
+                            LogsManager.d("SAMPLE_DATA_LOAD_ERROR addOnSuccessListener documentReference.id : ${documentReference.id}")
+                        }
+                        .addOnFailureListener { error ->
+                            LogsManager.d("SAMPLE_DATA_LOAD_ERROR addOnFailureListener error : $error")
+                        }
+                }
+            }
+        }, threadDelay)
     }
 
     private fun loadBackupData() {

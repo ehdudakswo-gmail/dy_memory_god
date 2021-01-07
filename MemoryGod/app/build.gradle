@@ -66,4 +66,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore:21.2.1'
 
     implementation 'org.jsoup:jsoup:1.8.3'
+    implementation 'com.opencsv:opencsv:4.6'
 }
