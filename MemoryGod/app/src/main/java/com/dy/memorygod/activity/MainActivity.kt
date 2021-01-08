@@ -103,14 +103,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         actionBar.setDisplayShowTitleEnabled(false)
 
         textView_main_toolbar_title.setOnLongClickListener {
-            val info: PackageInfo = packageManager.getPackageInfo(packageName, 0)
-            val version = info.versionName
+            val appInfo = GlobalApplication.instance.getAppInfo()
+            showToast(appInfo)
 
-            Toast.makeText(
-                this,
-                version,
-                Toast.LENGTH_SHORT
-            ).show()
             true
         }
     }
