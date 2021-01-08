@@ -51,23 +51,17 @@ object FirestoreManager {
             "date" to Date(),
             "type" to type,
             "message" to message,
+            "appVersion" to getAppVersion(),
             "deviceID" to getDeviceId(context),
             "deviceModel" to getDeviceModel(),
             "deviceOS" to getDeviceOs(),
-            "appVersion" to getAppVersion(context),
             "country" to getCountry(),
             "ip" to getIp()
         )
     }
 
-    private fun getAppVersion(context: Context): String {
-        return try {
-            val packageName = context.packageName
-            val packageInfo = context.packageManager.getPackageInfo(packageName, 0)
-            packageInfo.versionName
-        } catch (ex: Exception) {
-            ex.toString()
-        }
+    private fun getAppVersion(): String {
+        return GlobalApplication.instance.appVersion
     }
 
     private fun getDeviceId(context: Context): String {

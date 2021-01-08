@@ -12,12 +12,24 @@ class GlobalApplication : Application() {
     }
 
     val appMode = AppMode.RELEASE
+    var appVersion: String = "null"
     val firestoreConfig = FirestoreConfig()
 
     override fun onCreate() {
         super.onCreate()
 
         instance = this
+        appVersion = getAppVersionName()
+    }
+
+    private fun getAppVersionName(): String {
+        return try {
+            val packageName = packageName
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            packageInfo.versionName
+        } catch (ex: Exception) {
+            ex.toString()
+        }
     }
 
 }
