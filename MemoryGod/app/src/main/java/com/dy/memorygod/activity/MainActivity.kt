@@ -23,6 +23,7 @@ import com.dy.memorygod.adapter.MainRecyclerViewEventListener
 import com.dy.memorygod.data.ContactPhoneNumberData
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
+import com.dy.memorygod.entity.MainDataEntity
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
 import com.dy.memorygod.thread.*
@@ -59,6 +60,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         setFirestoreConfig()
         setAD()
         setData()
+    }
+
+    private fun showToast(message: String) {
+        runOnUiThread {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onStart() {
@@ -147,9 +154,52 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setData() {
+        val message = getString(R.string.app_data_load_progress_message)
+        ProgressDialogManager.show(this, message)
         MainDataManager.init()
-        setPhoneNumberData()
-        setSampleData()
+
+        val thread = BackupDataLoadThread(this)
+        thread.start()
+        thread.join()
+
+        val backupData = thread.backupData
+//        LogsManager.d("setData backupData : $backupData")
+
+        if (backupData == null || backupData.isEmpty()) {
+            setPhoneNumberData()
+            loadSampleData()
+        } else {
+            loadMainData(backupData)
+        }
+
+        val exception = thread.exception
+        LogsManager.d("setData backupData exception: $exception")
+
+        if (exception != null) {
+            // Message
+            val errorMessage = FirestoreLogType.BACKUP_DATA_LOAD_ERROR.get()
+            showToast(errorMessage)
+
+            // Firestore Log
+            if (FirestoreManager.isLogEnable()) {
+                firestoreDB.collection(FirestoreManager.COLLECTION_LOGS)
+                    .document(FirestoreManager.COLLECTION_LOGS_DOCUMENT_DATE)
+                    .collection(FirestoreManager.getLogsDate())
+                    .add(
+                        FirestoreManager.getLogData(
+                            this,
+                            FirestoreLogType.BACKUP_DATA_LOAD_ERROR,
+                            exception
+                        )
+                    )
+                    .addOnSuccessListener { documentReference ->
+                        LogsManager.d("BACKUP_DATA_LOAD_ERROR addOnSuccessListener documentReference.id : ${documentReference.id}")
+                    }
+                    .addOnFailureListener { error ->
+                        LogsManager.d("BACKUP_DATA_LOAD_ERROR addOnFailureListener error : $error")
+                    }
+            }
+        }
     }
 
     private fun setPhoneNumberData() {
@@ -160,22 +210,21 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         MainDataManager.dataList.add(data)
     }
 
-    private fun setSampleData() {
-        val message = getString(R.string.app_sample_data_load_progress_message)
-        ProgressDialogManager.show(this, message)
-
+    private fun loadSampleData() {
         Handler().postDelayed({
             val thread = SampleDataLoadThread(this)
             thread.start()
             thread.join()
-
-            ProgressDialogManager.hide()
-            loadBackupData()
+            init()
 
             val exception = thread.exception
             LogsManager.d("setSampleData exception : $exception")
 
             if (exception != null) {
+                // Message
+                val errorMessage = FirestoreLogType.SAMPLE_DATA_LOAD_ERROR.get()
+                showToast(errorMessage)
+
                 // Firestore Log
                 if (FirestoreManager.isLogEnable()) {
                     firestoreDB.collection(FirestoreManager.COLLECTION_LOGS)
@@ -199,32 +248,53 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }, threadDelay)
     }
 
-    private fun loadBackupData() {
-        val message = getString(R.string.app_backup_load_message)
-        ProgressDialogManager.show(this, message)
-
+    private fun loadMainData(backupData: List<MainDataEntity>) {
         Handler().postDelayed({
-            val thread = MainDataLoadThread(this)
+            val thread = MainDataLoadThread(backupData)
             thread.start()
             thread.join()
+            init()
 
             val exception = thread.exception
             if (exception != null) {
-                val errorFormat = getString(R.string.app_backup_load_error)
-                val errorMessage = String.format(errorFormat, exception)
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                // Message
+                val errorMessage = FirestoreLogType.MAIN_DATA_DB_LOAD_ERROR.get()
+                showToast(errorMessage)
 
+                // FirebaseAnalytics Log
                 val name = FirebaseAnalyticsEventName.MAIN_DATA_DB_LOAD_ERROR.get()
                 val bundle = Bundle()
                 bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
                 firebaseAnalytics.logEvent(name, bundle)
-            }
 
-            setRecyclerView()
-            refreshMode(ActivityModeMain.NORMAL)
-            MainDataManager.setLoadingComplete()
-            ProgressDialogManager.hide()
+                // Firestore Log
+                if (FirestoreManager.isLogEnable()) {
+                    firestoreDB.collection(FirestoreManager.COLLECTION_LOGS)
+                        .document(FirestoreManager.COLLECTION_LOGS_DOCUMENT_DATE)
+                        .collection(FirestoreManager.getLogsDate())
+                        .add(
+                            FirestoreManager.getLogData(
+                                this,
+                                FirestoreLogType.MAIN_DATA_DB_LOAD_ERROR,
+                                exception
+                            )
+                        )
+                        .addOnSuccessListener { documentReference ->
+                            LogsManager.d("MAIN_DATA_DB_LOAD_ERROR addOnSuccessListener documentReference.id : ${documentReference.id}")
+                        }
+                        .addOnFailureListener { error ->
+                            LogsManager.d("MAIN_DATA_DB_LOAD_ERROR addOnFailureListener error : $error")
+                        }
+                }
+            }
         }, threadDelay)
+    }
+
+    private fun init() {
+        setRecyclerView()
+        refreshMode(ActivityModeMain.NORMAL)
+        MainDataManager.setLoadingComplete()
+        ProgressDialogManager.hide()
     }
 
     private fun saveBackupData() {
@@ -456,14 +526,35 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
             val exception = thread.exception
             if (exception != null) {
-                val errorFormat = getString(R.string.app_backup_save_error)
-                val errorMessage = String.format(errorFormat, exception)
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                // Message
+                val errorMessage = FirestoreLogType.MAIN_DATA_DB_SAVE_ERROR.get()
+                showToast(errorMessage)
 
+                // FirebaseAnalytics Log
                 val name = FirebaseAnalyticsEventName.MAIN_DATA_DB_SAVE_ERROR.get()
                 val bundle = Bundle()
                 bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
                 firebaseAnalytics.logEvent(name, bundle)
+
+                // Firestore Log
+                if (FirestoreManager.isLogEnable()) {
+                    firestoreDB.collection(FirestoreManager.COLLECTION_LOGS)
+                        .document(FirestoreManager.COLLECTION_LOGS_DOCUMENT_DATE)
+                        .collection(FirestoreManager.getLogsDate())
+                        .add(
+                            FirestoreManager.getLogData(
+                                this,
+                                FirestoreLogType.MAIN_DATA_DB_SAVE_ERROR,
+                                exception
+                            )
+                        )
+                        .addOnSuccessListener { documentReference ->
+                            LogsManager.d("MAIN_DATA_DB_SAVE_ERROR addOnSuccessListener documentReference.id : ${documentReference.id}")
+                        }
+                        .addOnFailureListener { error ->
+                            LogsManager.d("MAIN_DATA_DB_SAVE_ERROR addOnFailureListener error : $error")
+                        }
+                }
             }
 
             super.onBackPressed()

@@ -5,16 +5,13 @@
     <string name="app_content_description_item_reorder">아이템 이동</string>
     <string name="app_text_to_speech_error_format">TextToSpeech Error (%d)</string>
 
+    <string name="app_data_load_progress_message">데이터를 로딩중입니다.</string>
     <string name="app_phone_number_title">전화번호</string>
-    <string name="app_sample_data_load_progress_message">샘플 데이터를 로딩중입니다.</string>
 
     <string name="app_file_name_format">%s (%s)%s</string>
     <string name="app_file_save_data_none">저장할 데이터가 없습니다.</string>
     <string name="app_file_load_data_title">데이터 추가</string>
     <string name="app_backup_save_message">데이터를 저장중입니다.</string>
-    <string name="app_backup_load_message">데이터를 로딩중입니다.</string>
-    <string name="app_backup_save_error">저장 에러 (%s)</string>
-    <string name="app_backup_load_error">로딩 에러 (%s)</string>
 
     <string name="app_dialog_ok">확인</string>
     <string name="app_dialog_cancel">취소</string>

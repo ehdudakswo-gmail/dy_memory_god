@@ -3,13 +3,12 @@ package com.dy.memorygod.thread
 import android.content.Context
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
-import com.dy.memorygod.db.MainDataDB
 import com.dy.memorygod.entity.MainDataEntity
 import com.dy.memorygod.manager.MainDataManager
 import java.util.*
 import kotlin.collections.set
 
-class MainDataLoadThread(val context: Context) : Thread() {
+class MainDataLoadThread(private val backupData: List<MainDataEntity>) : Thread() {
 
     var exception: String? = null
 
@@ -17,15 +16,8 @@ class MainDataLoadThread(val context: Context) : Thread() {
         super.run()
 
         try {
-            val db = MainDataDB.getInstance(context)
-            val entityList = db?.mainDataDao()?.getAll() as List<MainDataEntity>
-
-            if (entityList.isEmpty()) {
-                return
-            }
-
             val hashMap = HashMap<Int, MainData>()
-            for (entity in entityList) {
+            for (entity in backupData) {
                 val idx = entity.idx
                 var contentList: MutableList<MainDataContent>
 
