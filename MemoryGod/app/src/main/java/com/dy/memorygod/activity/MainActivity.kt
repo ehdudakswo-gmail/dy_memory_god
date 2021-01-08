@@ -62,12 +62,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         setData()
     }
 
-    private fun showToast(message: String) {
-        runOnUiThread {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        }
-    }
-
     override fun onStart() {
         super.onStart()
 
@@ -80,7 +74,26 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     override fun onDestroy() {
         super.onDestroy()
 
-        ProgressDialogManager.hide()
+        ProgressDialogManager.hide(this)
+        AlertDialogManager.hide(this)
+    }
+
+    private fun showToast(message: String) {
+        runOnUiThread {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showAlertDialog(message: String) {
+        runOnUiThread {
+            AlertDialogManager.show(this, message)
+        }
+    }
+
+    private fun showProgressDialog(message: String) {
+        runOnUiThread {
+            ProgressDialogManager.show(this, message)
+        }
     }
 
     private fun setToolbar() {
@@ -155,7 +168,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
     private fun setData() {
         val message = getString(R.string.app_data_load_progress_message)
-        ProgressDialogManager.show(this, message)
+        showProgressDialog(message)
         MainDataManager.init()
 
         val thread = BackupDataLoadThread(this)
@@ -294,7 +307,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         setRecyclerView()
         refreshMode(ActivityModeMain.NORMAL)
         MainDataManager.setLoadingComplete()
-        ProgressDialogManager.hide()
+        ProgressDialogManager.hide(this)
     }
 
     private fun saveBackupData() {
@@ -453,7 +466,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val phoneNumberList = ContactManager.getPhoneNumberList(this@MainActivity)
                 if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
                     val errorMessage = ContactManager.ERROR_MESSAGE
-                    AlertDialogManager.show(this@MainActivity, errorMessage)
+                    showAlertDialog(errorMessage)
                     refreshContentView(MainDataManager.dataList)
 
                     val name = FirebaseAnalyticsEventName.PHONE_NUMBER_LOAD_ERROR.get()
@@ -517,7 +530,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
     private fun finishWithBackup() {
         val message = getString(R.string.app_backup_save_message)
-        ProgressDialogManager.show(this, message)
+        showProgressDialog(message)
 
         Handler().postDelayed({
             val thread = MainDataSaveThread(this)
@@ -832,7 +845,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             if (hashSet.contains(title)) {
                 val errorFormat = getString(R.string.app_toolBar_menu_file_save_error_title_overlap)
                 val errorMessage = String.format(errorFormat, title)
-                AlertDialogManager.show(this, errorMessage)
+                showAlertDialog(errorMessage)
                 return
             }
 
@@ -925,7 +938,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
     private fun handleFileSave(uri: Uri) {
         val loadingMessage = getString(R.string.app_toolBar_menu_file_save_progress_message)
-        ProgressDialogManager.show(this, loadingMessage)
+        showProgressDialog(loadingMessage)
 
         val dataList = MainDataManager.dataList
         refreshPhoneData(dataList)
@@ -940,8 +953,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
                 val errorMessage = String.format(errorFormat, exception)
 
-                AlertDialogManager.show(this, errorMessage)
-                ProgressDialogManager.hide()
+                showAlertDialog(errorMessage)
+                ProgressDialogManager.hide(this)
 
                 // FirebaseAnalytics Log
                 val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_SAVE_ERROR.get()
@@ -977,14 +990,14 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 R.string.app_toolBar_menu_file_save_complete,
                 Toast.LENGTH_SHORT
             ).show()
-            ProgressDialogManager.hide()
+            ProgressDialogManager.hide(this)
 
         }, threadDelay)
     }
 
     private fun handleFileLoad(uri: Uri) {
         val loadingMessage = getString(R.string.app_toolBar_menu_file_load_progress_message)
-        ProgressDialogManager.show(this, loadingMessage)
+        showProgressDialog(loadingMessage)
 
         Handler().postDelayed({
             val thread = ExcelFileLoadThread(this, uri)
@@ -996,8 +1009,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 val errorFormat = getString(R.string.app_toolBar_menu_file_load_error)
                 val errorMessage = String.format(errorFormat, exception)
 
-                AlertDialogManager.show(this, errorMessage)
-                ProgressDialogManager.hide()
+                showAlertDialog(errorMessage)
+                ProgressDialogManager.hide(this)
 
                 // FirebaseAnalytics Log
                 val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_LOAD_ERROR.get()
@@ -1030,7 +1043,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
             val dataList = thread.dataList
             handleFileLoadData(dataList)
-            ProgressDialogManager.hide()
+            ProgressDialogManager.hide(this)
         }, threadDelay)
     }
 

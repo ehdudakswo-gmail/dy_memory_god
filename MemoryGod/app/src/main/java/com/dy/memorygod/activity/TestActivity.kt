@@ -57,6 +57,12 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         refreshMode()
     }
 
+    private fun showProgressDialog(message: String) {
+        runOnUiThread {
+            ProgressDialogManager.show(this, message)
+        }
+    }
+
     private fun setToolbar() {
         setSupportActionBar(toolbar_test)
         val actionBar = supportActionBar!!
@@ -440,7 +446,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         recognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 val speechMessage = getString(R.string.test_item_test_dialog_voice_speech_message)
-                ProgressDialogManager.show(this@TestActivity, speechMessage)
+                showProgressDialog(speechMessage)
             }
 
             override fun onRmsChanged(rmsdB: Float) {
@@ -462,7 +468,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             }
 
             override fun onError(error: Int) {
-                ProgressDialogManager.hide()
+                ProgressDialogManager.hide(this@TestActivity)
                 val errorMessage = getVoiceErrorMessage(error)
                 Toast.makeText(
                     this@TestActivity,
@@ -472,7 +478,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             }
 
             override fun onResults(results: Bundle) {
-                ProgressDialogManager.hide()
+                ProgressDialogManager.hide(this@TestActivity)
                 val key = SpeechRecognizer.RESULTS_RECOGNITION
                 val result = results.getStringArrayList(key)
 
