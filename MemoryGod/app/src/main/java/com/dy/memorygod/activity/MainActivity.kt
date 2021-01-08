@@ -2,7 +2,6 @@ package com.dy.memorygod.activity
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -207,6 +206,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         LogsManager.d("BACKUP_DATA_LOAD_ERROR addOnFailureListener error : $error")
                     }
             }
+
+            // FirebaseCrashlytics Log
+            FirebaseCrashlyticsManager.record(
+                FirebaseCrashlyticsLogType.BACKUP_DATA_LOAD_ERROR,
+                exception
+            )
         }
     }
 
@@ -252,6 +257,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                             LogsManager.d("SAMPLE_DATA_LOAD_ERROR addOnFailureListener error : $error")
                         }
                 }
+
+                // FirebaseCrashlytics Log
+                FirebaseCrashlyticsManager.record(
+                    FirebaseCrashlyticsLogType.SAMPLE_DATA_LOAD_ERROR,
+                    exception
+                )
             }
         }, threadDelay)
     }
@@ -294,6 +305,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                             LogsManager.d("MAIN_DATA_DB_LOAD_ERROR addOnFailureListener error : $error")
                         }
                 }
+
+                // FirebaseCrashlytics Log
+                FirebaseCrashlyticsManager.record(
+                    FirebaseCrashlyticsLogType.MAIN_DATA_DB_LOAD_ERROR,
+                    exception
+                )
             }
         }, threadDelay)
     }
@@ -430,6 +447,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                     LogsManager.d("MAIN_ITEM_CLICK addOnFailureListener error : $error")
                 }
         }
+
+        // FirebaseCrashlytics Log
+        FirebaseCrashlyticsManager.record(FirebaseCrashlyticsLogType.MAIN_ITEM_CLICK, data.title)
     }
 
     private fun startTest(data: MainData, activityMode: ActivityModeTest) {
@@ -563,6 +583,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                             LogsManager.d("MAIN_DATA_DB_SAVE_ERROR addOnFailureListener error : $error")
                         }
                 }
+
+                // FirebaseCrashlytics Log
+                FirebaseCrashlyticsManager.record(
+                    FirebaseCrashlyticsLogType.MAIN_DATA_DB_SAVE_ERROR,
+                    exception
+                )
             }
 
             super.onBackPressed()
@@ -977,6 +1003,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         }
                 }
 
+                // FirebaseCrashlytics Log
+                FirebaseCrashlyticsManager.record(
+                    FirebaseCrashlyticsLogType.MAIN_DATA_EXCEL_SAVE_ERROR,
+                    errorMessage
+                )
+
                 return@postDelayed
             }
 
@@ -1028,6 +1060,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                             LogsManager.d("MAIN_DATA_EXCEL_LOAD_ERROR addOnFailureListener error : $error")
                         }
                 }
+
+                // FirebaseCrashlytics Log
+                FirebaseCrashlyticsManager.record(
+                    FirebaseCrashlyticsLogType.MAIN_DATA_EXCEL_LOAD_ERROR,
+                    errorMessage
+                )
 
                 return@postDelayed
             }
