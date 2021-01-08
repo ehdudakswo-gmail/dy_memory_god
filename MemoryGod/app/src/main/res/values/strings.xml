@@ -38,6 +38,7 @@
     <string name="app_toolBar_menu_file_save_error_title_overlap">아이템 이름 중복은 불가능합니다. (%s)</string>
     <string name="app_toolBar_menu_file_save_complete">파일 저장 완료</string>
     <string name="app_toolBar_menu_file_load_progress_message">파일을 로딩중입니다.</string>
+    <string name="app_toolBar_menu_file_load_complete">파일 열기 완료</string>
     <string name="app_toolBar_menu_file_load_error">파일 열기 에러 (%s)</string>
     <string name="app_toolBar_menu_file_load_data_check_none">데이터를 선택해주세요.</string>
 

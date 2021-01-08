@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             }
             .addOnFailureListener { exception ->
                 val errorMessage = exception.toString()
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                showToast(errorMessage)
 
                 LogsManager.d("setFirestoreConfig addOnFailureListener errorMessage : $errorMessage")
             }
@@ -985,11 +985,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 return@postDelayed
             }
 
-            Toast.makeText(
-                this,
-                R.string.app_toolBar_menu_file_save_complete,
-                Toast.LENGTH_SHORT
-            ).show()
+            showToast(getString(R.string.app_toolBar_menu_file_save_complete))
             ProgressDialogManager.hide(this)
 
         }, threadDelay)
@@ -1123,6 +1119,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 }
 
                 refreshView()
+                showToast(getString(R.string.app_toolBar_menu_file_load_complete))
             }
             .show()
 
