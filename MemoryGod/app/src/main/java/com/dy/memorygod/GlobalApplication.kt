@@ -14,6 +14,7 @@ class GlobalApplication : Application() {
     val appMode = AppMode.RELEASE
     var appVersion = "null"
     val firestoreConfig = FirestoreConfig()
+    var firestoreLastError: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -35,11 +36,11 @@ class GlobalApplication : Application() {
     fun getAppInfo(): String {
         val info = arrayOf(
             "appVersion : $appVersion",
-            "firestoreConfig-isAllEnable : ${firestoreConfig.isAllEnable}",
-            "firestoreConfig-isLogEnable : ${firestoreConfig.isLogEnable}"
+            "firestoreConfig : $firestoreConfig",
+            "firestoreLastError : $firestoreLastError"
         )
 
-        return info.joinToString("\n")
+        return info.map { "- " + it }.joinToString("\n")
     }
 
 }

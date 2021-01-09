@@ -5,43 +5,83 @@ import android.os.Build
 import android.provider.Settings
 import com.dy.memorygod.GlobalApplication
 import com.dy.memorygod.enums.LogType
+import com.google.firebase.firestore.FirebaseFirestore
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.text.SimpleDateFormat
 import java.util.*
 
 
-object FirestoreManager {
+object FirebaseFirestoreManager {
+
+    private val db = FirebaseFirestore.getInstance()
+    private const val COLLECTION_LOGS = "logs"
+    private const val COLLECTION_LOGS_DOCUMENT_DATE = "date"
 
     const val COLLECTION_CONFIG = "config"
     const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE = "firestore"
     const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isAllEnable = "isAllEnable"
     const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isLogEnable = "isLogEnable"
+    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_stopLogTypes = "stopLogTypes"
 
-    const val COLLECTION_LOGS = "logs"
-    const val COLLECTION_LOGS_DOCUMENT_DATE = "date"
+    fun log(context: Context, type: LogType, message: String) {
+        if (isLogStop(type)) {
+            val logData = FirebaseLogManager.getLogData(type, message)
+            LogsManager.d("FirebaseFirestoreManager log--stop : $logData")
+            return
+        }
 
-    fun isLogEnable(): Boolean {
+        db.collection(COLLECTION_LOGS)
+            .document(COLLECTION_LOGS_DOCUMENT_DATE)
+            .collection(getLogsDate())
+            .add(
+                getLogData(
+                    context,
+                    type,
+                    message
+                )
+            )
+            .addOnSuccessListener { documentReference ->
+                val logData = FirebaseLogManager.getLogData(type, message)
+                LogsManager.d("FirebaseFirestoreManager log--record : $logData")
+                LogsManager.d("FirebaseFirestoreManager log addOnSuccessListener documentReference.id : ${documentReference.id}")
+            }
+            .addOnFailureListener { exception ->
+                val logMessage =
+                    "FirebaseFirestoreManager log addOnFailureListener exception : $exception"
+                LogsManager.d(logMessage)
+                FirebaseLogManager.logFirestoreError(context, logMessage)
+            }
+    }
+
+    private fun isLogStop(type: LogType): Boolean {
         val appConfig = GlobalApplication.instance.firestoreConfig
         if (!appConfig.isAllEnable) {
-            return false
+            return true
         }
 
         if (!appConfig.isLogEnable) {
-            return false
+            return true
         }
 
-        return true
+        val stopLogTypes = appConfig.stopLogTypes
+        val typeStr = type.get()
+
+        if (stopLogTypes != null && stopLogTypes.contains(typeStr)) {
+            return true
+        }
+
+        return false
     }
 
-    fun getLogsDate(): String {
+    private fun getLogsDate(): String {
         val now = Date()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
         return dateFormat.format(now)
     }
 
-    fun getLogData(
+    private fun getLogData(
         context: Context,
         type: LogType,
         message: String
