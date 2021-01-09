@@ -1,6 +1,6 @@
 package com.dy.memorygod.manager
 
-import com.dy.memorygod.enums.FirebaseCrashlyticsLogType
+import com.dy.memorygod.enums.LogType
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 
 /**
@@ -12,7 +12,7 @@ object FirebaseCrashlyticsManager {
     private const val NEW_LINE = "\n"
     private const val ITEM_SEPARATOR = " / "
 
-    fun record(type: FirebaseCrashlyticsLogType, message: String) {
+    fun record(type: LogType, message: String) {
         val arr = arrayOf(
             "type : $type",
             "message : $message"

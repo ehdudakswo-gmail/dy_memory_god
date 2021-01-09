@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import com.dy.memorygod.GlobalApplication
-import com.dy.memorygod.enums.FirestoreLogType
+import com.dy.memorygod.enums.LogType
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.text.SimpleDateFormat
@@ -43,7 +43,7 @@ object FirestoreManager {
 
     fun getLogData(
         context: Context,
-        type: FirestoreLogType,
+        type: LogType,
         message: String
     ): HashMap<String, Any> {
 

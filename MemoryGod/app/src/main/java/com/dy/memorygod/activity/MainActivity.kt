@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         if (exception != null) {
             // Message
-            val errorMessage = FirestoreLogType.BACKUP_DATA_LOAD_ERROR.get()
+            val errorMessage = LogType.BACKUP_DATA_LOAD_ERROR.get()
             showToast(errorMessage)
 
             // Firestore Log
@@ -195,7 +195,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                     .add(
                         FirestoreManager.getLogData(
                             this,
-                            FirestoreLogType.BACKUP_DATA_LOAD_ERROR,
+                            LogType.BACKUP_DATA_LOAD_ERROR,
                             exception
                         )
                     )
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
             // FirebaseCrashlytics Log
             FirebaseCrashlyticsManager.record(
-                FirebaseCrashlyticsLogType.BACKUP_DATA_LOAD_ERROR,
+                LogType.BACKUP_DATA_LOAD_ERROR,
                 exception
             )
         }
@@ -235,7 +235,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
             if (exception != null) {
                 // Message
-                val errorMessage = FirestoreLogType.SAMPLE_DATA_LOAD_ERROR.get()
+                val errorMessage = LogType.SAMPLE_DATA_LOAD_ERROR.get()
                 showToast(errorMessage)
 
                 // Firestore Log
@@ -246,7 +246,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         .add(
                             FirestoreManager.getLogData(
                                 this,
-                                FirestoreLogType.SAMPLE_DATA_LOAD_ERROR,
+                                LogType.SAMPLE_DATA_LOAD_ERROR,
                                 exception
                             )
                         )
@@ -260,7 +260,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
                 // FirebaseCrashlytics Log
                 FirebaseCrashlyticsManager.record(
-                    FirebaseCrashlyticsLogType.SAMPLE_DATA_LOAD_ERROR,
+                    LogType.SAMPLE_DATA_LOAD_ERROR,
                     exception
                 )
             }
@@ -277,7 +277,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             val exception = thread.exception
             if (exception != null) {
                 // Message
-                val errorMessage = FirestoreLogType.MAIN_DATA_DB_LOAD_ERROR.get()
+                val errorMessage = LogType.MAIN_DATA_DB_LOAD_ERROR.get()
                 showToast(errorMessage)
 
                 // FirebaseAnalytics Log
@@ -294,7 +294,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         .add(
                             FirestoreManager.getLogData(
                                 this,
-                                FirestoreLogType.MAIN_DATA_DB_LOAD_ERROR,
+                                LogType.MAIN_DATA_DB_LOAD_ERROR,
                                 exception
                             )
                         )
@@ -308,7 +308,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
                 // FirebaseCrashlytics Log
                 FirebaseCrashlyticsManager.record(
-                    FirebaseCrashlyticsLogType.MAIN_DATA_DB_LOAD_ERROR,
+                    LogType.MAIN_DATA_DB_LOAD_ERROR,
                     exception
                 )
             }
@@ -436,7 +436,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 .add(
                     FirestoreManager.getLogData(
                         this,
-                        FirestoreLogType.MAIN_ITEM_CLICK,
+                        LogType.MAIN_ITEM_CLICK,
                         data.title
                     )
                 )
@@ -449,7 +449,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
 
         // FirebaseCrashlytics Log
-        FirebaseCrashlyticsManager.record(FirebaseCrashlyticsLogType.MAIN_ITEM_CLICK, data.title)
+        FirebaseCrashlyticsManager.record(LogType.MAIN_ITEM_CLICK, data.title)
     }
 
     private fun startTest(data: MainData, activityMode: ActivityModeTest) {
@@ -555,7 +555,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             val exception = thread.exception
             if (exception != null) {
                 // Message
-                val errorMessage = FirestoreLogType.MAIN_DATA_DB_SAVE_ERROR.get()
+                val errorMessage = LogType.MAIN_DATA_DB_SAVE_ERROR.get()
                 showToast(errorMessage)
 
                 // FirebaseAnalytics Log
@@ -572,7 +572,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         .add(
                             FirestoreManager.getLogData(
                                 this,
-                                FirestoreLogType.MAIN_DATA_DB_SAVE_ERROR,
+                                LogType.MAIN_DATA_DB_SAVE_ERROR,
                                 exception
                             )
                         )
@@ -586,7 +586,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
                 // FirebaseCrashlytics Log
                 FirebaseCrashlyticsManager.record(
-                    FirebaseCrashlyticsLogType.MAIN_DATA_DB_SAVE_ERROR,
+                    LogType.MAIN_DATA_DB_SAVE_ERROR,
                     exception
                 )
             }
@@ -991,7 +991,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         .add(
                             FirestoreManager.getLogData(
                                 this,
-                                FirestoreLogType.MAIN_DATA_EXCEL_SAVE_ERROR,
+                                LogType.MAIN_DATA_EXCEL_SAVE_ERROR,
                                 errorMessage
                             )
                         )
@@ -1005,7 +1005,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
                 // FirebaseCrashlytics Log
                 FirebaseCrashlyticsManager.record(
-                    FirebaseCrashlyticsLogType.MAIN_DATA_EXCEL_SAVE_ERROR,
+                    LogType.MAIN_DATA_EXCEL_SAVE_ERROR,
                     errorMessage
                 )
 
@@ -1049,7 +1049,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         .add(
                             FirestoreManager.getLogData(
                                 this,
-                                FirestoreLogType.MAIN_DATA_EXCEL_LOAD_ERROR,
+                                LogType.MAIN_DATA_EXCEL_LOAD_ERROR,
                                 errorMessage
                             )
                         )
@@ -1063,7 +1063,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
                 // FirebaseCrashlytics Log
                 FirebaseCrashlyticsManager.record(
-                    FirebaseCrashlyticsLogType.MAIN_DATA_EXCEL_LOAD_ERROR,
+                    LogType.MAIN_DATA_EXCEL_LOAD_ERROR,
                     errorMessage
                 )
 

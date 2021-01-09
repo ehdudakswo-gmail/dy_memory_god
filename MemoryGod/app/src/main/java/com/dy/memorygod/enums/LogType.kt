@@ -1,6 +1,6 @@
 package com.dy.memorygod.enums
 
-enum class FirebaseCrashlyticsLogType {
+enum class LogType {
 
     MAIN_ITEM_CLICK,
 
