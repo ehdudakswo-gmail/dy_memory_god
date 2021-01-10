@@ -295,7 +295,11 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         dialog.setCanceledOnTouchOutside(false)
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-            showAnswerViewDialog(dataAnswer)
+            Toast.makeText(
+                this,
+                dataAnswer,
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
@@ -336,6 +340,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             speakVoice(dataProblem)
         }
 
+        view.imageView_test_dialog_answer_speak.setOnClickListener {
+            speakVoice(dataAnswer)
+        }
+
         view.imageView_test_dialog_pre.setOnClickListener {
             setPreDialog(dialog)
         }
@@ -351,33 +359,6 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         view.imageView_test_answer_settings.setOnClickListener {
             showAnswerSettingsDialog()
         }
-    }
-
-    private fun showAnswerViewDialog(dataAnswer: String) {
-        val itemText = getString(R.string.test_item_test_dialog_answer_view_text)
-        val itemVoice = getString(R.string.test_item_test_dialog_answer_view_voice)
-
-        val itemArr = arrayOf(
-            itemText,
-            itemVoice
-        )
-
-        val builder = AlertDialog.Builder(this)
-        val dialog = builder
-            .setItems(itemArr) { _, which ->
-                when (itemArr[which]) {
-                    itemText -> {
-                        Toast.makeText(
-                            this,
-                            dataAnswer,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    itemVoice -> {
-                        speakVoice(dataAnswer)
-                    }
-                }
-            }.show()
     }
 
     private fun speakVoice(text: String) {
