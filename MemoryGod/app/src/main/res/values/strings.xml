@@ -5,22 +5,13 @@
     <string name="app_content_description_item_reorder">아이템 이동</string>
     <string name="app_text_to_speech_error_format">TextToSpeech Error (%d)</string>
 
+    <string name="app_data_load_progress_message">데이터를 로딩중입니다.</string>
     <string name="app_phone_number_title">전화번호</string>
-    <string name="app_sample_title">영어단어 샘플</string>
-    <string name="app_sample_content1_problem">Apple</string>
-    <string name="app_sample_content1_answer">사과</string>
-    <string name="app_sample_content2_problem">Korea</string>
-    <string name="app_sample_content2_answer">한국</string>
-    <string name="app_sample_content3_problem">English</string>
-    <string name="app_sample_content3_answer">영어</string>
 
     <string name="app_file_name_format">%s (%s)%s</string>
     <string name="app_file_save_data_none">저장할 데이터가 없습니다.</string>
     <string name="app_file_load_data_title">데이터 추가</string>
     <string name="app_backup_save_message">데이터를 저장중입니다.</string>
-    <string name="app_backup_load_message">데이터를 로딩중입니다.</string>
-    <string name="app_backup_save_error">저장 에러 (%s)</string>
-    <string name="app_backup_load_error">로딩 에러 (%s)</string>
 
     <string name="app_dialog_ok">확인</string>
     <string name="app_dialog_cancel">취소</string>
@@ -43,11 +34,10 @@
     <string name="app_toolBar_menu_sort_data_empty">정렬할 데이터가 없습니다.</string>
     <string name="app_toolBar_menu_search_data_empty">검색할 데이터가 없습니다.</string>
     <string name="app_toolBar_menu_file_save_progress_message">파일을 저장중입니다.</string>
-    <string name="app_toolBar_menu_file_save_error">파일 저장 에러 (%s)</string>
     <string name="app_toolBar_menu_file_save_error_title_overlap">아이템 이름 중복은 불가능합니다. (%s)</string>
     <string name="app_toolBar_menu_file_save_complete">파일 저장 완료</string>
     <string name="app_toolBar_menu_file_load_progress_message">파일을 로딩중입니다.</string>
-    <string name="app_toolBar_menu_file_load_error">파일 열기 에러 (%s)</string>
+    <string name="app_toolBar_menu_file_load_complete">파일 열기 완료</string>
     <string name="app_toolBar_menu_file_load_data_check_none">데이터를 선택해주세요.</string>
 
     <string name="app_item_empty">아이템이 없습니다.</string>
@@ -103,13 +93,14 @@
     <string name="test_item_edit_dialog_answer_hint">정답</string>
 
     <string name="test_item_test_dialog_answer_hint">정답 입력</string>
-    <string name="test_item_test_dialog_answer_view">정답 확인</string>
-    <string name="test_item_test_dialog_answer_view_text">텍스트</string>
-    <string name="test_item_test_dialog_answer_view_voice">음성</string>
+    <string name="test_item_test_dialog_answer_view">정답 보기</string>
     <string name="test_item_test_dialog_pass">정답입니다.</string>
     <string name="test_item_test_dialog_wrong">오답입니다.</string>
     <string name="test_item_test_dialog_wrong_space">오답입니다. (공백을 확인해주세요)</string>
     <string name="test_item_test_dialog_wrong_case_sensitive">오답입니다. (대소문자를 확인해주세요)</string>
+
+    <string name="test_item_test_dialog_pre_limit">처음 문제입니다.</string>
+    <string name="test_item_test_dialog_next_limit">마지막 문제입니다.</string>
 
     <string name="test_item_test_dialog_voice_speech_message">음성 인식 중</string>
     <string name="test_item_test_dialog_voice_error_format">Voice onError (%d)</string>
@@ -122,8 +113,12 @@
     <string name="test_sort_toolBar_menu_name_reverse">이름 역순</string>
     <string name="test_sort_toolBar_menu_test_check">채점 순</string>
     <string name="test_sort_toolBar_menu_test_check_reverse">채점 역순</string>
+    <string name="test_sort_toolBar_menu_random">랜덤</string>
 
-    <string name="imageView_contentDescription_test_dialog_title_speak">문제읽기</string>
+    <string name="imageView_contentDescription_test_dialog_title_speak">문제음성</string>
+    <string name="imageView_contentDescription_test_dialog_answer_speak">정답음성</string>
+    <string name="imageView_contentDescription_test_dialog_pre">이전문제</string>
+    <string name="imageView_contentDescription_test_dialog_next">다음문제</string>
     <string name="imageView_contentDescription_test_answer_mic">음성입력</string>
     <string name="imageView_contentDescription_test_answer_settings">설정</string>
 

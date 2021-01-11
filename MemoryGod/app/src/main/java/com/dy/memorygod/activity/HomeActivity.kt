@@ -9,16 +9,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.dy.memorygod.R
-import com.dy.memorygod.enums.FirebaseAnalyticsEventName
-import com.dy.memorygod.enums.FirebaseAnalyticsEventParam
+import com.dy.memorygod.enums.LogType
 import com.dy.memorygod.enums.VersionCheckState
+import com.dy.memorygod.manager.FirebaseLogManager
 import com.dy.memorygod.manager.NetworkCheckManager
 import com.dy.memorygod.thread.MarketVersionThread
-import com.google.firebase.analytics.FirebaseAnalytics
 
 class HomeActivity : AppCompatActivity() {
-
-    private val firebaseAnalytics: FirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,13 +123,13 @@ class HomeActivity : AppCompatActivity() {
             .setTitle(R.string.home_version_update_alert_dialog_title)
             .setMessage(getUpdateMessage(appVersion, marketVersion))
             .setPositiveButton(R.string.home_version_update_alert_dialog_button_ok) { _, _ ->
-                setUpdateLog(FirebaseAnalyticsEventName.HOME_UPDATE_OK, appVersion, marketVersion)
+                setUpdateLog(LogType.HOME_UPDATE_OK_CLICK, appVersion, marketVersion)
                 startMarket()
                 finish()
             }
             .setNegativeButton(R.string.app_dialog_cancel) { _, _ ->
                 setUpdateLog(
-                    FirebaseAnalyticsEventName.HOME_UPDATE_CANCEL,
+                    LogType.HOME_UPDATE_CANCEL_CLICK,
                     appVersion,
                     marketVersion
                 )
@@ -150,14 +147,16 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setUpdateLog(
-        eventName: FirebaseAnalyticsEventName,
+        logType: LogType,
         appVersion: String,
         marketVersion: String
     ) {
-        val name = eventName.get()
-        val bundle = Bundle()
-        bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), "$appVersion / $marketVersion")
-        firebaseAnalytics.logEvent(name, bundle)
+        // Log Data
+        val logMessageArr = arrayOf("appVersion : $appVersion", "marketVersion : $marketVersion")
+        val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+        // Firebase Log
+        FirebaseLogManager.log(this, logType, logMessage)
     }
 
     private fun startMarket() {

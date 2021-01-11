@@ -23,4 +23,9 @@
         android:title="@string/test_sort_toolBar_menu_test_check_reverse"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/test_sort_toolBar_menu_random"
+        android:title="@string/test_sort_toolBar_menu_random"
+        app:showAsAction="never" />
+
 </menu>

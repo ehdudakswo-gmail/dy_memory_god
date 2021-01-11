@@ -39,6 +39,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private val recyclerViewAdapter = TestRecyclerViewAdapter(this, this)
     private var mode = ActivityModeTest.NORMAL
 
+    private var selectedPosition: Int = 0
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var answerEditText: EditText
@@ -54,6 +55,12 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         setTextToSpeech()
         showInitMessage()
         refreshMode()
+    }
+
+    private fun showProgressDialog(message: String) {
+        runOnUiThread {
+            ProgressDialogManager.show(this, message)
+        }
     }
 
     private fun setToolbar() {
@@ -256,6 +263,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             return
         }
 
+        selectedPosition = position
         val item = recyclerViewAdapter.dataList[position]
         setItemTest(item)
     }
@@ -265,7 +273,12 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         val dataAnswer = data.answer.trim()
 
         val view = View.inflate(this, R.layout.dialog_test_item_test, null)
+        val titleLayout = view.layout_test_dialog_title
         val titleTextView = view.textView_test_dialog_title
+
+        if (data.testCheck == TestCheck.PASS) {
+            titleLayout.setBackgroundResource(data.testCheck.color)
+        }
         titleTextView.text = dataProblem
 
         answerEditText = view.editText_test_item_test_answer
@@ -282,7 +295,11 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         dialog.setCanceledOnTouchOutside(false)
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-            showAnswerViewDialog(dataAnswer)
+            Toast.makeText(
+                this,
+                dataAnswer,
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
@@ -323,6 +340,18 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             speakVoice(dataProblem)
         }
 
+        view.imageView_test_dialog_answer_speak.setOnClickListener {
+            speakVoice(dataAnswer)
+        }
+
+        view.imageView_test_dialog_pre.setOnClickListener {
+            setPreDialog(dialog)
+        }
+
+        view.imageView_test_dialog_next.setOnClickListener {
+            setNextDialog(dialog)
+        }
+
         view.imageView_test_answer_mic.setOnClickListener {
             KeyboardManager.hide(this, view)
             checkVoiceInputPermission()
@@ -332,35 +361,35 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
     }
 
-    private fun showAnswerViewDialog(dataAnswer: String) {
-        val itemText = getString(R.string.test_item_test_dialog_answer_view_text)
-        val itemVoice = getString(R.string.test_item_test_dialog_answer_view_voice)
-
-        val itemArr = arrayOf(
-            itemText,
-            itemVoice
-        )
-
-        val builder = AlertDialog.Builder(this)
-        val dialog = builder
-            .setItems(itemArr) { _, which ->
-                when (itemArr[which]) {
-                    itemText -> {
-                        Toast.makeText(
-                            this,
-                            dataAnswer,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    itemVoice -> {
-                        speakVoice(dataAnswer)
-                    }
-                }
-            }.show()
-    }
-
     private fun speakVoice(text: String) {
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+
+    private fun setPreDialog(dialog: AlertDialog) {
+        if (selectedPosition <= 0) {
+            Toast.makeText(this, R.string.test_item_test_dialog_pre_limit, Toast.LENGTH_SHORT)
+                .show()
+        } else {
+            dialog.cancel()
+            selectedPosition--
+
+            val item = recyclerViewAdapter.dataList[selectedPosition]
+            setItemTest(item)
+        }
+    }
+
+    private fun setNextDialog(dialog: AlertDialog) {
+        val lastIdx = recyclerViewAdapter.dataList.lastIndex
+        if (selectedPosition >= lastIdx) {
+            Toast.makeText(this, R.string.test_item_test_dialog_next_limit, Toast.LENGTH_SHORT)
+                .show()
+        } else {
+            dialog.cancel()
+            selectedPosition++
+
+            val item = recyclerViewAdapter.dataList[selectedPosition]
+            setItemTest(item)
+        }
     }
 
     private fun cancelDialog(view: View, dialog: AlertDialog) {
@@ -398,7 +427,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         recognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 val speechMessage = getString(R.string.test_item_test_dialog_voice_speech_message)
-                ProgressDialogManager.show(this@TestActivity, speechMessage)
+                showProgressDialog(speechMessage)
             }
 
             override fun onRmsChanged(rmsdB: Float) {
@@ -420,7 +449,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             }
 
             override fun onError(error: Int) {
-                ProgressDialogManager.hide()
+                ProgressDialogManager.hide(this@TestActivity)
                 val errorMessage = getVoiceErrorMessage(error)
                 Toast.makeText(
                     this@TestActivity,
@@ -430,7 +459,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             }
 
             override fun onResults(results: Bundle) {
-                ProgressDialogManager.hide()
+                ProgressDialogManager.hide(this@TestActivity)
                 val key = SpeechRecognizer.RESULTS_RECOGNITION
                 val result = results.getStringArrayList(key)
 

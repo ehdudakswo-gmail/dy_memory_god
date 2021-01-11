@@ -1,8 +1,9 @@
 package com.dy.memorygod.activity
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -16,46 +17,52 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.dy.memorygod.GlobalApplication
 import com.dy.memorygod.R
 import com.dy.memorygod.adapter.MainRecyclerViewAdapter
 import com.dy.memorygod.adapter.MainRecyclerViewEventListener
 import com.dy.memorygod.data.ContactPhoneNumberData
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
+import com.dy.memorygod.entity.MainDataEntity
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
-import com.dy.memorygod.thread.ExcelFileLoadThread
-import com.dy.memorygod.thread.ExcelFileSaveThread
-import com.dy.memorygod.thread.MainDataLoadThread
-import com.dy.memorygod.thread.MainDataSaveThread
+import com.dy.memorygod.thread.*
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
-import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import kotlin.collections.ArrayList
 
+
 class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
+    private val context = this
     private val recyclerViewAdapter = MainRecyclerViewAdapter(this, this)
     private var mode = ActivityModeMain.NORMAL
 
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
     private val threadDelay = 100L
-    private val firebaseAnalytics: FirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
+    // Firebase
+    private val firestoreDB = FirebaseFirestore.getInstance()
+    private var firestoreConfigSnapshotListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         setToolbar()
-        setAD()
-        setDefaultData()
-        loadBackupData()
+        setFirestoreConfig()
+        setAdMob()
+        setData()
     }
 
     override fun onStart() {
@@ -70,7 +77,28 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     override fun onDestroy() {
         super.onDestroy()
 
-        ProgressDialogManager.hide()
+        ProgressDialogManager.hide(this)
+        AlertDialogManager.hide(this)
+
+        firestoreConfigSnapshotListener?.remove()
+    }
+
+    private fun showToast(message: String) {
+        runOnUiThread {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showAlertDialog(message: String) {
+        runOnUiThread {
+            AlertDialogManager.show(this, message)
+        }
+    }
+
+    private fun showProgressDialog(message: String) {
+        runOnUiThread {
+            ProgressDialogManager.show(this, message)
+        }
     }
 
     private fun setToolbar() {
@@ -80,19 +108,93 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         actionBar.setDisplayShowTitleEnabled(false)
 
         textView_main_toolbar_title.setOnLongClickListener {
-            val info: PackageInfo = packageManager.getPackageInfo(packageName, 0)
-            val version = info.versionName
+            // Show Message
+            val appInfo = GlobalApplication.instance.getAppInfo()
+            showAlertDialog(appInfo)
 
-            Toast.makeText(
-                this,
-                version,
-                Toast.LENGTH_SHORT
-            ).show()
+            // Copy Clipboard
+            val clipboardManager = getSystemService(Activity.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipData = ClipData.newPlainText("appInfo", appInfo)
+            clipboardManager.setPrimaryClip(clipData)
+
             true
         }
     }
 
-    private fun setAD() {
+    private fun setFirestoreConfig() {
+        val collectionPath = FirebaseFirestoreManager.COLLECTION_CONFIG
+        val documentPath = FirebaseFirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE
+        val docRef = firestoreDB.collection(collectionPath).document(documentPath)
+
+        // once
+        docRef
+            .get()
+            .addOnSuccessListener { document ->
+                val data = document.data
+                val logMessage = "setFirestoreConfig addOnSuccessListener data : $data"
+                LogsManager.d(logMessage)
+
+                if (data == null) {
+                    FirebaseLogManager.logFirestoreError(this, logMessage)
+                    return@addOnSuccessListener
+                }
+
+                setAppConfig(data)
+            }
+            .addOnFailureListener { exception ->
+                val logMessage = "setFirestoreConfig addOnFailureListener exception : $exception"
+                LogsManager.d(logMessage)
+                FirebaseLogManager.logFirestoreError(this, logMessage)
+            }
+
+        // realtime
+        firestoreConfigSnapshotListener = docRef.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                val logMessage = "setFirestoreConfig addSnapshotListener exception : $exception"
+                LogsManager.d(logMessage)
+                FirebaseLogManager.logFirestoreError(this, logMessage)
+                return@addSnapshotListener
+            }
+
+            if (snapshot == null || !snapshot.exists()) {
+                val logMessage = "setFirestoreConfig addSnapshotListener snapshot : $snapshot"
+                LogsManager.d(logMessage)
+                FirebaseLogManager.logFirestoreError(this, logMessage)
+                return@addSnapshotListener
+            }
+
+            val data = snapshot.data
+            val logMessage = "setFirestoreConfig addSnapshotListener data : $data"
+            LogsManager.d(logMessage)
+
+            if (data == null) {
+                FirebaseLogManager.logFirestoreError(this, logMessage)
+                return@addSnapshotListener
+            }
+
+            setAppConfig(data)
+        }
+    }
+
+    private fun setAppConfig(data: Map<String, Any>) {
+        val isAllEnableKey =
+            FirebaseFirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isAllEnable
+        val isLogEnableKey =
+            FirebaseFirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isLogEnable
+        val stopLogTypesKey =
+            FirebaseFirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_stopLogTypes
+
+        val isAllEnable = data[isAllEnableKey] as Boolean
+        val isLogEnable = data[isLogEnableKey] as Boolean
+        val stopLogTypes = data[stopLogTypesKey] as List<*>
+
+        val appConfig = GlobalApplication.instance.firestoreConfig
+        appConfig.isAllEnable = isAllEnable
+        appConfig.isLogEnable = isLogEnable
+        appConfig.stopLogTypes = stopLogTypes
+    }
+
+    private fun setAdMob() {
         MobileAds.initialize(this) {}
 
         val adView = adView_main
@@ -100,22 +202,57 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         adView.loadAd(adRequest)
         adView.adListener = object : AdListener() {
-            override fun onAdFailedToLoad(errorCode: Int) {
-                super.onAdFailedToLoad(errorCode)
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                super.onAdFailedToLoad(error)
 
-                val name = FirebaseAnalyticsEventName.AD_FAILED_TO_LOAD.get()
-                val nameWithValue = "${name}_${errorCode}"
-                val bundle = Bundle()
-                bundle.putInt(FirebaseAnalyticsEventParam.INT_VALUE.get(), errorCode)
-                firebaseAnalytics.logEvent(nameWithValue, bundle)
+                val errorCode = error.code
+                val errorMessage = error.message
+                val logMessageArr =
+                    arrayOf("errorCode : $errorCode", "errorMessage : $errorMessage")
+
+                // Log Data
+                val logType = LogType.ADMOB_FAILED_TO_LOAD
+                val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                // Firebase Log
+                FirebaseLogManager.log(context, logType, logMessage)
             }
         }
     }
 
-    private fun setDefaultData() {
+    private fun setData() {
+        val progressMessage = getString(R.string.app_data_load_progress_message)
+        showProgressDialog(progressMessage)
         MainDataManager.init()
-        setPhoneNumberData()
-        setSampleData()
+
+        val thread = BackupDataLoadThread(this)
+        thread.start()
+        thread.join()
+
+        val backupData = thread.backupData
+//        LogsManager.d("setData backupData : $backupData")
+
+        if (backupData == null || backupData.isEmpty()) {
+            setPhoneNumberData()
+            loadSampleData()
+        } else {
+            loadMainData(backupData)
+        }
+
+        val exception = thread.exception
+        LogsManager.d("setData backupData exception: $exception")
+
+        if (exception != null) {
+            // Log Data
+            val logType = LogType.BACKUP_DATA_LOAD_ERROR
+            val logMessage = exception
+
+            // Show Message
+            showToast(logType.get())
+
+            // Firebase Log
+            FirebaseLogManager.log(this, logType, logMessage)
+        }
     }
 
     private fun setPhoneNumberData() {
@@ -126,62 +263,57 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         MainDataManager.dataList.add(data)
     }
 
-    private fun setSampleData() {
-        val title = getString(R.string.app_sample_title)
-        val contentList = mutableListOf<MainDataContent>()
-
-        contentList.add(
-            MainDataContent(
-                getString(R.string.app_sample_content1_problem),
-                getString(R.string.app_sample_content1_answer),
-                TestCheck.NONE
-            )
-        )
-        contentList.add(
-            MainDataContent(
-                getString(R.string.app_sample_content2_problem),
-                getString(R.string.app_sample_content2_answer),
-                TestCheck.NONE
-            )
-        )
-        contentList.add(
-            MainDataContent(
-                getString(R.string.app_sample_content3_problem),
-                getString(R.string.app_sample_content3_answer),
-                TestCheck.NONE
-            )
-        )
-
-        val data = MainData(title, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
-        MainDataManager.dataList.add(data)
-    }
-
-    private fun loadBackupData() {
-        val message = getString(R.string.app_backup_load_message)
-        ProgressDialogManager.show(this, message)
-
+    private fun loadSampleData() {
         Handler().postDelayed({
-            val thread = MainDataLoadThread(this)
+            val thread = SampleDataLoadThread(this)
             thread.start()
             thread.join()
+            init()
+
+            val exception = thread.exception
+            LogsManager.d("loadSampleData exception : $exception")
+
+            if (exception != null) {
+                // Log Data
+                val logType = LogType.SAMPLE_DATA_LOAD_ERROR
+                val logMessage = exception
+
+                // Show Message
+                showToast(logType.get())
+
+                // Firebase Log
+                FirebaseLogManager.log(this, logType, logMessage)
+            }
+        }, threadDelay)
+    }
+
+    private fun loadMainData(backupData: List<MainDataEntity>) {
+        Handler().postDelayed({
+            val thread = MainDataLoadThread(backupData)
+            thread.start()
+            thread.join()
+            init()
 
             val exception = thread.exception
             if (exception != null) {
-                val errorFormat = getString(R.string.app_backup_load_error)
-                val errorMessage = String.format(errorFormat, exception)
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                // Log Data
+                val logType = LogType.MAIN_DATA_DB_LOAD_ERROR
+                val logMessage = exception
 
-                val name = FirebaseAnalyticsEventName.MAIN_DATA_DB_LOAD_ERROR.get()
-                val bundle = Bundle()
-                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
-                firebaseAnalytics.logEvent(name, bundle)
+                // Show Message
+                showToast(logType.get())
+
+                // Firebase Log
+                FirebaseLogManager.log(this, logType, logMessage)
             }
-
-            setRecyclerView()
-            refreshMode(ActivityModeMain.NORMAL)
-            MainDataManager.setLoadingComplete()
-            ProgressDialogManager.hide()
         }, threadDelay)
+    }
+
+    private fun init() {
+        setRecyclerView()
+        refreshMode(ActivityModeMain.NORMAL)
+        MainDataManager.setLoadingComplete()
+        ProgressDialogManager.hide(this)
     }
 
     private fun saveBackupData() {
@@ -284,10 +416,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             }
         }
 
-        val name = FirebaseAnalyticsEventName.MAIN_ITEM_CLICK.get()
-        val bundle = Bundle()
-        bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), data.title)
-        firebaseAnalytics.logEvent(name, bundle)
+        // Log Data
+        val logType = LogType.MAIN_ITEM_CLICK
+        val logMessage = data.title
+
+        // Firebase Log
+        FirebaseLogManager.log(this, logType, logMessage)
     }
 
     private fun startTest(data: MainData, activityMode: ActivityModeTest) {
@@ -318,14 +452,18 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
                 val phoneNumberList = ContactManager.getPhoneNumberList(this@MainActivity)
                 if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
-                    val errorMessage = ContactManager.ERROR_MESSAGE
-                    AlertDialogManager.show(this@MainActivity, errorMessage)
                     refreshContentView(MainDataManager.dataList)
 
-                    val name = FirebaseAnalyticsEventName.PHONE_NUMBER_LOAD_ERROR.get()
-                    val bundle = Bundle()
-                    bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
-                    firebaseAnalytics.logEvent(name, bundle)
+                    // Log Data
+                    val logType = LogType.PHONE_NUMBER_LOAD_ERROR
+                    val logMessage = ContactManager.ERROR_MESSAGE
+
+                    // Show Message
+                    showAlertDialog(logType.get())
+
+                    // Firebase Log
+                    FirebaseLogManager.log(context, logType, logMessage)
+
                     return
                 }
 
@@ -383,7 +521,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
     private fun finishWithBackup() {
         val message = getString(R.string.app_backup_save_message)
-        ProgressDialogManager.show(this, message)
+        showProgressDialog(message)
 
         Handler().postDelayed({
             val thread = MainDataSaveThread(this)
@@ -392,14 +530,15 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
             val exception = thread.exception
             if (exception != null) {
-                val errorFormat = getString(R.string.app_backup_save_error)
-                val errorMessage = String.format(errorFormat, exception)
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                // Log Data
+                val logType = LogType.MAIN_DATA_DB_SAVE_ERROR
+                val logMessage = exception
 
-                val name = FirebaseAnalyticsEventName.MAIN_DATA_DB_SAVE_ERROR.get()
-                val bundle = Bundle()
-                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
-                firebaseAnalytics.logEvent(name, bundle)
+                // Show Message
+                showToast(logType.get())
+
+                // Firebase Log
+                FirebaseLogManager.log(this, logType, logMessage)
             }
 
             super.onBackPressed()
@@ -614,17 +753,16 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         val phoneNumberList = ContactManager.getPhoneNumberList(this@MainActivity)
 
         if (phoneNumberList == ContactManager.ERROR_CONTACT_PHONE_NUMBER) {
-            val errorMessage = ContactManager.ERROR_MESSAGE
-            Toast.makeText(
-                this@MainActivity,
-                errorMessage,
-                Toast.LENGTH_SHORT
-            ).show()
+            // Log Data
+            val logType = LogType.PHONE_NUMBER_REFRESH_ERROR
+            val logMessage = ContactManager.ERROR_MESSAGE
 
-            val name = FirebaseAnalyticsEventName.PHONE_NUMBER_REFRESH_ERROR.get()
-            val bundle = Bundle()
-            bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
-            firebaseAnalytics.logEvent(name, bundle)
+            // Show Message
+            showToast(logType.get())
+
+            // Firebase Log
+            FirebaseLogManager.log(this, logType, logMessage)
+
             return
         }
 
@@ -677,7 +815,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             if (hashSet.contains(title)) {
                 val errorFormat = getString(R.string.app_toolBar_menu_file_save_error_title_overlap)
                 val errorMessage = String.format(errorFormat, title)
-                AlertDialogManager.show(this, errorMessage)
+                showAlertDialog(errorMessage)
                 return
             }
 
@@ -770,7 +908,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
     private fun handleFileSave(uri: Uri) {
         val loadingMessage = getString(R.string.app_toolBar_menu_file_save_progress_message)
-        ProgressDialogManager.show(this, loadingMessage)
+        showProgressDialog(loadingMessage)
 
         val dataList = MainDataManager.dataList
         refreshPhoneData(dataList)
@@ -782,33 +920,29 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
             val exception = thread.exception
             if (exception != null) {
-                val errorFormat = getString(R.string.app_toolBar_menu_file_save_error)
-                val errorMessage = String.format(errorFormat, exception)
+                // Log Data
+                val logType = LogType.MAIN_DATA_EXCEL_SAVE_ERROR
+                val logMessage = exception
 
-                AlertDialogManager.show(this, errorMessage)
-                ProgressDialogManager.hide()
+                // Show Message
+                showAlertDialog(logType.get())
+                ProgressDialogManager.hide(this)
 
-                val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_SAVE_ERROR.get()
-                val bundle = Bundle()
-                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
-                firebaseAnalytics.logEvent(name, bundle)
+                // Firebase Log
+                FirebaseLogManager.log(this, logType, logMessage)
 
                 return@postDelayed
             }
 
-            Toast.makeText(
-                this,
-                R.string.app_toolBar_menu_file_save_complete,
-                Toast.LENGTH_SHORT
-            ).show()
-            ProgressDialogManager.hide()
+            showToast(getString(R.string.app_toolBar_menu_file_save_complete))
+            ProgressDialogManager.hide(this)
 
         }, threadDelay)
     }
 
     private fun handleFileLoad(uri: Uri) {
         val loadingMessage = getString(R.string.app_toolBar_menu_file_load_progress_message)
-        ProgressDialogManager.show(this, loadingMessage)
+        showProgressDialog(loadingMessage)
 
         Handler().postDelayed({
             val thread = ExcelFileLoadThread(this, uri)
@@ -817,22 +951,23 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
             val exception = thread.exception
             if (exception != null) {
-                val errorFormat = getString(R.string.app_toolBar_menu_file_load_error)
-                val errorMessage = String.format(errorFormat, exception)
+                // Log Data
+                val logType = LogType.MAIN_DATA_EXCEL_LOAD_ERROR
+                val logMessage = exception
 
-                AlertDialogManager.show(this, errorMessage)
-                ProgressDialogManager.hide()
+                // Show Message
+                showAlertDialog(logType.get())
+                ProgressDialogManager.hide(this)
 
-                val name = FirebaseAnalyticsEventName.MAIN_DATA_EXCEL_LOAD_ERROR.get()
-                val bundle = Bundle()
-                bundle.putString(FirebaseAnalyticsEventParam.MESSAGE.get(), errorMessage)
-                firebaseAnalytics.logEvent(name, bundle)
+                // Firebase Log
+                FirebaseLogManager.log(this, logType, logMessage)
+
                 return@postDelayed
             }
 
             val dataList = thread.dataList
             handleFileLoadData(dataList)
-            ProgressDialogManager.hide()
+            ProgressDialogManager.hide(this)
         }, threadDelay)
     }
 
@@ -912,6 +1047,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 }
 
                 refreshView()
+                showToast(getString(R.string.app_toolBar_menu_file_load_complete))
             }
             .show()
 
