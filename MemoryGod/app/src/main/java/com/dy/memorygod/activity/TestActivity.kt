@@ -312,12 +312,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         val dataAnswer = data.answer.trim()
 
         val view = View.inflate(this, R.layout.dialog_test_item_test, null)
-        val titleLayout = view.layout_test_dialog_title
+        val topLayout = view.layout_test_dialog_top
         val titleTextView = view.textView_test_dialog_title
 
-        if (data.testCheck == TestCheck.PASS) {
-            titleLayout.setBackgroundResource(data.testCheck.color)
-        }
+        topLayout.setBackgroundResource(data.testCheck.color)
         titleTextView.text = dataProblem
 
         answerEditText = view.editText_test_item_test_answer
