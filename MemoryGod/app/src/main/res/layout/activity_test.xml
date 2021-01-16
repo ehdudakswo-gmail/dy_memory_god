@@ -69,7 +69,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@color/color_content_view_bg"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/adView_test_banner"
         app:layout_constraintTop_toBottomOf="@+id/appBarLayout_test">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -87,5 +87,14 @@
             android:visibility="gone" />
 
     </FrameLayout>
+
+    <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adView_test_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/admob_test_banner_id"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/frameLayout_test_content" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

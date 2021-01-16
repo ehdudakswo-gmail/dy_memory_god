@@ -124,5 +124,6 @@
 
     <string name="admob_app_id">ca-app-pub-9781828508992303~2035825882</string>
     <string name="admob_main_banner_id">ca-app-pub-9781828508992303/2383206015</string>
+    <string name="admob_test_banner_id">ca-app-pub-9781828508992303/3411895110</string>
 
 </resources>

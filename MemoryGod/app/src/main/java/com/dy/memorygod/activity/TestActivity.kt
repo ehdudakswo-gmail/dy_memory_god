@@ -25,8 +25,13 @@ import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_test.*
 import kotlinx.android.synthetic.main.dialog_test_item_edit.view.*
 import kotlinx.android.synthetic.main.dialog_test_item_test.view.*
@@ -35,6 +40,7 @@ import java.util.*
 
 class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
+    private val context = this
     private val selectedData = MainDataManager.selectedData
     private val recyclerViewAdapter = TestRecyclerViewAdapter(this, this)
     private var mode = ActivityModeTest.NORMAL
@@ -49,6 +55,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
 
+        setAdMob()
         setToolbar()
         setRecyclerView()
         setOnClickListener()
@@ -60,6 +67,38 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private fun showProgressDialog(message: String) {
         runOnUiThread {
             ProgressDialogManager.show(this, message)
+        }
+    }
+
+    private fun setAdMob() {
+        MobileAds.initialize(this) {}
+
+        val adView = adView_test_banner
+        val adRequest = AdRequest.Builder().build()
+
+        adView.loadAd(adRequest)
+        adView.adListener = object : AdListener() {
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                super.onAdFailedToLoad(error)
+
+                val adUnit = "test_banner"
+                val errorCode = error.code
+                val errorMessage = error.message
+
+                val logMessageArr =
+                    arrayOf(
+                        "adUnit : $adUnit",
+                        "errorCode : $errorCode",
+                        "errorMessage : $errorMessage"
+                    )
+
+                // Log Data
+                val logType = LogType.ADMOB_FAILED_TO_LOAD
+                val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                // Firebase Log
+                FirebaseLogManager.log(context, logType, logMessage)
+            }
         }
     }
 

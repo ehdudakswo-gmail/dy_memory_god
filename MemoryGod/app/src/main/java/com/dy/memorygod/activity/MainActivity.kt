@@ -197,7 +197,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private fun setAdMob() {
         MobileAds.initialize(this) {}
 
-        val adView = adView_main
+        val adView = adView_main_banner
         val adRequest = AdRequest.Builder().build()
 
         adView.loadAd(adRequest)
@@ -205,10 +205,16 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             override fun onAdFailedToLoad(error: LoadAdError) {
                 super.onAdFailedToLoad(error)
 
+                val adUnit = "main_banner"
                 val errorCode = error.code
                 val errorMessage = error.message
+
                 val logMessageArr =
-                    arrayOf("errorCode : $errorCode", "errorMessage : $errorMessage")
+                    arrayOf(
+                        "adUnit : $adUnit",
+                        "errorCode : $errorCode",
+                        "errorMessage : $errorMessage"
+                    )
 
                 // Log Data
                 val logType = LogType.ADMOB_FAILED_TO_LOAD
