@@ -3,8 +3,8 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
-    <color name="colorBlack">#000000</color>
-    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorBlack">@android:color/black</color>
+    <color name="colorWhite">@android:color/white</color>
 
     <color name="color_toolBar_bg">@color/colorBlack</color>
     <color name="color_toolBar_title">@color/colorWhite</color>

@@ -171,6 +171,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         frameLayout_test_content.setOnClickListener {
             KeyboardManager.hide(this, frameLayout_test_content)
         }
+
+        floatingActionButton_test_menu_upload.setOnClickListener {
+            recyclerView.smoothScrollToPosition(0);
+        }
     }
 
     private fun setTextToSpeech() {

@@ -123,6 +123,7 @@
     <string name="imageView_contentDescription_test_dialog_speak">음성출력</string>
     <string name="imageView_contentDescription_test_dialog_mic">음성입력</string>
     <string name="imageView_contentDescription_test_dialog_settings">설정</string>
+    <string name="contentDescription_menu_upload_">상단이동</string>
 
     <string name="admob_app_id">ca-app-pub-9781828508992303~2035825882</string>
     <string name="admob_main_banner_id">ca-app-pub-9781828508992303/2383206015</string>

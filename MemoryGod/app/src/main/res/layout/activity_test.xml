@@ -88,6 +88,20 @@
 
     </FrameLayout>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton_test_menu_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:clickable="true"
+        android:contentDescription="@string/contentDescription_menu_upload_"
+        app:backgroundTint="@color/colorBlack"
+        app:layout_constraintBottom_toBottomOf="@id/frameLayout_test_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:rippleColor="@color/colorWhite"
+        app:srcCompat="@android:drawable/ic_menu_upload"
+        app:tint="@color/colorWhite" />
+
     <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
         android:id="@+id/adView_test_banner"
         android:layout_width="match_parent"
