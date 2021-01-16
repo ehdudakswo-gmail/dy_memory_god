@@ -37,7 +37,7 @@
                     android:layout_height="@dimen/test_dialog_option_image_size"
                     android:layout_gravity="center"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/imageView_contentDescription_test_dialog_title_speak"
+                    android:contentDescription="@string/imageView_contentDescription_test_dialog_speak"
                     android:src="@drawable/ic_test_dialog_speak" />
 
                 <Space
@@ -69,7 +69,7 @@
                     android:src="@drawable/ic_test_dialog_pre" />
 
                 <Space
-                    android:layout_width="5dp"
+                    android:layout_width="@dimen/test_dialog_option_image_space"
                     android:layout_height="wrap_content" />
 
                 <ImageView
@@ -100,7 +100,7 @@
                 android:layout_height="@dimen/test_dialog_option_image_size"
                 android:layout_gravity="center"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/imageView_contentDescription_test_dialog_answer_speak"
+                android:contentDescription="@string/imageView_contentDescription_test_dialog_speak"
                 android:src="@drawable/ic_test_dialog_speak" />
 
             <EditText
@@ -119,21 +119,21 @@
                 android:layout_height="@dimen/test_dialog_option_image_size"
                 android:layout_gravity="center"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/imageView_contentDescription_test_answer_mic"
-                android:src="@drawable/ic_test_answer_mic" />
+                android:contentDescription="@string/imageView_contentDescription_test_dialog_mic"
+                android:src="@drawable/ic_test_dialog_mic" />
 
             <Space
-                android:layout_width="5dp"
+                android:layout_width="@dimen/test_dialog_option_image_space"
                 android:layout_height="wrap_content" />
 
             <ImageView
-                android:id="@+id/imageView_test_answer_settings"
+                android:id="@+id/imageView_test_dialog_answer_settings"
                 android:layout_width="@dimen/test_dialog_option_image_size"
                 android:layout_height="@dimen/test_dialog_option_image_size"
                 android:layout_gravity="center"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/imageView_contentDescription_test_answer_settings"
-                android:src="@drawable/ic_test_answer_settings" />
+                android:contentDescription="@string/imageView_contentDescription_test_dialog_settings"
+                android:src="@drawable/ic_test_dialog_settings" />
 
         </LinearLayout>
 
