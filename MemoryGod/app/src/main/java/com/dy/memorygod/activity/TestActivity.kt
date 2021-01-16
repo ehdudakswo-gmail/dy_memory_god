@@ -25,8 +25,13 @@ import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_test.*
 import kotlinx.android.synthetic.main.dialog_test_item_edit.view.*
 import kotlinx.android.synthetic.main.dialog_test_item_test.view.*
@@ -35,6 +40,7 @@ import java.util.*
 
 class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
+    private val context = this
     private val selectedData = MainDataManager.selectedData
     private val recyclerViewAdapter = TestRecyclerViewAdapter(this, this)
     private var mode = ActivityModeTest.NORMAL
@@ -42,13 +48,15 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private var selectedPosition: Int = 0
     private lateinit var emptyTextView: TextView
     private lateinit var recyclerView: RecyclerView
-    private lateinit var answerEditText: EditText
+
     private lateinit var textToSpeech: TextToSpeech
+    private lateinit var voiceInputEditText: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
 
+        setAdMob()
         setToolbar()
         setRecyclerView()
         setOnClickListener()
@@ -60,6 +68,38 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private fun showProgressDialog(message: String) {
         runOnUiThread {
             ProgressDialogManager.show(this, message)
+        }
+    }
+
+    private fun setAdMob() {
+        MobileAds.initialize(this) {}
+
+        val adView = adView_test_banner
+        val adRequest = AdRequest.Builder().build()
+
+        adView.loadAd(adRequest)
+        adView.adListener = object : AdListener() {
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                super.onAdFailedToLoad(error)
+
+                val adUnit = "test_banner"
+                val errorCode = error.code
+                val errorMessage = error.message
+
+                val logMessageArr =
+                    arrayOf(
+                        "adUnit : $adUnit",
+                        "errorCode : $errorCode",
+                        "errorMessage : $errorMessage"
+                    )
+
+                // Log Data
+                val logType = LogType.ADMOB_FAILED_TO_LOAD
+                val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                // Firebase Log
+                FirebaseLogManager.log(context, logType, logMessage)
+            }
         }
     }
 
@@ -131,12 +171,16 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         frameLayout_test_content.setOnClickListener {
             KeyboardManager.hide(this, frameLayout_test_content)
         }
+
+        floatingActionButton_test_menu_upload.setOnClickListener {
+            recyclerView.smoothScrollToPosition(0);
+        }
     }
 
     private fun setTextToSpeech() {
         textToSpeech = TextToSpeech(this) { status ->
             if (status == SUCCESS) {
-                textToSpeech.language = Locale.KOREAN
+                textToSpeech.language = Locale.getDefault()
             } else {
                 val errorFormat = getString(R.string.app_text_to_speech_error_format)
                 val errorMessage = String.format(errorFormat, status)
@@ -273,15 +317,13 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         val dataAnswer = data.answer.trim()
 
         val view = View.inflate(this, R.layout.dialog_test_item_test, null)
-        val titleLayout = view.layout_test_dialog_title
+        val topLayout = view.layout_test_dialog_top
         val titleTextView = view.textView_test_dialog_title
 
-        if (data.testCheck == TestCheck.PASS) {
-            titleLayout.setBackgroundResource(data.testCheck.color)
-        }
+        topLayout.setBackgroundResource(data.testCheck.color)
         titleTextView.text = dataProblem
 
-        answerEditText = view.editText_test_item_test_answer
+        val answerEditText = view.editText_test_item_test_answer
         answerEditText.requestFocus()
         KeyboardManager.show(this)
 
@@ -353,16 +395,23 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
 
         view.imageView_test_answer_mic.setOnClickListener {
-            KeyboardManager.hide(this, view)
-            checkVoiceInputPermission()
+            handleVoiceInput(view, answerEditText)
         }
-        view.imageView_test_answer_settings.setOnClickListener {
-            showAnswerSettingsDialog()
+        view.imageView_test_dialog_answer_settings.setOnClickListener {
+            showSettingsDialog(answerEditText)
         }
     }
 
-    private fun speakVoice(text: String) {
-        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+    private fun handleVoiceInput(view: View, editText: EditText) {
+        KeyboardManager.hide(this, view)
+        voiceInputEditText = editText
+        checkVoiceInputPermission()
+    }
+
+    private fun cancelDialog(view: View, dialog: AlertDialog) {
+        refreshContentView(recyclerViewAdapter.dataList)
+        KeyboardManager.hide(this, view)
+        dialog.dismiss()
     }
 
     private fun setPreDialog(dialog: AlertDialog) {
@@ -392,10 +441,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
     }
 
-    private fun cancelDialog(view: View, dialog: AlertDialog) {
-        refreshContentView(recyclerViewAdapter.dataList)
-        KeyboardManager.hide(this, view)
-        dialog.dismiss()
+    private fun speakVoice(text: String) {
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun checkVoiceInputPermission() {
@@ -415,7 +462,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
             override fun onPermissionDenied(deniedPermissions: java.util.ArrayList<String>?) {
                 Toast.makeText(
-                    this@TestActivity,
+                    context,
                     R.string.app_permission_request,
                     Toast.LENGTH_SHORT
                 ).show()
@@ -449,23 +496,23 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             }
 
             override fun onError(error: Int) {
-                ProgressDialogManager.hide(this@TestActivity)
+                ProgressDialogManager.hide(context)
                 val errorMessage = getVoiceErrorMessage(error)
                 Toast.makeText(
-                    this@TestActivity,
+                    context,
                     errorMessage,
                     Toast.LENGTH_SHORT
                 ).show()
             }
 
             override fun onResults(results: Bundle) {
-                ProgressDialogManager.hide(this@TestActivity)
+                ProgressDialogManager.hide(context)
                 val key = SpeechRecognizer.RESULTS_RECOGNITION
                 val result = results.getStringArrayList(key)
 
                 if (result.isNullOrEmpty()) {
                     Toast.makeText(
-                        this@TestActivity,
+                        context,
                         R.string.test_item_test_dialog_voice_result_error,
                         Toast.LENGTH_SHORT
                     ).show()
@@ -473,10 +520,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 }
 
                 val data = result[0]
-                answerEditText.setText(data)
+                voiceInputEditText.setText(data)
 
                 Toast.makeText(
-                    this@TestActivity,
+                    context,
                     R.string.test_item_test_dialog_voice_result_success,
                     Toast.LENGTH_SHORT
                 ).show()
@@ -508,32 +555,46 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         }
     }
 
-    private fun showAnswerSettingsDialog() {
+    private fun showSettingsDialog(selectedEditText: EditText) {
         val itemBlankDelete = getString(R.string.test_item_test_dialog_settings_blank_delete)
         val itemDashDelete = getString(R.string.test_item_test_dialog_settings_dash_delete)
+        val itemUpperCase = getString(R.string.test_item_test_dialog_settings_upper_case)
+        val itemLowerCase = getString(R.string.test_item_test_dialog_settings_lower_case)
 
         val itemArr = arrayOf(
             itemBlankDelete,
-            itemDashDelete
+            itemDashDelete,
+            itemUpperCase,
+            itemLowerCase
         )
 
         val builder = AlertDialog.Builder(this)
         val dialog = builder
             .setItems(itemArr) { _, which ->
-                when (itemArr[which]) {
+                // handle item
+                val selectedItem = itemArr[which]
+                val originText = selectedEditText.text.toString().trim()
+                var newText = originText
+
+                when (selectedItem) {
                     itemBlankDelete -> {
-                        val originText = answerEditText.text.toString().trim()
-                        val newText = originText.replace(" ", "")
-                        answerEditText.setText(newText)
-                        Toast.makeText(this, itemBlankDelete, Toast.LENGTH_SHORT).show()
+                        newText = originText.replace(" ", "")
                     }
                     itemDashDelete -> {
-                        val originText = answerEditText.text.toString().trim()
-                        val newText = originText.replace("-", "")
-                        answerEditText.setText(newText)
-                        Toast.makeText(this, itemDashDelete, Toast.LENGTH_SHORT).show()
+                        newText = originText.replace("-", "")
+                    }
+                    itemUpperCase -> {
+                        newText = originText.toUpperCase(Locale.ROOT)
+                    }
+                    itemLowerCase -> {
+                        newText = originText.toLowerCase(Locale.ROOT)
                     }
                 }
+
+                // handle UI
+                selectedEditText.setText(newText)
+                selectedEditText.requestFocus()
+                Toast.makeText(this, selectedItem, Toast.LENGTH_SHORT).show()
             }.show()
     }
 
@@ -666,6 +727,28 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
             cancelDialog(view, dialog)
+        }
+
+        view.imageView_test_dialog_edit_problem_speak.setOnClickListener {
+            val text = problemEditText.text.toString().trim()
+            speakVoice(text)
+        }
+        view.imageView_test_dialog_edit_answer_speak.setOnClickListener {
+            val text = answerEditText.text.toString().trim()
+            speakVoice(text)
+        }
+
+        view.imageView_test_dialog_edit_problem_mic.setOnClickListener {
+            handleVoiceInput(view, problemEditText)
+        }
+        view.imageView_test_dialog_edit_answer_mic.setOnClickListener {
+            handleVoiceInput(view, answerEditText)
+        }
+        view.imageView_test_dialog_edit_problem_settings.setOnClickListener {
+            showSettingsDialog(problemEditText)
+        }
+        view.imageView_test_dialog_edit_answer_settings.setOnClickListener {
+            showSettingsDialog(answerEditText)
         }
     }
 
