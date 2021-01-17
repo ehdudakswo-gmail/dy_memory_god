@@ -16,6 +16,9 @@ enum class LogType {
     PHONE_NUMBER_REFRESH_ERROR,
     ADMOB_FAILED_TO_LOAD,
 
+    MAIN_DATA_EXCEL_SAVE_SUCCESS,
+    MAIN_DATA_EXCEL_LOAD_SUCCESS,
+
     FIRESTORE_ERROR;
 
     fun get() = toString()
