@@ -943,6 +943,14 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             showToast(getString(R.string.app_toolBar_menu_file_save_complete))
             ProgressDialogManager.hide(this)
 
+            /** LOG START **/
+            // Log Data
+            val logType = LogType.MAIN_DATA_EXCEL_SAVE_SUCCESS
+            val logMessage = "uri : $uri"
+
+            // Firebase Log
+            FirebaseLogManager.log(this, logType, logMessage)
+            /** LOG END **/
         }, threadDelay)
     }
 
@@ -974,6 +982,15 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             val dataList = thread.dataList
             handleFileLoadData(dataList)
             ProgressDialogManager.hide(this)
+
+            /** LOG START **/
+            // Log Data
+            val logType = LogType.MAIN_DATA_EXCEL_LOAD_SUCCESS
+            val logMessage = "uri : $uri"
+
+            // Firebase Log
+            FirebaseLogManager.log(this, logType, logMessage)
+            /** LOG END **/
         }, threadDelay)
     }
 
