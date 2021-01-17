@@ -107,14 +107,19 @@ class TestSearchActivity : AppCompatActivity(), TestSearchRecyclerViewEventListe
                 return true
             }
 
-            override fun onQueryTextChange(newText: String?): Boolean {
-                val text = newText!!.trim()
-                val lowerText = text.toLowerCase(Locale.ROOT)
+            override fun onQueryTextChange(newText: String): Boolean {
+                val lowerQueryText = newText.trim().toLowerCase(Locale.ROOT)
+                val dataContentList = selectedData.contentList
 
                 val filterList =
-                    selectedData.contentList.filter {
-                        val lowerData = it.problem.toLowerCase(Locale.ROOT)
-                        lowerData.contains(lowerText)
+                    dataContentList.filter {
+                        val lowerProblemText = it.problem.toLowerCase(Locale.ROOT)
+                        val lowerAnswerText = it.answer.toLowerCase(Locale.ROOT)
+
+                        val isContainProblem = lowerProblemText.contains(lowerQueryText)
+                        val isContainAnswer = lowerAnswerText.contains(lowerQueryText)
+
+                        isContainProblem || isContainAnswer
                     }.toMutableList()
 
                 recyclerViewAdapter.refresh(filterList)
