@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private val threadDelay = 100L
 
     // Firebase
-    private val firestoreDB = FirebaseFirestore.getInstance()
     private var firestoreConfigSnapshotListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,9 +121,10 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setFirestoreConfig() {
-        val collectionPath = FirebaseFirestoreManager.COLLECTION_CONFIG
-        val documentPath = FirebaseFirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE
-        val docRef = firestoreDB.collection(collectionPath).document(documentPath)
+        val db = FirebaseFirestoreManager.db
+        val collectionPath = FirebaseFirestoreManager.CONFIG
+        val documentPath = FirebaseFirestoreManager.CONFIG_FIRESTORE
+        val docRef = db.collection(collectionPath).document(documentPath)
 
         // once
         docRef
@@ -178,11 +178,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
     private fun setAppConfig(data: Map<String, Any>) {
         val isAllEnableKey =
-            FirebaseFirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isAllEnable
+            FirebaseFirestoreManager.CONFIG_FIRESTORE_isAllEnable
         val isLogEnableKey =
-            FirebaseFirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isLogEnable
+            FirebaseFirestoreManager.CONFIG_FIRESTORE_isLogEnable
         val stopLogTypesKey =
-            FirebaseFirestoreManager.COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_stopLogTypes
+            FirebaseFirestoreManager.CONFIG_FIRESTORE_stopLogTypes
 
         val isAllEnable = data[isAllEnableKey] as Boolean
         val isLogEnable = data[isLogEnableKey] as Boolean

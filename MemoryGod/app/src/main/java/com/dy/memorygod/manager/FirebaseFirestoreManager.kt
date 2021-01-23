@@ -11,14 +11,18 @@ import java.util.*
 
 
 object FirebaseFirestoreManager {
+    // db
+    val db = FirebaseFirestore.getInstance()
 
-    private val db = FirebaseFirestore.getInstance()
+    // logs
+    const val LOGS = "logs"
 
-    const val COLLECTION_CONFIG = "config"
-    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE = "firestore"
-    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isAllEnable = "isAllEnable"
-    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isLogEnable = "isLogEnable"
-    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_stopLogTypes = "stopLogTypes"
+    // config
+    const val CONFIG = "config"
+    const val CONFIG_FIRESTORE = "firestore"
+    const val CONFIG_FIRESTORE_isAllEnable = "isAllEnable"
+    const val CONFIG_FIRESTORE_isLogEnable = "isLogEnable"
+    const val CONFIG_FIRESTORE_stopLogTypes = "stopLogTypes"
 
     fun log(context: Context, type: LogType, message: String) {
         if (isLogStop(type)) {
@@ -27,20 +31,18 @@ object FirebaseFirestoreManager {
             return
         }
 
-        val collection = "logs"
-
         val nowDate = Date()
         val documentDateFormat = SimpleDateFormat("yyyy", Locale.getDefault())
         val document = documentDateFormat.format(nowDate)
 
-        val collection2DateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val collection2 = collection2DateFormat.format(nowDate)
+        val collectionDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val collection = collectionDateFormat.format(nowDate)
 
         val data = getLogData(context, type, message)
 
-        db.collection(collection)
+        db.collection(LOGS)
             .document(document)
-            .collection(collection2)
+            .collection(collection)
             .add(data)
             .addOnSuccessListener { documentReference ->
                 val logData = FirebaseLogManager.getLogData(type, message)
