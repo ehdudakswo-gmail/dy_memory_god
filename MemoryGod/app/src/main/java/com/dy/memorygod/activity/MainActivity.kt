@@ -423,11 +423,28 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
 
         // Log Data
+        val logMessageArr = arrayOf(
+            "title : ${data.title}",
+            "content : ${getContentLog(data.contentList)}"
+        )
+
         val logType = LogType.MAIN_ITEM_CLICK
-        val logMessage = data.title
+        val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
 
         // Firebase Log
         FirebaseLogManager.log(this, logType, logMessage)
+    }
+
+    private fun getContentLog(contentList: List<MainDataContent>): String {
+        if (contentList.isEmpty()) {
+            return "EMPTY"
+        }
+
+        val size = contentList.size
+        val first = contentList.first().problem
+        val last = contentList.last().problem
+
+        return "${size}개 ($first ~ $last)"
     }
 
     private fun startTest(data: MainData, activityMode: ActivityModeTest) {
