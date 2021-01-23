@@ -19,6 +19,7 @@
     <string name="app_dialog_no">아니요</string>
     <string name="app_dialog_close">닫기</string>
     <string name="app_dialog_all_selection_flag">전체선택/해제</string>
+    <string name="app_dialog_check_empty">아이템을 선택해주세요.</string>
 
     <string name="app_toolBar_menu_add">추가</string>
     <string name="app_toolBar_menu_copy">복사</string>
@@ -27,12 +28,17 @@
     <string name="app_toolBar_menu_sort">정렬</string>
     <string name="app_toolBar_menu_search">검색</string>
     <string name="app_toolBar_menu_select_all">전체 선택</string>
+    <string name="app_toolBar_menu_share_data_download">공유 자료</string>
     <string name="app_toolBar_menu_file_save">파일 저장</string>
     <string name="app_toolBar_menu_file_load">파일 열기</string>
 
     <string name="app_toolBar_selection_info">%d / %d 선택</string>
     <string name="app_toolBar_menu_sort_data_empty">정렬할 데이터가 없습니다.</string>
     <string name="app_toolBar_menu_search_data_empty">검색할 데이터가 없습니다.</string>
+    <string name="app_toolBar_menu_share_list_progress_dialog_message">공유 리스트를 로딩중입니다.</string>
+    <string name="app_toolBar_menu_share_list_choice_dialog_title">공유 리스트</string>
+    <string name="app_toolBar_menu_share_data_progress_dialog_message_format">공유 데이터를 로딩중입니다.\n(%s)</string>
+    <string name="app_toolBar_menu_share_data_download_success_message_format">다운로드 완료\n(%s)</string>
     <string name="app_toolBar_menu_file_save_progress_message">파일을 저장중입니다.</string>
     <string name="app_toolBar_menu_file_save_error_title_overlap">아이템 이름 중복은 불가능합니다. (%s)</string>
     <string name="app_toolBar_menu_file_save_complete">파일 저장 완료</string>

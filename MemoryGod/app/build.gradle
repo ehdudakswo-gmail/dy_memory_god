@@ -68,4 +68,6 @@ dependencies {
     implementation 'org.apache.poi:poi-ooxml:3.9'
     implementation 'org.jsoup:jsoup:1.8.3'
     implementation 'com.opencsv:opencsv:4.6'
+    implementation 'com.squareup.retrofit2:retrofit:2.6.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
 }

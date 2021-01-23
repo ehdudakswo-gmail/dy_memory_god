@@ -27,16 +27,21 @@ import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.entity.MainDataEntity
 import com.dy.memorygod.enums.*
 import com.dy.memorygod.manager.*
+import com.dy.memorygod.retrofit.RetrofitClient
+import com.dy.memorygod.retrofit.RetrofitErrorMessage
+import com.dy.memorygod.retrofit.RetrofitService
 import com.dy.memorygod.thread.*
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -97,6 +102,12 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private fun showProgressDialog(message: String) {
         runOnUiThread {
             ProgressDialogManager.show(this, message)
+        }
+    }
+
+    private fun hideProgressDialog() {
+        runOnUiThread {
+            ProgressDialogManager.hide(this)
         }
     }
 
@@ -593,6 +604,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             R.id.main_toolBar_menu_select_all -> {
                 recyclerViewAdapter.selectAll()
             }
+            R.id.main_toolBar_menu_share_data_download -> {
+                handleShareData()
+            }
             R.id.main_toolBar_menu_file_save -> {
                 checkFileSavePermission()
             }
@@ -795,6 +809,220 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private fun refreshView() {
         refreshContentView(recyclerViewAdapter.dataList)
         recyclerViewAdapter.clearSelection()
+    }
+
+    private fun handleShareData() {
+        getShareList()
+    }
+
+    private fun getShareList() {
+        val progressMessage =
+            getString(R.string.app_toolBar_menu_share_list_progress_dialog_message)
+        showProgressDialog(progressMessage)
+
+        val service = RetrofitClient.getService().getShareList()
+        val logType = LogType.SHARE_LIST_ERROR
+
+        service.enqueue(object : Callback<RetrofitService.ShareListResponse> {
+            override fun onResponse(
+                call: Call<RetrofitService.ShareListResponse>,
+                response: Response<RetrofitService.ShareListResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    if (responseBody == null) {
+                        showAlertDialog(logType.get())
+                        hideProgressDialog()
+
+                        val logMessage = RetrofitErrorMessage.onResponseBodyNull()
+                        FirebaseLogManager.log(context, logType, logMessage)
+                        return
+                    }
+
+                    val error = responseBody.error
+                    if (error != null) {
+                        showAlertDialog(logType.get())
+                        hideProgressDialog()
+
+                        val logMessage = RetrofitErrorMessage.onResponseError(error)
+                        FirebaseLogManager.log(context, logType, logMessage)
+                        return
+                    }
+
+                    val data = responseBody.data
+                    if (data == null) {
+                        showAlertDialog(logType.get())
+                        hideProgressDialog()
+
+                        val logMessage = RetrofitErrorMessage.onResponseDataNull()
+                        FirebaseLogManager.log(context, logType, logMessage)
+                        return
+                    }
+
+                    showShareList(data)
+                    hideProgressDialog()
+                } else {
+                    showAlertDialog(logType.get())
+                    hideProgressDialog()
+
+                    val responseCode = response.code()
+                    val logMessage = RetrofitErrorMessage.onResponseFailed(responseCode)
+                    FirebaseLogManager.log(context, logType, logMessage)
+                }
+            }
+
+            override fun onFailure(
+                call: Call<RetrofitService.ShareListResponse>,
+                t: Throwable
+            ) {
+                showAlertDialog(logType.get())
+                hideProgressDialog()
+
+                val logMessage = RetrofitErrorMessage.onFailure(t)
+                FirebaseLogManager.log(context, logType, logMessage)
+            }
+        })
+    }
+
+    private fun showShareList(shareList: List<String>) {
+        val items = shareList.map { it }.toTypedArray()
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setTitle(R.string.app_toolBar_menu_share_list_choice_dialog_title)
+            .setPositiveButton(R.string.app_dialog_ok, null)
+            .setNegativeButton(R.string.app_dialog_cancel, null)
+            .setSingleChoiceItems(items, -1, null)
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val listView = dialog.listView
+            val checkedList = mutableListOf<String>()
+
+            for (i in items.indices) {
+                if (listView.isItemChecked(i)) {
+                    val checkedItem = items[i]
+                    checkedList.add(checkedItem)
+                }
+            }
+
+            if (checkedList.isEmpty()) {
+                showToast(getString(R.string.app_dialog_check_empty))
+                return@setOnClickListener
+            }
+
+            val checkedItem = checkedList[0]
+            getShareData(checkedItem)
+            dialog.dismiss()
+        }
+    }
+
+    private fun getShareData(sheetName: String) {
+        val progressMessageFormat =
+            getString(R.string.app_toolBar_menu_share_data_progress_dialog_message_format)
+        val progressMessage = String.format(progressMessageFormat, sheetName)
+        showProgressDialog(progressMessage)
+
+        val service = RetrofitClient.getService().getShareData(sheetName)
+        val logType = LogType.SHARE_DATA_ERROR
+
+        service.enqueue(object : Callback<RetrofitService.ShareDataResponse> {
+            override fun onResponse(
+                call: Call<RetrofitService.ShareDataResponse>,
+                response: Response<RetrofitService.ShareDataResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    if (responseBody == null) {
+                        showAlertDialog(logType.get())
+                        hideProgressDialog()
+
+                        val logMessage = RetrofitErrorMessage.onResponseBodyNull()
+                        FirebaseLogManager.log(context, logType, logMessage)
+                        return
+                    }
+
+                    val error = responseBody.error
+                    if (error != null) {
+                        showAlertDialog(logType.get())
+                        hideProgressDialog()
+
+                        val logMessage = RetrofitErrorMessage.onResponseError(error)
+                        FirebaseLogManager.log(context, logType, logMessage)
+                        return
+                    }
+
+                    val data = responseBody.data
+                    if (data == null) {
+                        showAlertDialog(logType.get())
+                        hideProgressDialog()
+
+                        val logMessage = RetrofitErrorMessage.onResponseDataNull()
+                        FirebaseLogManager.log(context, logType, logMessage)
+                        return
+                    }
+
+                    try {
+                        setShareData(sheetName, data)
+                        refreshView()
+                        handleShareDataDownloadSuccess(sheetName)
+                    } catch (ex: Exception) {
+                        showAlertDialog(logType.get())
+                        val logMessage = RetrofitErrorMessage.onResponseException(ex)
+                        FirebaseLogManager.log(context, logType, logMessage)
+                    } finally {
+                        hideProgressDialog()
+                    }
+                } else {
+                    showAlertDialog(logType.get())
+                    hideProgressDialog()
+
+                    val responseCode = response.code()
+                    val logMessage = RetrofitErrorMessage.onResponseFailed(responseCode)
+                    FirebaseLogManager.log(context, logType, logMessage)
+                }
+            }
+
+            override fun onFailure(
+                call: Call<RetrofitService.ShareDataResponse>,
+                t: Throwable
+            ) {
+                showAlertDialog(logType.get())
+                hideProgressDialog()
+
+                val logMessage = RetrofitErrorMessage.onFailure(t)
+                FirebaseLogManager.log(context, logType, logMessage)
+            }
+        })
+    }
+
+    private fun setShareData(sheetName: String, shareData: List<List<String>>) {
+        val contentList = mutableListOf<MainDataContent>()
+        for (low in shareData) {
+            val problemIdx = MainDataContentHeader.PROBLEM.getIdx()
+            val answerIdx = MainDataContentHeader.ANSWER.getIdx()
+
+            val problem = low[problemIdx]
+            val answer = low[answerIdx]
+
+            val content = MainDataContent(problem, answer, TestCheck.NONE)
+            contentList.add(content)
+        }
+
+        val mainData =
+            MainData(sheetName, contentList, Date(), DataType.NORMAL, DataTypePhone.NONE)
+        MainDataManager.dataList.add(mainData)
+    }
+
+    private fun handleShareDataDownloadSuccess(sheetName: String) {
+        val messageFormat =
+            getString(R.string.app_toolBar_menu_share_data_download_success_message_format)
+        val message = String.format(messageFormat, sheetName)
+        showToast(message)
+
+        val logType = LogType.SHARE_DATA_DOWNLOAD_SUCCESS
+        val logMessage = "sheetName : $sheetName"
+        FirebaseLogManager.log(this, logType, logMessage)
     }
 
     private fun checkFileSavePermission() {

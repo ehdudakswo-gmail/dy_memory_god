@@ -34,6 +34,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/main_toolBar_menu_share_data_download"
+        android:title="@string/app_toolBar_menu_share_data_download"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/main_toolBar_menu_file_save"
         android:title="@string/app_toolBar_menu_file_save"
         app:showAsAction="never" />
