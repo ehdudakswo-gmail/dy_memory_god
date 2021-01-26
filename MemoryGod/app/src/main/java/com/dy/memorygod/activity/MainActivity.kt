@@ -579,6 +579,17 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }, threadDelay)
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val shareDataDownload =
+            menu.findItem(R.id.main_toolBar_menu_share_data_download) ?: return true
+
+        val appConfig = GlobalApplication.instance.firestoreConfig
+        val isShareDataDownload = appConfig.isShareDataDownload
+        shareDataDownload.isVisible = isShareDataDownload
+
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
@@ -812,6 +823,15 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun handleShareData() {
+        val appConfig = GlobalApplication.instance.firestoreConfig
+        val isShareDataDownload = appConfig.isShareDataDownload
+
+        if (!isShareDataDownload) {
+            val stopMessage = getString(R.string.app_service_stop)
+            showToast(stopMessage)
+            return
+        }
+
         getShareList()
     }
 

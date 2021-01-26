@@ -4,6 +4,7 @@
     <string name="app_permission_request">앱의 기능을 사용하기 위해서는 권한이 필요합니다.</string>
     <string name="app_content_description_item_reorder">아이템 이동</string>
     <string name="app_text_to_speech_error_format">TextToSpeech Error (%d)</string>
+    <string name="app_service_stop">잠시 중단된 서비스입니다.</string>
 
     <string name="app_data_load_progress_message">데이터를 로딩중입니다.</string>
     <string name="app_phone_number_title">전화번호</string>
