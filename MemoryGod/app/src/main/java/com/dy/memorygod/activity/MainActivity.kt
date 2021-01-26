@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private fun setFirestoreConfig() {
         val db = FirebaseFirestoreManager.db
         val collectionPath = FirebaseFirestoreManager.CONFIG
-        val documentPath = FirebaseFirestoreManager.CONFIG_FIRESTORE
+        val documentPath = FirebaseFirestoreManager.CONFIG_ANDROID
         val docRef = db.collection(collectionPath).document(documentPath)
 
         // once
@@ -188,20 +188,20 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setAppConfig(data: Map<String, Any>) {
-        val isAllEnableKey =
-            FirebaseFirestoreManager.CONFIG_FIRESTORE_isAllEnable
         val isLogEnableKey =
-            FirebaseFirestoreManager.CONFIG_FIRESTORE_isLogEnable
+            FirebaseFirestoreManager.CONFIG_ANDROID_isLogEnable
+        val isShareDataDownloadKey =
+            FirebaseFirestoreManager.CONFIG_ANDROID_isShareDataDownload
         val stopLogTypesKey =
-            FirebaseFirestoreManager.CONFIG_FIRESTORE_stopLogTypes
+            FirebaseFirestoreManager.CONFIG_ANDROID_stopLogTypes
 
-        val isAllEnable = data[isAllEnableKey] as Boolean
         val isLogEnable = data[isLogEnableKey] as Boolean
+        val isShareDataDownload = data[isShareDataDownloadKey] as Boolean
         val stopLogTypes = data[stopLogTypesKey] as List<*>
 
         val appConfig = GlobalApplication.instance.firestoreConfig
-        appConfig.isAllEnable = isAllEnable
         appConfig.isLogEnable = isLogEnable
+        appConfig.isShareDataDownload = isShareDataDownload
         appConfig.stopLogTypes = stopLogTypes
     }
 

@@ -14,15 +14,15 @@ object FirebaseFirestoreManager {
     // db
     val db = FirebaseFirestore.getInstance()
 
-    // logs
-    const val LOGS = "logs"
-
     // config
     const val CONFIG = "config"
-    const val CONFIG_FIRESTORE = "firestore"
-    const val CONFIG_FIRESTORE_isAllEnable = "isAllEnable"
-    const val CONFIG_FIRESTORE_isLogEnable = "isLogEnable"
-    const val CONFIG_FIRESTORE_stopLogTypes = "stopLogTypes"
+    const val CONFIG_ANDROID = "android"
+    const val CONFIG_ANDROID_isLogEnable = "isLogEnable"
+    const val CONFIG_ANDROID_isShareDataDownload = "isShareDataDownload"
+    const val CONFIG_ANDROID_stopLogTypes = "stopLogTypes"
+
+    // logs
+    private const val LOGS = "logs"
 
     fun log(context: Context, type: LogType, message: String) {
         if (isLogStop(type)) {
@@ -68,10 +68,6 @@ object FirebaseFirestoreManager {
 
     private fun isLogStop(type: LogType): Boolean {
         val appConfig = GlobalApplication.instance.firestoreConfig
-        if (!appConfig.isAllEnable) {
-            return true
-        }
-
         if (!appConfig.isLogEnable) {
             return true
         }
