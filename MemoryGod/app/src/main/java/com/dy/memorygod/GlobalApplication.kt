@@ -40,7 +40,10 @@ class GlobalApplication : Application() {
             "firestoreLastError : $firestoreLastError"
         )
 
-        return info.map { "- " + it }.joinToString("\n")
+        val itemHead = "*"
+        val newLine = "\n"
+
+        return info.joinToString(newLine) { "$itemHead$it" }
     }
 
 }

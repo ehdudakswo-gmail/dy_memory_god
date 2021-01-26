@@ -6,23 +6,23 @@ import android.provider.Settings
 import com.dy.memorygod.GlobalApplication
 import com.dy.memorygod.enums.LogType
 import com.google.firebase.firestore.FirebaseFirestore
-import java.net.Inet4Address
-import java.net.NetworkInterface
 import java.text.SimpleDateFormat
 import java.util.*
 
 
 object FirebaseFirestoreManager {
+    // db
+    val db = FirebaseFirestore.getInstance()
 
-    private val db = FirebaseFirestore.getInstance()
-    private const val COLLECTION_LOGS = "logs"
-    private const val COLLECTION_LOGS_DOCUMENT_DATE = "date"
+    // config
+    const val CONFIG = "config"
+    const val CONFIG_ANDROID = "android"
+    const val CONFIG_ANDROID_isLogEnable = "isLogEnable"
+    const val CONFIG_ANDROID_isShareDataDownload = "isShareDataDownload"
+    const val CONFIG_ANDROID_stopLogTypes = "stopLogTypes"
 
-    const val COLLECTION_CONFIG = "config"
-    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE = "firestore"
-    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isAllEnable = "isAllEnable"
-    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_isLogEnable = "isLogEnable"
-    const val COLLECTION_CONFIG_DOCUMENT_FIRESTORE_FIELD_stopLogTypes = "stopLogTypes"
+    // logs
+    private const val LOGS = "logs"
 
     fun log(context: Context, type: LogType, message: String) {
         if (isLogStop(type)) {
@@ -31,16 +31,28 @@ object FirebaseFirestoreManager {
             return
         }
 
-        db.collection(COLLECTION_LOGS)
-            .document(COLLECTION_LOGS_DOCUMENT_DATE)
-            .collection(getLogsDate())
-            .add(
-                getLogData(
-                    context,
-                    type,
-                    message
-                )
-            )
+        // collection
+        val collection = db.collection(LOGS)
+        val nowDate = Date()
+
+        // document
+        val documentPathFormat = SimpleDateFormat("yyyy", Locale.getDefault())
+        val documentPath = documentPathFormat.format(nowDate)
+        val document = collection.document(documentPath)
+
+        /** 필수 **/
+        val documentData = getDocumentData(nowDate)
+        document.set(documentData)
+
+        // collection2
+        val collection2PathFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val collection2Path = collection2PathFormat.format(nowDate)
+        val collection2 = document.collection(collection2Path)
+
+        // create document data
+        val data = getLogData(context, type, message)
+        collection2
+            .add(data)
             .addOnSuccessListener { documentReference ->
                 val logData = FirebaseLogManager.getLogData(type, message)
                 LogsManager.d("FirebaseFirestoreManager log--record : $logData")
@@ -56,10 +68,6 @@ object FirebaseFirestoreManager {
 
     private fun isLogStop(type: LogType): Boolean {
         val appConfig = GlobalApplication.instance.firestoreConfig
-        if (!appConfig.isAllEnable) {
-            return true
-        }
-
         if (!appConfig.isLogEnable) {
             return true
         }
@@ -74,11 +82,10 @@ object FirebaseFirestoreManager {
         return false
     }
 
-    private fun getLogsDate(): String {
-        val now = Date()
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
-        return dateFormat.format(now)
+    private fun getDocumentData(date: Date): HashMap<String, Any> {
+        return hashMapOf(
+            "lastUpdate" to date
+        )
     }
 
     private fun getLogData(
@@ -91,17 +98,12 @@ object FirebaseFirestoreManager {
             "date" to Date(),
             "type" to type,
             "message" to message,
-            "appVersion" to getAppVersion(),
             "deviceID" to getDeviceId(context),
             "deviceModel" to getDeviceModel(),
             "deviceOS" to getDeviceOs(),
             "country" to getCountry(),
-            "ip" to getIp()
+            "appVersion" to getAppVersion()
         )
-    }
-
-    private fun getAppVersion(): String {
-        return GlobalApplication.instance.appVersion
     }
 
     private fun getDeviceId(context: Context): String {
@@ -138,29 +140,8 @@ object FirebaseFirestoreManager {
         }
     }
 
-    private fun getIp(): String {
-        return try {
-            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
-            while (networkInterfaces.hasMoreElements()) {
-                val networkInterface = networkInterfaces.nextElement()
-                val inetAddresses = networkInterface.inetAddresses
-
-                while (inetAddresses.hasMoreElements()) {
-                    val inetAddress = inetAddresses.nextElement()
-                    if (inetAddress.isLoopbackAddress) {
-                        continue
-                    }
-
-                    if (inetAddress is Inet4Address) {
-                        return inetAddress.hostAddress
-                    }
-                }
-            }
-
-            return "null"
-        } catch (ex: Exception) {
-            ex.toString()
-        }
+    private fun getAppVersion(): String {
+        return GlobalApplication.instance.appVersion
     }
 
 }
