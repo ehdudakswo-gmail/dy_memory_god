@@ -31,18 +31,27 @@ object FirebaseFirestoreManager {
             return
         }
 
+        // collection
+        val collection = db.collection(LOGS)
         val nowDate = Date()
-        val documentDateFormat = SimpleDateFormat("yyyy", Locale.getDefault())
-        val document = documentDateFormat.format(nowDate)
 
-        val collectionDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val collection = collectionDateFormat.format(nowDate)
+        // document
+        val documentPathFormat = SimpleDateFormat("yyyy", Locale.getDefault())
+        val documentPath = documentPathFormat.format(nowDate)
+        val document = collection.document(documentPath)
 
+        /** 필수 **/
+        val documentData = getDocumentData(nowDate)
+        document.set(documentData)
+
+        // collection2
+        val collection2PathFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val collection2Path = collection2PathFormat.format(nowDate)
+        val collection2 = document.collection(collection2Path)
+
+        // create document data
         val data = getLogData(context, type, message)
-
-        db.collection(LOGS)
-            .document(document)
-            .collection(collection)
+        collection2
             .add(data)
             .addOnSuccessListener { documentReference ->
                 val logData = FirebaseLogManager.getLogData(type, message)
@@ -75,6 +84,12 @@ object FirebaseFirestoreManager {
         }
 
         return false
+    }
+
+    private fun getDocumentData(date: Date): HashMap<String, Any> {
+        return hashMapOf(
+            "lastUpdate" to date
+        )
     }
 
     private fun getLogData(
