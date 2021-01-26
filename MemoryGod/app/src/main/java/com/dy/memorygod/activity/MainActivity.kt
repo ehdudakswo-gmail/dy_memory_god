@@ -957,7 +957,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         showAlertDialog(logType.get())
                         hideProgressDialog()
 
-                        val logMessage = RetrofitErrorMessage.onResponseBodyNull()
+                        val retrofitError = RetrofitErrorMessage.onResponseBodyNull()
+                        val logMessage = getShareDataErrorLogMessage(sheetName, retrofitError)
                         FirebaseLogManager.log(context, logType, logMessage)
                         return
                     }
@@ -967,7 +968,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         showAlertDialog(logType.get())
                         hideProgressDialog()
 
-                        val logMessage = RetrofitErrorMessage.onResponseError(error)
+                        val retrofitError = RetrofitErrorMessage.onResponseError(error)
+                        val logMessage = getShareDataErrorLogMessage(sheetName, retrofitError)
                         FirebaseLogManager.log(context, logType, logMessage)
                         return
                     }
@@ -977,7 +979,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                         showAlertDialog(logType.get())
                         hideProgressDialog()
 
-                        val logMessage = RetrofitErrorMessage.onResponseDataNull()
+                        val retrofitError = RetrofitErrorMessage.onResponseDataNull()
+                        val logMessage = getShareDataErrorLogMessage(sheetName, retrofitError)
                         FirebaseLogManager.log(context, logType, logMessage)
                         return
                     }
@@ -985,10 +988,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                     try {
                         setShareData(sheetName, data)
                         refreshView()
-                        handleShareDataDownloadSuccess(sheetName)
+                        handleShareDataDownloadSuccess(sheetName, data)
                     } catch (ex: Exception) {
                         showAlertDialog(logType.get())
-                        val logMessage = RetrofitErrorMessage.onResponseException(ex)
+                        val retrofitError = RetrofitErrorMessage.onResponseException(ex)
+                        val logMessage = getShareDataErrorLogMessage(sheetName, retrofitError)
                         FirebaseLogManager.log(context, logType, logMessage)
                     } finally {
                         hideProgressDialog()
@@ -998,7 +1002,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                     hideProgressDialog()
 
                     val responseCode = response.code()
-                    val logMessage = RetrofitErrorMessage.onResponseFailed(responseCode)
+                    val retrofitError = RetrofitErrorMessage.onResponseFailed(responseCode)
+                    val logMessage = getShareDataErrorLogMessage(sheetName, retrofitError)
                     FirebaseLogManager.log(context, logType, logMessage)
                 }
             }
@@ -1010,10 +1015,20 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
                 showAlertDialog(logType.get())
                 hideProgressDialog()
 
-                val logMessage = RetrofitErrorMessage.onFailure(t)
+                val retrofitError = RetrofitErrorMessage.onFailure(t)
+                val logMessage = getShareDataErrorLogMessage(sheetName, retrofitError)
                 FirebaseLogManager.log(context, logType, logMessage)
             }
         })
+    }
+
+    private fun getShareDataErrorLogMessage(sheetName: String, retrofitError: String): String {
+        val logMessageArr = arrayOf(
+            "sheetName : $sheetName",
+            "retrofitError : $retrofitError"
+        )
+
+        return FirebaseLogManager.getJoinData(logMessageArr)
     }
 
     private fun setShareData(sheetName: String, shareData: List<List<String>>) {
@@ -1034,14 +1049,18 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         MainDataManager.dataList.add(mainData)
     }
 
-    private fun handleShareDataDownloadSuccess(sheetName: String) {
+    private fun handleShareDataDownloadSuccess(sheetName: String, data: List<List<String>>) {
         val messageFormat =
             getString(R.string.app_toolBar_menu_share_data_download_success_message_format)
         val message = String.format(messageFormat, sheetName)
         showToast(message)
 
+        val logMessageArr = arrayOf(
+            "sheetName : $sheetName",
+            "data.size : ${data.size}"
+        )
         val logType = LogType.SHARE_DATA_DOWNLOAD_SUCCESS
-        val logMessage = "sheetName : $sheetName"
+        val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
         FirebaseLogManager.log(this, logType, logMessage)
     }
 
