@@ -10,6 +10,7 @@ object FirebaseLogManager {
     private const val DATA_JOIN_SEPARATOR = ", "
     private const val DATA_JOIN_OPEN = "{"
     private const val DATA_JOIN_CLOSE = "}"
+    const val DATA_EMPTY = "-"
 
     fun log(context: Context, logType: LogType, logMessage: String) {
         // by log record time
