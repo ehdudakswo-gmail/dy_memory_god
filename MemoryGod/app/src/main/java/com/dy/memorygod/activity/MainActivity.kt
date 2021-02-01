@@ -56,6 +56,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private lateinit var recyclerView: RecyclerView
     private val threadDelay = 100L
 
+    private var backPressedTime: Long = 0
+    private val backPressedTimeInterval: Long = 2000
+
     // Firebase
     private var firestoreConfigSnapshotListener: ListenerRegistration? = null
 
@@ -556,12 +559,22 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     override fun onBackPressed() {
         when (mode) {
             ActivityModeMain.NORMAL -> {
-                finishWithBackup()
+                handleBackPressedTwice()
             }
             ActivityModeMain.SELECTION -> {
                 recyclerViewAdapter.clearSelection()
             }
         }
+    }
+
+    private fun handleBackPressedTwice() {
+        if (System.currentTimeMillis() - backPressedTime < backPressedTimeInterval) {
+            finishWithBackup()
+            return
+        }
+
+        backPressedTime = System.currentTimeMillis()
+        showToast(getString(R.string.app_back_press_finish))
     }
 
     private fun finishWithBackup() {
