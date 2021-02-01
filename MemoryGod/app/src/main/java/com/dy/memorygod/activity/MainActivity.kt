@@ -447,8 +447,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         // log
         val logMessageArr = arrayOf(
-            "title : ${data.title}",
-            "content : ${getContentLog(data.contentList)}"
+            "title : ${getTitleLog(data)}",
+            "content : ${getContentLog(data)}"
         )
 
         val logType = LogType.MAIN_ITEM_CLICK
@@ -456,7 +456,19 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         FirebaseLogManager.log(this, logType, logMessage)
     }
 
-    private fun getContentLog(contentList: List<MainDataContent>): String {
+    private fun getTitleLog(data: MainData): String {
+        val title = data.title
+
+        if (title.isEmpty()) {
+            return FirebaseLogManager.DATA_EMPTY
+        }
+
+        return title
+    }
+
+    private fun getContentLog(data: MainData): String {
+        val contentList = data.contentList
+
         if (contentList.isEmpty()) {
             return FirebaseLogManager.DATA_EMPTY
         }
