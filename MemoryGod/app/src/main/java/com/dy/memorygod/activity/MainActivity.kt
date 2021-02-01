@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private var backPressedTime: Long = 0
     private val backPressedTimeInterval: Long = 2000
 
-    // Firebase
+    // firebase
     private var firestoreConfigSnapshotListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
