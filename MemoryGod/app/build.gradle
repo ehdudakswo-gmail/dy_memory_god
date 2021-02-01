@@ -53,17 +53,17 @@ dependencies {
     implementation 'com.android.support:cardview-v7:29.0.0'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.recyclerview:recyclerview-selection:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview-selection:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:19.7.0'
 
-    // Firebase
+    // firebase
     implementation 'com.google.firebase:firebase-ads:19.7.0'
-    implementation 'com.google.firebase:firebase-analytics:18.0.1'
-    implementation 'com.google.firebase:firebase-core:18.0.1'
-    implementation 'com.google.firebase:firebase-crashlytics:17.3.0'
-    implementation 'com.google.firebase:firebase-firestore:22.0.1'
+    implementation 'com.google.firebase:firebase-analytics:18.0.2'
+    implementation 'com.google.firebase:firebase-core:18.0.2'
+    implementation 'com.google.firebase:firebase-crashlytics:17.3.1'
+    implementation 'com.google.firebase:firebase-firestore:22.0.2'
 
-    // Open Source
+    // open source
     implementation 'gun0912.ted:tedpermission:2.0.0'
     implementation 'org.apache.poi:poi-ooxml:3.9'
     implementation 'org.jsoup:jsoup:1.8.3'
