@@ -552,14 +552,19 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             override fun onEndOfSpeech() {
             }
 
-            override fun onError(error: Int) {
+            override fun onError(errorCode: Int) {
                 ProgressDialogManager.hide(context)
-                val errorMessage = getVoiceErrorMessage(error)
-                Toast.makeText(
-                    context,
-                    errorMessage,
-                    Toast.LENGTH_SHORT
-                ).show()
+                val errorMessage = getVoiceErrorMessage(errorCode)
+
+                val logMessageArr = arrayOf(
+                    "errorCode : $errorCode",
+                    "errorMessage : $errorMessage"
+                )
+                val logType = LogType.STT_ERROR
+                val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                showToast(errorMessage)
+                FirebaseLogManager.log(context, logType, logMessage)
             }
 
             override fun onResults(results: Bundle) {
@@ -567,23 +572,25 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 val key = SpeechRecognizer.RESULTS_RECOGNITION
                 val result = results.getStringArrayList(key)
 
-                if (result.isNullOrEmpty()) {
-                    Toast.makeText(
-                        context,
-                        R.string.test_item_test_dialog_voice_result_error,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                if (result == null || result.isEmpty()) {
+                    val logMessageArr = arrayOf(
+                        "results : $results",
+                        "key : $key",
+                        "result : $result"
+                    )
+                    val logType = LogType.STT_RESULT_EMPTY_ERROR
+                    val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                    showToast(logType.get())
+                    FirebaseLogManager.log(context, logType, logMessage)
                     return
                 }
 
                 val data = result[0]
                 voiceInputEditText.setText(data)
 
-                Toast.makeText(
-                    context,
-                    R.string.test_item_test_dialog_voice_result_success,
-                    Toast.LENGTH_SHORT
-                ).show()
+                val successMessage = getString(R.string.test_item_test_dialog_voice_result_success)
+                showToast(successMessage)
             }
         })
 
