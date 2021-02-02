@@ -56,7 +56,10 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     private lateinit var recyclerView: RecyclerView
     private val threadDelay = 100L
 
-    // Firebase
+    private var backPressedTime: Long = 0
+    private val backPressedTimeInterval: Long = 2000
+
+    // firebase
     private var firestoreConfigSnapshotListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -447,8 +450,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         // log
         val logMessageArr = arrayOf(
-            "title : ${data.title}",
-            "content : ${getContentLog(data.contentList)}"
+            "title : ${getTitleLog(data)}",
+            "content : ${getContentLog(data)}"
         )
 
         val logType = LogType.MAIN_ITEM_CLICK
@@ -456,7 +459,19 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         FirebaseLogManager.log(this, logType, logMessage)
     }
 
-    private fun getContentLog(contentList: List<MainDataContent>): String {
+    private fun getTitleLog(data: MainData): String {
+        val title = data.title
+
+        if (title.isEmpty()) {
+            return FirebaseLogManager.DATA_EMPTY
+        }
+
+        return title
+    }
+
+    private fun getContentLog(data: MainData): String {
+        val contentList = data.contentList
+
         if (contentList.isEmpty()) {
             return FirebaseLogManager.DATA_EMPTY
         }
@@ -544,12 +559,22 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     override fun onBackPressed() {
         when (mode) {
             ActivityModeMain.NORMAL -> {
-                finishWithBackup()
+                handleBackPressedTwice()
             }
             ActivityModeMain.SELECTION -> {
                 recyclerViewAdapter.clearSelection()
             }
         }
+    }
+
+    private fun handleBackPressedTwice() {
+        if (System.currentTimeMillis() - backPressedTime < backPressedTimeInterval) {
+            finishWithBackup()
+            return
+        }
+
+        backPressedTime = System.currentTimeMillis()
+        showToast(getString(R.string.app_back_press_finish))
     }
 
     private fun finishWithBackup() {

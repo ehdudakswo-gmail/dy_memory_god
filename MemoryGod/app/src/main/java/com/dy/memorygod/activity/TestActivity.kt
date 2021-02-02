@@ -7,6 +7,7 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.SUCCESS
+import android.speech.tts.UtteranceProgressListener
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -29,6 +30,7 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
+import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import kotlinx.android.synthetic.main.activity_main.*
@@ -63,6 +65,12 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         setTextToSpeech()
         showInitMessage()
         refreshMode()
+    }
+
+    private fun showToast(message: String) {
+        runOnUiThread {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showProgressDialog(message: String) {
@@ -178,15 +186,41 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun setTextToSpeech() {
-        textToSpeech = TextToSpeech(this) { status ->
-            if (status == SUCCESS) {
-                textToSpeech.language = Locale.getDefault()
-            } else {
-                val errorFormat = getString(R.string.app_text_to_speech_error_format)
-                val errorMessage = String.format(errorFormat, status)
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+        val utteranceProgressListener = object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String) {
+                LogsManager.d("utteranceProgressListener onStart utteranceId : $utteranceId")
+            }
+
+            override fun onDone(utteranceId: String) {
+                LogsManager.d("utteranceProgressListener onDone utteranceId : $utteranceId")
+            }
+
+            override fun onError(utteranceId: String) {
+                val logMessageArr = arrayOf("text : $utteranceId")
+                val logType = LogType.TTS_SPEAK_ERROR
+                val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                showToast(logType.get())
+                FirebaseLogManager.log(context, logType, logMessage)
             }
         }
+
+        val onInitListener = TextToSpeech.OnInitListener { status ->
+            if (status == SUCCESS) {
+                textToSpeech.language = Locale.getDefault()
+                textToSpeech.setOnUtteranceProgressListener(utteranceProgressListener)
+            } else {
+                val logMessageArr = arrayOf("status : $status")
+                val logType = LogType.TTS_INIT_ERROR
+                val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                showToast(logType.get())
+                FirebaseLogManager.log(context, logType, logMessage)
+            }
+        }
+
+        val engine = "com.google.android.tts"
+        textToSpeech = TextToSpeech(this, onInitListener, engine)
     }
 
     private fun showInitMessage() {
@@ -442,7 +476,30 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun speakVoice(text: String) {
-        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+        val languageIdentifier = LanguageIdentification.getClient()
+
+        languageIdentifier.identifyLanguage(text)
+            .addOnSuccessListener { languageCode ->
+                val locale = Locale.forLanguageTag(languageCode)
+                textToSpeech.language = locale
+                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, text)
+            }
+            .addOnFailureListener {
+                textToSpeech.language = Locale.getDefault()
+                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, text)
+
+                val error = it.toString()
+                val logMessageArr = arrayOf(
+                    "text : $text",
+                    "error : $error"
+                )
+
+                val logType = LogType.TTS_LANGUAGE_IDENTIFY_ERROR
+                val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                showToast(logType.get())
+                FirebaseLogManager.log(context, logType, logMessage)
+            }
     }
 
     private fun checkVoiceInputPermission() {
@@ -495,14 +552,19 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             override fun onEndOfSpeech() {
             }
 
-            override fun onError(error: Int) {
+            override fun onError(errorCode: Int) {
                 ProgressDialogManager.hide(context)
-                val errorMessage = getVoiceErrorMessage(error)
-                Toast.makeText(
-                    context,
-                    errorMessage,
-                    Toast.LENGTH_SHORT
-                ).show()
+                val errorMessage = getVoiceErrorMessage(errorCode)
+
+                val logMessageArr = arrayOf(
+                    "errorCode : $errorCode",
+                    "errorMessage : $errorMessage"
+                )
+                val logType = LogType.STT_ERROR
+                val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                showToast(errorMessage)
+                FirebaseLogManager.log(context, logType, logMessage)
             }
 
             override fun onResults(results: Bundle) {
@@ -510,23 +572,25 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 val key = SpeechRecognizer.RESULTS_RECOGNITION
                 val result = results.getStringArrayList(key)
 
-                if (result.isNullOrEmpty()) {
-                    Toast.makeText(
-                        context,
-                        R.string.test_item_test_dialog_voice_result_error,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                if (result == null || result.isEmpty()) {
+                    val logMessageArr = arrayOf(
+                        "results : $results",
+                        "key : $key",
+                        "result : $result"
+                    )
+                    val logType = LogType.STT_RESULT_EMPTY_ERROR
+                    val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+
+                    showToast(logType.get())
+                    FirebaseLogManager.log(context, logType, logMessage)
                     return
                 }
 
                 val data = result[0]
                 voiceInputEditText.setText(data)
 
-                Toast.makeText(
-                    context,
-                    R.string.test_item_test_dialog_voice_result_success,
-                    Toast.LENGTH_SHORT
-                ).show()
+                val successMessage = getString(R.string.test_item_test_dialog_voice_result_success)
+                showToast(successMessage)
             }
         })
 
