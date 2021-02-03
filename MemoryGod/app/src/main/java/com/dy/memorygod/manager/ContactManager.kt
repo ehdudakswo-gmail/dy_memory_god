@@ -4,6 +4,12 @@ import android.content.Context
 import android.provider.ContactsContract
 import com.dy.memorygod.data.ContactEmailData
 import com.dy.memorygod.data.ContactPhoneNumberData
+import com.dy.memorygod.enums.LogType
+import com.google.i18n.phonenumbers.NumberParseException
+import com.google.i18n.phonenumbers.PhoneNumberUtil
+import java.util.*
+import kotlin.collections.ArrayList
+
 
 object ContactManager {
 
@@ -11,7 +17,6 @@ object ContactManager {
     private const val ERROR_CONTACT_CURSOR_NAME = "ERROR_CONTACT_CURSOR_NAME"
     private const val ERROR_CONTACT_CURSOR_PHONE_NUMBER = "ERROR_CONTACT_CURSOR_PHONE_NUMBER"
     private const val ERROR_CONTACT_EMPTY = "ERROR_CONTACT_EMPTY"
-    private const val PHONE_NUMBER_SEPARATOR = "-"
 
     var ERROR_MESSAGE = "ERROR_MESSAGE"
     val ERROR_CONTACT_PHONE_NUMBER = emptyList<ContactPhoneNumberData>()
@@ -40,8 +45,7 @@ object ContactManager {
 
         while (cursor.moveToNext()) {
             val name = cursor.getString(nameIdx)
-            var phoneNumber = cursor.getString(phoneNumberIdx)
-            phoneNumber = phoneNumber.replace(PHONE_NUMBER_SEPARATOR, "")
+            val phoneNumber = cursor.getString(phoneNumberIdx)
 
             if (name.isNullOrEmpty()) {
                 ERROR_MESSAGE = ERROR_CONTACT_CURSOR_NAME
@@ -53,7 +57,8 @@ object ContactManager {
                 return ERROR_CONTACT_PHONE_NUMBER
             }
 
-            val data = ContactPhoneNumberData(name, phoneNumber)
+            val phoneNumberFormat = getPhoneNumberFormat(context, phoneNumber)
+            val data = ContactPhoneNumberData(name, phoneNumberFormat)
             list.add(data)
         }
         cursor.close()
@@ -64,6 +69,35 @@ object ContactManager {
         }
 
         return list
+    }
+
+    fun getPhoneNumberFormat(context: Context, text: String): String {
+        if (text.isEmpty()) {
+            return ""
+        }
+
+        try {
+            val phoneNumberUtil = PhoneNumberUtil.getInstance()
+            val locale = Locale.getDefault().country
+            val phoneNumber = phoneNumberUtil.parse(text, locale)
+
+            return phoneNumberUtil.format(
+                phoneNumber,
+                PhoneNumberUtil.PhoneNumberFormat.NATIONAL
+            )
+        } catch (ex: NumberParseException) {
+            val errorMessage = ex.toString()
+            val logMessageArr = arrayOf(
+                "text : $text",
+                "errorMessage : $errorMessage"
+            )
+
+            val logType = LogType.PHONE_NUMBER_FORMAT_ERROR
+            val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+            FirebaseLogManager.log(context, logType, logMessage)
+
+            return "FORMAT_ERROR"
+        }
     }
 
     fun getEmailList(context: Context): List<ContactEmailData> {
