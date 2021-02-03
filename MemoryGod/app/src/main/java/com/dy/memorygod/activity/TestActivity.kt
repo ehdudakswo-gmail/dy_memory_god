@@ -620,14 +620,13 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun showSettingsDialog(selectedEditText: EditText) {
-        val itemBlankDelete = getString(R.string.test_item_test_dialog_settings_blank_delete)
-        val itemDashDelete = getString(R.string.test_item_test_dialog_settings_dash_delete)
+        val itemPhoneNumberFormat =
+            getString(R.string.test_item_test_dialog_settings_phone_number_format)
         val itemUpperCase = getString(R.string.test_item_test_dialog_settings_upper_case)
         val itemLowerCase = getString(R.string.test_item_test_dialog_settings_lower_case)
 
         val itemArr = arrayOf(
-            itemBlankDelete,
-            itemDashDelete,
+            itemPhoneNumberFormat,
             itemUpperCase,
             itemLowerCase
         )
@@ -641,11 +640,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 var newText = originText
 
                 when (selectedItem) {
-                    itemBlankDelete -> {
-                        newText = originText.replace(" ", "")
-                    }
-                    itemDashDelete -> {
-                        newText = originText.replace("-", "")
+                    itemPhoneNumberFormat -> {
+                        newText = ContactManager.getPhoneNumberFormat(originText)
                     }
                     itemUpperCase -> {
                         newText = originText.toUpperCase(Locale.ROOT)
