@@ -641,7 +641,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
                 when (selectedItem) {
                     itemPhoneNumberFormat -> {
-                        newText = ContactManager.getPhoneNumberFormat(originText)
+                        newText = ContactManager.getPhoneNumberFormat(context, originText)
                     }
                     itemUpperCase -> {
                         newText = originText.toUpperCase(Locale.ROOT)

@@ -4,9 +4,12 @@ import android.content.Context
 import android.provider.ContactsContract
 import com.dy.memorygod.data.ContactEmailData
 import com.dy.memorygod.data.ContactPhoneNumberData
+import com.dy.memorygod.enums.LogType
+import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import java.util.*
 import kotlin.collections.ArrayList
+
 
 object ContactManager {
 
@@ -54,7 +57,7 @@ object ContactManager {
                 return ERROR_CONTACT_PHONE_NUMBER
             }
 
-            val phoneNumberFormat = getPhoneNumberFormat(phoneNumber)
+            val phoneNumberFormat = getPhoneNumberFormat(context, phoneNumber)
             val data = ContactPhoneNumberData(name, phoneNumberFormat)
             list.add(data)
         }
@@ -68,19 +71,33 @@ object ContactManager {
         return list
     }
 
-    fun getPhoneNumberFormat(text: String): String {
+    fun getPhoneNumberFormat(context: Context, text: String): String {
         if (text.isEmpty()) {
             return ""
         }
 
-        val phoneNumberUtil = PhoneNumberUtil.getInstance()
-        val locale = Locale.getDefault().country
-        val phoneNumber = phoneNumberUtil.parse(text, locale)
+        try {
+            val phoneNumberUtil = PhoneNumberUtil.getInstance()
+            val locale = Locale.getDefault().country
+            val phoneNumber = phoneNumberUtil.parse(text, locale)
 
-        return phoneNumberUtil.format(
-            phoneNumber,
-            PhoneNumberUtil.PhoneNumberFormat.NATIONAL
-        )
+            return phoneNumberUtil.format(
+                phoneNumber,
+                PhoneNumberUtil.PhoneNumberFormat.NATIONAL
+            )
+        } catch (ex: NumberParseException) {
+            val errorMessage = ex.toString()
+            val logMessageArr = arrayOf(
+                "text : $text",
+                "errorMessage : $errorMessage"
+            )
+
+            val logType = LogType.PHONE_NUMBER_FORMAT_ERROR
+            val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+            FirebaseLogManager.log(context, logType, logMessage)
+
+            return "FORMAT_ERROR"
+        }
     }
 
     fun getEmailList(context: Context): List<ContactEmailData> {
