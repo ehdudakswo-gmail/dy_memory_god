@@ -1,7 +1,6 @@
 package com.dy.memorygod.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -94,15 +93,23 @@ class MainRecyclerViewAdapter(
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val titleTextView: TextView =
-            itemView.textView_main_item_title
+        private val titleTextView: TextView = itemView.textView_main_item_title
+        private val contentCountTextView: TextView = itemView.textView_main_item_content_count
 
         fun bind(data: MainData, isActivated: Boolean) {
             titleTextView.text = data.title
+            contentCountTextView.text = getContentCount(data)
             itemView.isActivated = isActivated
 
             refreshVisibility(itemView)
             refreshBgColor(itemView)
+        }
+
+        private fun getContentCount(data: MainData): String {
+            val contentList = data.contentList
+            val size = contentList.size
+
+            return size.toString()
         }
 
         fun getItemDetails(): ItemDetailsLookup.ItemDetails<Long> =
