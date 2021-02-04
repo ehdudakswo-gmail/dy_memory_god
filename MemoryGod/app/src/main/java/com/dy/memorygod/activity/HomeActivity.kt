@@ -161,19 +161,17 @@ class HomeActivity : AppCompatActivity() {
 
     private fun startMarket() {
         try {
-            startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("market://details?id=$packageName")
-                )
-            )
+            val action = Intent.ACTION_VIEW
+            val uri = Uri.parse("market://details?id=$packageName")
+
+            val intent = Intent(action, uri)
+            startActivity(intent)
         } catch (ex: Exception) {
-            startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
-                )
-            )
+            val action = Intent.ACTION_VIEW
+            val uri = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+
+            val intent = Intent(action, uri)
+            startActivity(intent)
         }
     }
 

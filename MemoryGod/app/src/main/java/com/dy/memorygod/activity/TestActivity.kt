@@ -1,9 +1,11 @@
 package com.dy.memorygod.activity
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -58,6 +60,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private lateinit var textToSpeech: TextToSpeech
     private lateinit var voiceInputEditText: EditText
 
+    private val googleTTS = "com.google.android.tts"
+    private lateinit var lastView: View
+    private lateinit var lastDialog: Dialog
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
@@ -69,6 +75,15 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         setTextToSpeech()
         showInitMessage()
         refreshMode()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (this::textToSpeech.isInitialized) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
     }
 
     private fun showToast(message: String) {
@@ -223,8 +238,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             }
         }
 
-        val engine = "com.google.android.tts"
-        textToSpeech = TextToSpeech(this, onInitListener, engine)
+        textToSpeech = TextToSpeech(this, onInitListener, googleTTS)
     }
 
     private fun showInitMessage() {
@@ -355,6 +369,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
         val dataAnswer = data.answer.trim()
 
         val view = View.inflate(this, R.layout.dialog_test_item_test, null)
+        lastView = view
+
         val topLayout = view.layout_test_dialog_top
         val titleTextView = view.textView_test_dialog_title
 
@@ -385,7 +401,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             .setNeutralButton(R.string.test_item_test_dialog_answer_view, null)
             .show()
 
+        lastDialog = dialog
         dialog.setCanceledOnTouchOutside(false)
+        dialog.setCancelable(false)
+
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
             Toast.makeText(
                 this,
@@ -492,9 +511,14 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun speakVoice(text: String) {
-        val languageIdentifier = LanguageIdentification.getClient()
+        speakTTS(text)
+        checkGoogleTTS()
+    }
 
-        languageIdentifier.identifyLanguage(text)
+    private fun speakTTS(text: String) {
+        LanguageIdentification
+            .getClient()
+            .identifyLanguage(text)
             .addOnSuccessListener { languageCode ->
                 val locale = Locale.forLanguageTag(languageCode)
                 textToSpeech.language = locale
@@ -516,6 +540,83 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 showToast(logType.get())
                 FirebaseLogManager.log(context, logType, logMessage)
             }
+    }
+
+    private fun checkGoogleTTS() {
+        val engines = textToSpeech.engines
+        val isInstalled = isInstalledGoogleTTS(engines)
+
+        if (isInstalled) {
+            return
+        }
+
+        // log
+        val logMessageArr = arrayOf(
+            "engines.size : ${engines.size}",
+            "engines : $engines",
+            "defaultEngine : ${textToSpeech.defaultEngine}"
+        )
+        val logType = LogType.TTS_GOOGLE_INSTALLED_ERROR
+        val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
+        FirebaseLogManager.log(context, logType, logMessage)
+
+        // alert dialog
+        showGoogleTTSAlertDialog()
+    }
+
+    private fun isInstalledGoogleTTS(engines: List<TextToSpeech.EngineInfo>): Boolean {
+        for (engine in engines) {
+            val name = engine.name ?: continue
+            if (name == googleTTS) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private fun showGoogleTTSAlertDialog() {
+        val builder = AlertDialog.Builder(this)
+        val dialog = builder
+            .setMessage(R.string.app_google_tts_request_message)
+            .setPositiveButton(R.string.app_dialog_ok) { _, _ ->
+                hideLastView()
+                startGoogleTTSMarket()
+                finish()
+            }
+            .setNegativeButton(R.string.app_dialog_cancel) { _, _ ->
+            }
+            .show()
+
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.setCancelable(false)
+    }
+
+    private fun hideLastView() {
+        if (this::lastView.isInitialized) {
+            KeyboardManager.hide(context, lastView)
+        }
+
+        if (this::lastDialog.isInitialized) {
+            lastDialog.dismiss()
+            lastDialog.hide()
+        }
+    }
+
+    private fun startGoogleTTSMarket() {
+        try {
+            val action = Intent.ACTION_VIEW
+            val uri = Uri.parse("market://details?id=$googleTTS")
+
+            val intent = Intent(action, uri)
+            startActivity(intent)
+        } catch (ex: Exception) {
+            val action = Intent.ACTION_VIEW
+            val uri = Uri.parse("https://play.google.com/store/apps/details?id=$googleTTS")
+
+            val intent = Intent(action, uri)
+            startActivity(intent)
+        }
     }
 
     private fun checkVoiceInputPermission() {
@@ -759,6 +860,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
     private fun handleItem(itemState: ItemState, data: MainDataContent) {
         val view = View.inflate(this, R.layout.dialog_test_item_edit, null)
+        lastView = view
+
         val problemEditText = view.editText_test_item_edit_problem
         val answerEditText = view.editText_test_item_edit_answer
 
@@ -782,7 +885,10 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
             .setNegativeButton(R.string.app_dialog_cancel, null)
             .show()
 
+        lastDialog = dialog
         dialog.setCanceledOnTouchOutside(false)
+        dialog.setCancelable(false)
+
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val editedProblem = problemEditText.text.toString().trim()
             val editedAnswer = answerEditText.text.toString().trim()
@@ -1087,15 +1193,6 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private fun refreshView() {
         refreshContentView(recyclerViewAdapter.dataList)
         recyclerViewAdapter.clearSelection()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        if (this::textToSpeech.isInitialized) {
-            textToSpeech.stop()
-            textToSpeech.shutdown()
-        }
     }
 
 }
