@@ -5,6 +5,7 @@ import android.provider.ContactsContract
 import com.dy.memorygod.data.ContactEmailData
 import com.dy.memorygod.data.ContactPhoneNumberData
 import com.dy.memorygod.enums.LogType
+import com.dy.memorygod.enums.PhoneNumberFormatCall
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import java.util.*
@@ -17,6 +18,7 @@ object ContactManager {
     private const val ERROR_CONTACT_CURSOR_NAME = "ERROR_CONTACT_CURSOR_NAME"
     private const val ERROR_CONTACT_CURSOR_PHONE_NUMBER = "ERROR_CONTACT_CURSOR_PHONE_NUMBER"
     private const val ERROR_CONTACT_EMPTY = "ERROR_CONTACT_EMPTY"
+    const val ERROR_PHONE_NUMBER_FORMAT = "ERROR_PHONE_NUMBER_FORMAT"
 
     var ERROR_MESSAGE = "ERROR_MESSAGE"
     val ERROR_CONTACT_PHONE_NUMBER = emptyList<ContactPhoneNumberData>()
@@ -57,8 +59,17 @@ object ContactManager {
                 return ERROR_CONTACT_PHONE_NUMBER
             }
 
-            val phoneNumberFormat = getPhoneNumberFormat(context, phoneNumber)
-            val data = ContactPhoneNumberData(name, phoneNumberFormat)
+            var data = ContactPhoneNumberData(name, phoneNumber)
+            val phoneNumberFormat = getPhoneNumberFormat(
+                context,
+                PhoneNumberFormatCall.CONTACT_DATA_READ,
+                phoneNumber
+            )
+
+            if (phoneNumberFormat != ERROR_PHONE_NUMBER_FORMAT) {
+                data = ContactPhoneNumberData(name, phoneNumberFormat)
+            }
+
             list.add(data)
         }
         cursor.close()
@@ -71,7 +82,7 @@ object ContactManager {
         return list
     }
 
-    fun getPhoneNumberFormat(context: Context, text: String): String {
+    fun getPhoneNumberFormat(context: Context, call: PhoneNumberFormatCall, text: String): String {
         if (text.isEmpty()) {
             return ""
         }
@@ -88,6 +99,7 @@ object ContactManager {
         } catch (ex: NumberParseException) {
             val errorMessage = ex.toString()
             val logMessageArr = arrayOf(
+                "call : $call",
                 "text : $text",
                 "errorMessage : $errorMessage"
             )
@@ -96,7 +108,7 @@ object ContactManager {
             val logMessage = FirebaseLogManager.getJoinData(logMessageArr)
             FirebaseLogManager.log(context, logType, logMessage)
 
-            return "FORMAT_ERROR"
+            return ERROR_PHONE_NUMBER_FORMAT
         }
     }
 

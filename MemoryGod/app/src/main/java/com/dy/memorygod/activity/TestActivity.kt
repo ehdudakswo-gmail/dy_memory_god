@@ -641,7 +641,11 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
                 when (selectedItem) {
                     itemPhoneNumberFormat -> {
-                        newText = ContactManager.getPhoneNumberFormat(context, originText)
+                        newText = ContactManager.getPhoneNumberFormat(
+                            context,
+                            PhoneNumberFormatCall.TEST_DIALOG_SETTINGS,
+                            originText
+                        )
                     }
                     itemUpperCase -> {
                         newText = originText.toUpperCase(Locale.ROOT)
@@ -652,9 +656,17 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 }
 
                 // handle UI
+                if (newText == ContactManager.ERROR_PHONE_NUMBER_FORMAT) {
+                    val phoneNumberErrorFormat =
+                        getString(R.string.test_item_test_dialog_settings_phone_number_format_error_format)
+                    val phoneNumberError = String.format(phoneNumberErrorFormat, originText)
+                    showToast(phoneNumberError)
+                    return@setItems
+                }
+
                 selectedEditText.setText(newText)
                 selectedEditText.requestFocus()
-                Toast.makeText(this, selectedItem, Toast.LENGTH_SHORT).show()
+                showToast(selectedItem)
             }.show()
     }
 

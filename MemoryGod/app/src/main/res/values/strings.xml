@@ -114,6 +114,7 @@
     <string name="test_item_test_dialog_voice_result_success">입력 완료</string>
 
     <string name="test_item_test_dialog_settings_phone_number_format">전화번호 형식</string>
+    <string name="test_item_test_dialog_settings_phone_number_format_error_format">전화번호 형식이 아닙니다. (%s)</string>
     <string name="test_item_test_dialog_settings_upper_case">대문자 변경</string>
     <string name="test_item_test_dialog_settings_lower_case">소문자 변경</string>
 
