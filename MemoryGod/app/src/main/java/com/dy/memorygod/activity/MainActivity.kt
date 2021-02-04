@@ -121,11 +121,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         actionBar.setDisplayShowTitleEnabled(false)
 
         textView_main_toolbar_title.setOnLongClickListener {
-            // Show Message
+            // show message
             val appInfo = GlobalApplication.instance.getAppInfo()
             showAlertDialog(appInfo)
 
-            // Copy Clipboard
+            // copy clipboard
             val clipboardManager = getSystemService(Activity.CLIPBOARD_SERVICE) as ClipboardManager
             val clipData = ClipData.newPlainText("appInfo", appInfo)
             clipboardManager.setPrimaryClip(clipData)

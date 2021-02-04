@@ -1,5 +1,8 @@
 package com.dy.memorygod.activity
 
+import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognitionListener
@@ -356,6 +359,17 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         topLayout.setBackgroundResource(data.testCheck.color)
         titleTextView.text = dataProblem
+        titleTextView.setOnLongClickListener {
+            // copy clipboard
+            val clipboardManager = getSystemService(Activity.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipData = ClipData.newPlainText("dataProblem", dataProblem)
+            clipboardManager.setPrimaryClip(clipData)
+
+            // show message
+            val copyMessage = getString(R.string.app_copy_complete)
+            showToast(copyMessage)
+            true
+        }
 
         val answerEditText = view.editText_test_item_test_answer
         answerEditText.requestFocus()
