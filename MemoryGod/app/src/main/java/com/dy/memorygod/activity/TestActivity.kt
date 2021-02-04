@@ -11,6 +11,7 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.SUCCESS
 import android.speech.tts.UtteranceProgressListener
+import android.text.method.ScrollingMovementMethod
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -359,6 +360,7 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
 
         topLayout.setBackgroundResource(data.testCheck.color)
         titleTextView.text = dataProblem
+        titleTextView.movementMethod = ScrollingMovementMethod()
         titleTextView.setOnLongClickListener {
             // copy clipboard
             val clipboardManager = getSystemService(Activity.CLIPBOARD_SERVICE) as ClipboardManager

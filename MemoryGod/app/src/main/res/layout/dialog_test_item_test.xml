@@ -23,6 +23,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -48,6 +49,8 @@
                     android:id="@+id/textView_test_dialog_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:maxHeight="@dimen/test_dialog_title_textView_maxHeight"
+                    android:scrollbars="vertical"
                     android:text="@string/app_text_empty"
                     android:textColor="@color/colorBlack"
                     android:textSize="20sp" />
@@ -57,6 +60,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:orientation="horizontal">
 
                 <ImageView
