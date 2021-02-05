@@ -737,32 +737,30 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     }
 
     private fun showSettingsDialog(selectedEditText: EditText) {
-        val itemPhoneNumberFormat =
-            getString(R.string.test_item_test_dialog_settings_phone_number_format)
+        val itemBlankDelete = getString(R.string.test_item_test_dialog_settings_blank_delete)
         val itemUpperCase = getString(R.string.test_item_test_dialog_settings_upper_case)
         val itemLowerCase = getString(R.string.test_item_test_dialog_settings_lower_case)
+        val itemPhoneNumberFormat =
+            getString(R.string.test_item_test_dialog_settings_phone_number_format)
 
         val itemArr = arrayOf(
-            itemPhoneNumberFormat,
+            itemBlankDelete,
             itemUpperCase,
-            itemLowerCase
+            itemLowerCase,
+            itemPhoneNumberFormat
         )
 
         val builder = AlertDialog.Builder(this)
         val dialog = builder
             .setItems(itemArr) { _, which ->
-                // handle item
+                // text
                 val selectedItem = itemArr[which]
                 val originText = selectedEditText.text.toString().trim()
                 var newText = originText
 
                 when (selectedItem) {
-                    itemPhoneNumberFormat -> {
-                        newText = ContactManager.getPhoneNumberFormat(
-                            context,
-                            PhoneNumberFormatCall.TEST_DIALOG_SETTINGS,
-                            originText
-                        )
+                    itemBlankDelete -> {
+                        newText = originText.replace(" ", "")
                     }
                     itemUpperCase -> {
                         newText = originText.toUpperCase(Locale.ROOT)
@@ -770,13 +768,21 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                     itemLowerCase -> {
                         newText = originText.toLowerCase(Locale.ROOT)
                     }
+                    itemPhoneNumberFormat -> {
+                        newText = ContactManager.getPhoneNumberFormat(
+                            context,
+                            PhoneNumberFormatCall.TEST_DIALOG_SETTINGS,
+                            originText
+                        )
+                    }
                 }
 
-                // handle UI
+                // ui
                 if (newText == ContactManager.ERROR_PHONE_NUMBER_FORMAT) {
                     val phoneNumberErrorFormat =
                         getString(R.string.test_item_test_dialog_settings_phone_number_format_error_format)
                     val phoneNumberError = String.format(phoneNumberErrorFormat, originText)
+
                     showToast(phoneNumberError)
                     return@setItems
                 }
@@ -785,6 +791,8 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
                 selectedEditText.requestFocus()
                 showToast(selectedItem)
             }.show()
+
+        dialog.setCanceledOnTouchOutside(false)
     }
 
     override fun onItemSelected(size: Int) {
