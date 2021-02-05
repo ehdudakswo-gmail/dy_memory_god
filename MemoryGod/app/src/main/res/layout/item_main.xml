@@ -34,18 +34,37 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:textSize="@dimen/item_view_title_text_size"
-                app:layout_constraintEnd_toStartOf="@+id/imageView_main_item_reorder"
+                app:layout_constraintEnd_toStartOf="@+id/layout_main_item_option"
                 app:layout_constraintStart_toEndOf="@+id/view_main_item_left_space" />
 
-            <ImageView
-                android:id="@+id/imageView_main_item_reorder"
-                android:layout_width="@dimen/item_view_reorder_width"
-                android:layout_height="@dimen/item_view_reorder_height"
-                android:contentDescription="@string/app_content_description_item_reorder"
+            <FrameLayout
+                android:id="@+id/layout_main_item_option"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|end"
+                android:orientation="horizontal"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_item_reorder" />
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/textView_main_item_content_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|end"
+                    android:layout_marginEnd="10dp"
+                    android:textSize="@dimen/item_view_title_text_size" />
+
+                <ImageView
+                    android:id="@+id/imageView_main_item_reorder"
+                    android:layout_width="@dimen/item_view_reorder_width"
+                    android:layout_height="@dimen/item_view_reorder_height"
+                    android:layout_gravity="center_vertical|end"
+                    android:contentDescription="@string/app_content_description_item_reorder"
+                    app:srcCompat="@drawable/ic_item_reorder" />
+
+            </FrameLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

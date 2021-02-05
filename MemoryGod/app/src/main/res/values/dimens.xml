@@ -8,6 +8,7 @@
     <dimen name="item_view_reorder_height">30dp</dimen>
     <dimen name="item_empty_text_size">20sp</dimen>
 
+    <dimen name="test_dialog_title_textView_maxHeight">150dp</dimen>
     <dimen name="test_dialog_option_image_size">30dp</dimen>
     <dimen name="test_dialog_option_image_space">5dp</dimen>
 </resources>
