@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         if (MainDataManager.isLoadingComplete) {
             val dataList = recyclerViewAdapter.dataList
-            refreshPhoneData(dataList)
+//            refreshPhoneData(dataList)
             refreshContentView(dataList)
             saveBackupData()
         }
