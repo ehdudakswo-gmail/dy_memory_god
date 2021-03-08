@@ -22,8 +22,8 @@ object FirebaseCrashlyticsManager {
             .getInstance()
             .recordException(exception)
 
-        val logData = FirebaseLogManager.getLogData(type, message)
-        AndroidLogManager.d("FirebaseCrashlyticsManager log--record : $logData")
+        val logInfo = FirebaseLogManager.getLogInfo(type, message)
+        AndroidLogManager.d("FirebaseCrashlyticsManager log--record : $logInfo")
     }
 
 }

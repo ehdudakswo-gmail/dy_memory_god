@@ -11,28 +11,23 @@ import java.util.*
 
 
 object FirebaseFirestoreManager {
-    // db
-    val db = FirebaseFirestore.getInstance()
-
     // config
     const val CONFIG = "config"
     const val CONFIG_ANDROID = "android"
-    const val CONFIG_ANDROID_isLogEnable = "isLogEnable"
-    const val CONFIG_ANDROID_isShareDataDownload = "isShareDataDownload"
-    const val CONFIG_ANDROID_stopLogTypes = "stopLogTypes"
 
-    // logs
-    private const val LOGS = "logs"
+    // log
+    private const val LOG = "log"
 
     fun log(context: Context, type: LogType, message: String) {
         if (isLogStop(type)) {
-            val logData = FirebaseLogManager.getLogData(type, message)
-            AndroidLogManager.d("FirebaseFirestoreManager log--stop : $logData")
+            val logInfo = FirebaseLogManager.getLogInfo(type, message)
+            AndroidLogManager.d("FirebaseFirestoreManager log--stop : $logInfo")
             return
         }
 
         // collection
-        val collection = db.collection(LOGS)
+        val db = FirebaseFirestore.getInstance()
+        val collection = db.collection(LOG)
         val nowDate = Date()
 
         // document
@@ -53,29 +48,27 @@ object FirebaseFirestoreManager {
         val data = getLogData(context, type, message)
         collection2
             .add(data)
-            .addOnSuccessListener { documentReference ->
-                val logData = FirebaseLogManager.getLogData(type, message)
-                AndroidLogManager.d("FirebaseFirestoreManager log--record : $logData")
-                AndroidLogManager.d("FirebaseFirestoreManager log addOnSuccessListener documentReference.id : ${documentReference.id}")
+            .addOnSuccessListener {
+                val logInfo = FirebaseLogManager.getLogInfo(type, message)
+                AndroidLogManager.d("FirebaseFirestoreManager log--record : $logInfo")
             }
             .addOnFailureListener { exception ->
                 val logMessage =
                     "FirebaseFirestoreManager log addOnFailureListener exception : $exception"
-                AndroidLogManager.d(logMessage)
                 FirebaseLogManager.logFirestoreError(context, logMessage)
             }
     }
 
     private fun isLogStop(type: LogType): Boolean {
         val appConfig = GlobalApplication.instance.firestoreConfig
-        if (!appConfig.isLogEnable) {
+        if (!appConfig.logEnable) {
             return true
         }
 
-        val stopLogTypes = appConfig.stopLogTypes
+        val logStopTypes = appConfig.logStopTypes
         val typeStr = type.get()
 
-        if (stopLogTypes != null && stopLogTypes.contains(typeStr)) {
+        if (logStopTypes != null && logStopTypes.contains(typeStr)) {
             return true
         }
 

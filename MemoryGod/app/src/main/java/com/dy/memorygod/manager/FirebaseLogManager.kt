@@ -3,6 +3,7 @@ package com.dy.memorygod.manager
 import android.content.Context
 import com.dy.memorygod.GlobalApplication
 import com.dy.memorygod.enums.LogType
+import java.text.SimpleDateFormat
 import java.util.*
 
 object FirebaseLogManager {
@@ -26,7 +27,10 @@ object FirebaseLogManager {
         FirebaseAnalyticsManager.log(context, logType, logMessage)
 
         // app config
-        val lastErrorArr = arrayOf(Date().toString(), logMessage)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val date = dateFormat.format(Date())
+
+        val lastErrorArr = arrayOf(date, logMessage)
         val lastError = getJoinData(lastErrorArr)
         GlobalApplication.instance.firestoreLastError = lastError
     }
@@ -37,7 +41,7 @@ object FirebaseLogManager {
         return "$DATA_JOIN_OPEN$joinData$DATA_JOIN_CLOSE"
     }
 
-    fun getLogData(type: LogType, message: String): String {
+    fun getLogInfo(type: LogType, message: String): String {
         val arr = arrayOf(type.get(), message)
 
         return getJoinData(arr)

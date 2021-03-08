@@ -16,8 +16,8 @@ object FirebaseAnalyticsManager {
             .getInstance(context)
             .logEvent(name, bundle)
 
-        val logData = FirebaseLogManager.getLogData(type, message)
-        AndroidLogManager.d("FirebaseAnalyticsManager log--record : $logData")
+        val logInfo = FirebaseLogManager.getLogInfo(type, message)
+        AndroidLogManager.d("FirebaseAnalyticsManager log--record : $logInfo")
     }
 
 }

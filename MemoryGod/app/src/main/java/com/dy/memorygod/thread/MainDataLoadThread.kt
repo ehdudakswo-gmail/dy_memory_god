@@ -1,6 +1,5 @@
 package com.dy.memorygod.thread
 
-import android.content.Context
 import com.dy.memorygod.data.MainData
 import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.entity.MainDataEntity
