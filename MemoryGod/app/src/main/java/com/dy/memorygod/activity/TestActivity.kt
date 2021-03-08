@@ -207,11 +207,11 @@ class TestActivity : AppCompatActivity(), TestRecyclerViewEventListener {
     private fun setTextToSpeech() {
         val utteranceProgressListener = object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
-                LogsManager.d("utteranceProgressListener onStart utteranceId : $utteranceId")
+                AndroidLogManager.d("utteranceProgressListener onStart utteranceId : $utteranceId")
             }
 
             override fun onDone(utteranceId: String) {
-                LogsManager.d("utteranceProgressListener onDone utteranceId : $utteranceId")
+                AndroidLogManager.d("utteranceProgressListener onDone utteranceId : $utteranceId")
             }
 
             override fun onError(utteranceId: String) {

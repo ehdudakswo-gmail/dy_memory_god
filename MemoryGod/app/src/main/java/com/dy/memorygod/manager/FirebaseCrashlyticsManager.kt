@@ -23,7 +23,7 @@ object FirebaseCrashlyticsManager {
             .recordException(exception)
 
         val logData = FirebaseLogManager.getLogData(type, message)
-        LogsManager.d("FirebaseCrashlyticsManager log--record : $logData")
+        AndroidLogManager.d("FirebaseCrashlyticsManager log--record : $logData")
     }
 
 }

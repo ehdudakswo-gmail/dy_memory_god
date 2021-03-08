@@ -27,7 +27,7 @@ object FirebaseFirestoreManager {
     fun log(context: Context, type: LogType, message: String) {
         if (isLogStop(type)) {
             val logData = FirebaseLogManager.getLogData(type, message)
-            LogsManager.d("FirebaseFirestoreManager log--stop : $logData")
+            AndroidLogManager.d("FirebaseFirestoreManager log--stop : $logData")
             return
         }
 
@@ -55,13 +55,13 @@ object FirebaseFirestoreManager {
             .add(data)
             .addOnSuccessListener { documentReference ->
                 val logData = FirebaseLogManager.getLogData(type, message)
-                LogsManager.d("FirebaseFirestoreManager log--record : $logData")
-                LogsManager.d("FirebaseFirestoreManager log addOnSuccessListener documentReference.id : ${documentReference.id}")
+                AndroidLogManager.d("FirebaseFirestoreManager log--record : $logData")
+                AndroidLogManager.d("FirebaseFirestoreManager log addOnSuccessListener documentReference.id : ${documentReference.id}")
             }
             .addOnFailureListener { exception ->
                 val logMessage =
                     "FirebaseFirestoreManager log addOnFailureListener exception : $exception"
-                LogsManager.d(logMessage)
+                AndroidLogManager.d(logMessage)
                 FirebaseLogManager.logFirestoreError(context, logMessage)
             }
     }

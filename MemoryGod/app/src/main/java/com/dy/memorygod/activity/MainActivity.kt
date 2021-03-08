@@ -148,7 +148,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             .addOnSuccessListener { document ->
                 val data = document.data
                 val logMessage = "setFirestoreConfig addOnSuccessListener data : $data"
-                LogsManager.d(logMessage)
+                AndroidLogManager.d(logMessage)
 
                 if (data == null) {
                     FirebaseLogManager.logFirestoreError(this, logMessage)
@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             }
             .addOnFailureListener { exception ->
                 val logMessage = "setFirestoreConfig addOnFailureListener exception : $exception"
-                LogsManager.d(logMessage)
+                AndroidLogManager.d(logMessage)
                 FirebaseLogManager.logFirestoreError(this, logMessage)
             }
 
@@ -167,21 +167,21 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         firestoreConfigSnapshotListener = docRef.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
                 val logMessage = "setFirestoreConfig addSnapshotListener exception : $exception"
-                LogsManager.d(logMessage)
+                AndroidLogManager.d(logMessage)
                 FirebaseLogManager.logFirestoreError(this, logMessage)
                 return@addSnapshotListener
             }
 
             if (snapshot == null || !snapshot.exists()) {
                 val logMessage = "setFirestoreConfig addSnapshotListener snapshot : $snapshot"
-                LogsManager.d(logMessage)
+                AndroidLogManager.d(logMessage)
                 FirebaseLogManager.logFirestoreError(this, logMessage)
                 return@addSnapshotListener
             }
 
             val data = snapshot.data
             val logMessage = "setFirestoreConfig addSnapshotListener data : $data"
-            LogsManager.d(logMessage)
+            AndroidLogManager.d(logMessage)
 
             if (data == null) {
                 FirebaseLogManager.logFirestoreError(this, logMessage)
@@ -262,7 +262,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
 
         val exception = thread.exception
-        LogsManager.d("setData backupData exception: $exception")
+        AndroidLogManager.d("setData backupData exception: $exception")
 
         if (exception != null) {
             // Log Data
@@ -293,7 +293,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             init()
 
             val exception = thread.exception
-            LogsManager.d("loadSampleData exception : $exception")
+            AndroidLogManager.d("loadSampleData exception : $exception")
 
             if (exception != null) {
                 // Log Data

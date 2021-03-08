@@ -6,7 +6,7 @@ import com.dy.memorygod.data.MainDataContent
 import com.dy.memorygod.enums.DataType
 import com.dy.memorygod.enums.DataTypePhone
 import com.dy.memorygod.enums.TestCheck
-import com.dy.memorygod.manager.LogsManager
+import com.dy.memorygod.manager.AndroidLogManager
 import com.dy.memorygod.manager.MainDataManager
 import java.io.BufferedReader
 import java.io.InputStream
@@ -35,11 +35,11 @@ class SampleDataLoadThread(
 
             for (file in sortedList) {
                 setSampleData(file)
-                LogsManager.d("SampleDataLoadThread file : $file")
+                AndroidLogManager.d("SampleDataLoadThread file : $file")
             }
         } catch (ex: Exception) {
             exception = ex.toString()
-            LogsManager.d("SampleDataLoadThread ex : $ex")
+            AndroidLogManager.d("SampleDataLoadThread ex : $ex")
         }
     }
 
