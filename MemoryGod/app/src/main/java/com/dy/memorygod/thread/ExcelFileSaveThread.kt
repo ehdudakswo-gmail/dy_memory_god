@@ -60,7 +60,7 @@ class ExcelFileSaveThread(
             if (this::parcelFileDescriptor.isInitialized) {
                 parcelFileDescriptor.close()
             }
-            
+
             if (this::outputStream.isInitialized) {
                 outputStream.close()
             }

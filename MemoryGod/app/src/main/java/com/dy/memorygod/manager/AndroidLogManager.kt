@@ -4,7 +4,7 @@ import android.util.Log
 import com.dy.memorygod.GlobalApplication
 import com.dy.memorygod.enums.AppMode
 
-object LogsManager {
+object AndroidLogManager {
 
     private const val TAG = "ehdudakswo"
 

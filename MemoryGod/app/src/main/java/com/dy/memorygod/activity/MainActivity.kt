@@ -35,6 +35,7 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
@@ -77,7 +78,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
         if (MainDataManager.isLoadingComplete) {
             val dataList = recyclerViewAdapter.dataList
-//            refreshPhoneData(dataList)
             refreshContentView(dataList)
             saveBackupData()
         }
@@ -137,20 +137,18 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setFirestoreConfig() {
-        val db = FirebaseFirestoreManager.db
+        val db = FirebaseFirestore.getInstance()
         val collectionPath = FirebaseFirestoreManager.CONFIG
         val documentPath = FirebaseFirestoreManager.CONFIG_ANDROID
         val docRef = db.collection(collectionPath).document(documentPath)
 
-        // once
+        // init
         docRef
             .get()
             .addOnSuccessListener { document ->
                 val data = document.data
-                val logMessage = "setFirestoreConfig addOnSuccessListener data : $data"
-                LogsManager.d(logMessage)
-
                 if (data == null) {
+                    val logMessage = "setFirestoreConfig addOnSuccessListener data null error"
                     FirebaseLogManager.logFirestoreError(this, logMessage)
                     return@addOnSuccessListener
                 }
@@ -159,7 +157,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             }
             .addOnFailureListener { exception ->
                 val logMessage = "setFirestoreConfig addOnFailureListener exception : $exception"
-                LogsManager.d(logMessage)
                 FirebaseLogManager.logFirestoreError(this, logMessage)
             }
 
@@ -167,23 +164,19 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         firestoreConfigSnapshotListener = docRef.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
                 val logMessage = "setFirestoreConfig addSnapshotListener exception : $exception"
-                LogsManager.d(logMessage)
                 FirebaseLogManager.logFirestoreError(this, logMessage)
                 return@addSnapshotListener
             }
 
             if (snapshot == null || !snapshot.exists()) {
-                val logMessage = "setFirestoreConfig addSnapshotListener snapshot : $snapshot"
-                LogsManager.d(logMessage)
+                val logMessage = "setFirestoreConfig addSnapshotListener snapshot null error"
                 FirebaseLogManager.logFirestoreError(this, logMessage)
                 return@addSnapshotListener
             }
 
             val data = snapshot.data
-            val logMessage = "setFirestoreConfig addSnapshotListener data : $data"
-            LogsManager.d(logMessage)
-
             if (data == null) {
+                val logMessage = "setFirestoreConfig addSnapshotListener data null error"
                 FirebaseLogManager.logFirestoreError(this, logMessage)
                 return@addSnapshotListener
             }
@@ -193,21 +186,14 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
     }
 
     private fun setAppConfig(data: Map<String, Any>) {
-        val isLogEnableKey =
-            FirebaseFirestoreManager.CONFIG_ANDROID_isLogEnable
-        val isShareDataDownloadKey =
-            FirebaseFirestoreManager.CONFIG_ANDROID_isShareDataDownload
-        val stopLogTypesKey =
-            FirebaseFirestoreManager.CONFIG_ANDROID_stopLogTypes
-
-        val isLogEnable = data[isLogEnableKey] as Boolean
-        val isShareDataDownload = data[isShareDataDownloadKey] as Boolean
-        val stopLogTypes = data[stopLogTypesKey] as List<*>
+        val logEnable = data["logEnable"] as Boolean
+        val logStopTypes = data["logStopTypes"] as List<*>
+        val shareDataEnable = data["shareDataEnable"] as Boolean
 
         val appConfig = GlobalApplication.instance.firestoreConfig
-        appConfig.isLogEnable = isLogEnable
-        appConfig.isShareDataDownload = isShareDataDownload
-        appConfig.stopLogTypes = stopLogTypes
+        appConfig.logEnable = logEnable
+        appConfig.logStopTypes = logStopTypes
+        appConfig.shareDataEnable = shareDataEnable
     }
 
     private fun setAdMob() {
@@ -262,7 +248,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
         }
 
         val exception = thread.exception
-        LogsManager.d("setData backupData exception: $exception")
+        AndroidLogManager.d("setData backupData exception: $exception")
 
         if (exception != null) {
             // Log Data
@@ -293,7 +279,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             init()
 
             val exception = thread.exception
-            LogsManager.d("loadSampleData exception : $exception")
+            AndroidLogManager.d("loadSampleData exception : $exception")
 
             if (exception != null) {
                 // Log Data
@@ -610,8 +596,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
             menu.findItem(R.id.main_toolBar_menu_share_data_download) ?: return true
 
         val appConfig = GlobalApplication.instance.firestoreConfig
-        val isShareDataDownload = appConfig.isShareDataDownload
-        shareDataDownload.isVisible = isShareDataDownload
+        val shareDataEnable = appConfig.shareDataEnable
+        shareDataDownload.isVisible = shareDataEnable
 
         return super.onPrepareOptionsMenu(menu)
     }
@@ -850,9 +836,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerViewEventListener {
 
     private fun handleShareData() {
         val appConfig = GlobalApplication.instance.firestoreConfig
-        val isShareDataDownload = appConfig.isShareDataDownload
+        val shareDataEnable = appConfig.shareDataEnable
 
-        if (!isShareDataDownload) {
+        if (!shareDataEnable) {
             val stopMessage = getString(R.string.app_service_stop)
             showToast(stopMessage)
             return
