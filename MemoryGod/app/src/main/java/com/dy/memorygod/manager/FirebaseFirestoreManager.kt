@@ -13,7 +13,7 @@ import java.util.*
 object FirebaseFirestoreManager {
     // config
     const val CONFIG = "config"
-    const val CONFIG_ANDROID = "android"
+    const val CONFIG_ANDROID = "android2"
 
     // log
     private const val LOG = "log"
